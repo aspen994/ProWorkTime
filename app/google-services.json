@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "227825902328",
+    "project_id": "ogrodapp",
+    "storage_bucket": "ogrodapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:227825902328:android:68426982e9e0373456910d",
+        "android_client_info": {
+          "package_name": "com.example.ogrdapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "227825902328-k7iiiurp0628sj543agpdkhdjqe09769.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNAqwX3JkCFiY07Bc0aZtz-MJrchglDFQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "227825902328-k7iiiurp0628sj543agpdkhdjqe09769.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
