@@ -123,7 +123,7 @@ public class UserMainActivity extends AppCompatActivity {
                     tmpEndTime = getCurrentTimeInSimpleFormat();
 
                     // Counting time overall
-                    tmpOverall += tmpEndTime - tmpBeginTime;
+                    tmpOverall = tmpEndTime - tmpBeginTime;
 
                     //Log.i("TIME",String.valueOf(tmpOverall));
 
