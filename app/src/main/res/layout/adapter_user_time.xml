@@ -9,7 +9,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal">
-
     <TextView
         android:id="@+id/date"
         android:layout_width="wrap_content"
@@ -43,6 +42,25 @@
         android:layout_height="wrap_content"
         android:text=" H" />
     </LinearLayout>
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+        <TextView
+            android:id="@+id/date_last_record"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"/>
+        <TextView
+            android:id="@+id/hoursInDay_last_record"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <TextView
+            android:id="@+id/hours_last_record"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
+    </LinearLayout>
 
 </androidx.appcompat.widget.LinearLayoutCompat>
