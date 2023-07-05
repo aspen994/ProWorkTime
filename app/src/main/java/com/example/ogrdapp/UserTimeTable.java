@@ -15,6 +15,8 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.ogrdapp.model.TimeModel;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.sql.Time;
 import java.time.LocalDate;
@@ -29,6 +31,9 @@ public class UserTimeTable extends AppCompatActivity {
 
     private Button btn_sum;
     TimeOverallAdapter timeOverallAdapter = new TimeOverallAdapter(this, timeModelArrayList);
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    private CollectionReference collectionReference = db.collection("Journal");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

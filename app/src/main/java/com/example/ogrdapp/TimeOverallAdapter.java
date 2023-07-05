@@ -2,6 +2,7 @@ package com.example.ogrdapp;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +17,6 @@ import com.example.ogrdapp.model.TimeModel;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.MyViewHolder> {
 
@@ -40,6 +40,7 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
     @Override
     public void onBindViewHolder(@NonNull TimeOverallAdapter.MyViewHolder holder, int position) {
 
+        //Hiding the LinearLayout for summing up
         holder.linearLayoutLastRecord.setVisibility(View.GONE);
         holder.date.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
         holder.hourInDay.setText(list.get(position).getTimeOverall());
@@ -53,6 +54,7 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
                 sum += timeModel.getTimeOverallInLong();
             }
             //sum += list.get(position).getTimeOverallInLong();
+            //Showhing the LinearLayout for summing up
             holder.linearLayoutLastRecord.setVisibility(View.VISIBLE);
             holder.linearLayoutLastRecord.setBackgroundColor(Color.YELLOW);
             holder.dateLastRecord.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
@@ -61,21 +63,25 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
             holder.hours_last_record.setTextColor(Color.BLACK);
 
 
-            long seconds = sum / 1000;
-            long minutes = seconds / 60;
-            long hours = minutes / 60;
+            String formattedTimeToLastRecord = formattedTime(sum);
 
-            seconds %= 60;
-            minutes %= 60;
 
-            String formattedTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-            //overHere
-
-            holder.hoursInDayLastRecord.setText(formattedTime);
+            holder.hoursInDayLastRecord.setText(formattedTimeToLastRecord);
             holder.hoursInDayLastRecord.setTextColor(Color.BLACK);
 
         }
-        //holder.earnMoney.setText("200");
+    }
+
+    private String formattedTime(long sum) {
+        long seconds = sum / 1000;
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+
+        seconds %= 60;
+        minutes %= 60;
+
+        String formattedTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+        return formattedTime;
     }
 
     @Override
