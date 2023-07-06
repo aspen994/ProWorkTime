@@ -22,10 +22,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.ogrdapp.model.TimeModel;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -51,6 +55,7 @@ public class UserMainActivity extends AppCompatActivity {
 
 
     private FirebaseAuth firebaseAuth=FirebaseAuth.getInstance();
+    private FirebaseUser fireBaseUser;
     public static final String QRCODE1="Tk6&zE8*odwq7G$u2#IVL1e!Q@JvXrFgS0^NbCn5mO9pDyA4(PcHhY3Za6lWsB)";
 
     private DrawerLayout drawerLayout;
@@ -75,6 +80,7 @@ public class UserMainActivity extends AppCompatActivity {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private CollectionReference collectionReference = db.collection("Users");
+    private CollectionReference collectionReferenceTime = db.collection("Time");
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -88,8 +94,15 @@ public class UserMainActivity extends AppCompatActivity {
     }
 
     ActivityResultLauncher<ScanOptions> barLauncher = registerForActivityResult(new ScanContract(), new ActivityResultCallback<ScanIntentResult>() {
+
         @Override
         public void onActivityResult(ScanIntentResult result) {
+
+            fireBaseUser = firebaseAuth.getCurrentUser();
+            assert  fireBaseUser !=null;
+            final String currentUserId = fireBaseUser.getUid();
+
+
             if(result.getContents()!=null && result.getContents().toString().equals(QRCODE1))
             {
                 Toast.makeText(UserMainActivity.this, "Dobry kod", Toast.LENGTH_SHORT).show();
@@ -146,8 +159,24 @@ public class UserMainActivity extends AppCompatActivity {
 
                     timeModel.setTimeOverall(formattedTime);
                     timeModel.setTimeOverallInLong(tmpOverall);
+                    timeModel.setId(currentUserId);
+                    timeModel.setUserName(userName.getText().toString());
+                    timeModel.setTimeAdded(new Timestamp(new Date()));
 
                     arrayList.add(timeModel);
+
+                    collectionReferenceTime.add(timeModel).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        @Override
+                        public void onSuccess(DocumentReference documentReference) {
+                            Toast.makeText(UserMainActivity.this, "Data added sucesfully", Toast.LENGTH_SHORT).show();
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(UserMainActivity.this, "Fail on adding data", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
 
 
                     timerOverall.setText(formattedTime);
@@ -314,8 +343,6 @@ public class UserMainActivity extends AppCompatActivity {
         });
 
 
-
-
         toogle = new ActionBarDrawerToggle(this,drawerLayout,R.string.open,R.string.close);
         drawerLayout.addDrawerListener(toogle);
         toogle.syncState();
@@ -330,7 +357,7 @@ public class UserMainActivity extends AppCompatActivity {
                 {
                     Intent i = new Intent(UserMainActivity.this,UserTimeTable.class);
                     Log.i("SIZE ARRAY LIST FROM MAIN",arrayList.size()+"");
-                    i.putExtra("timeModel",arrayList);
+                    //i.putExtra("timeModel",arrayList);
                     startActivity(i);
                     //startActivity(new Intent(UserMainActivity.this,UserTimeTable.class));
                 }

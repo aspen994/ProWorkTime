@@ -1,5 +1,6 @@
 package com.example.ogrdapp;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,16 +16,29 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.ogrdapp.model.TimeModel;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
-import java.sql.Time;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class UserTimeTable extends AppCompatActivity {
 
+
+    private FirebaseAuth firebaseAuth;
+    private  FirebaseAuth.AuthStateListener authStateListener;
+    private FirebaseUser user;
     private Spinner spinnerMonth, spinnerYear;
     private RecyclerView recyclerView;
     private ArrayList<TimeModel> timeModelArrayList = new ArrayList<>();
@@ -33,7 +47,7 @@ public class UserTimeTable extends AppCompatActivity {
     TimeOverallAdapter timeOverallAdapter = new TimeOverallAdapter(this, timeModelArrayList);
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    private CollectionReference collectionReference = db.collection("Journal");
+    private CollectionReference collectionReference = db.collection("Time");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +56,66 @@ public class UserTimeTable extends AppCompatActivity {
         spinnerMonth = findViewById(R.id.spinner_month);
         spinnerYear = findViewById(R.id.spinner_year);
         recyclerView = findViewById(R.id.recyclerView);
-
         btn_sum= findViewById(R.id.sum_btn);
+        //05.07.23 Firebase Auth
+        firebaseAuth = FirebaseAuth.getInstance();
+        user = firebaseAuth.getCurrentUser();
+        String userId = user.getUid();
+        String email = user.getEmail();
 
-        Intent i = getIntent();
-        timeModelArrayList.addAll((ArrayList<TimeModel>) i.getSerializableExtra("timeModel"));
+        // Zakomentowałem to 06.07.2023
+        /*Intent i = getIntent();
+        timeModelArrayList.addAll((ArrayList<TimeModel>) i.getSerializableExtra("timeModel"));*/
+
+        collectionReference.whereEqualTo("id", userId)
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if(!queryDocumentSnapshots.isEmpty())
+                        {
+                            for(QueryDocumentSnapshot timeModels: queryDocumentSnapshots)
+                            {
+                                /*Journal journal = journals.toObject(Journal.class);
+                                journalList.add(journal);
+                                */
+                                TimeModel timeModel = timeModels.toObject(TimeModel.class);
+                                //TODO 06.07.2023 - Sorting the ArrayList to show time in proper order
+                                timeModelArrayList.add(timeModel);
+                                Collections.sort(timeModelArrayList, new Comparator<TimeModel>() {
+                                    @Override
+                                    public int compare(TimeModel o1, TimeModel o2) {
+                                        return o1.getTimeBegin().compareTo(o2.getTimeBegin());
+                                    }
+                                });
+
+                            }
+                            // RecyclerView
+                          /*  journalRecyclerAdapter = new JournalRecyclerAdapter(JournalListActivity.this,journalList);
+                            recyclerView.setAdapter(journalRecyclerAdapter);
+                            noPostsEntry.setVisibility(View.INVISIBLE);
+                            journalRecyclerAdapter.notifyDataSetChanged();*/
+
+                            recyclerView.setHasFixedSize(true);
+                            recyclerView.setLayoutManager(new LinearLayoutManager(UserTimeTable.this));
+                            recyclerView.setAdapter(timeOverallAdapter);
+                            timeOverallAdapter.notifyDataSetChanged();
+                            Toast.makeText(UserTimeTable.this, "Data download", Toast.LENGTH_SHORT).show();
+
+                        }
+
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // Any Failuer
+                        Toast.makeText(UserTimeTable.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+
+        //Getting userId
+
 
         btn_sum.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,10 +129,10 @@ public class UserTimeTable extends AppCompatActivity {
         Log.i("SIZE ARRAYLIST",timeModelArrayList.size()+"");
 
 
-        recyclerView.setHasFixedSize(true);
+  /*      recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(timeOverallAdapter);
-        timeOverallAdapter.notifyDataSetChanged();
+        timeOverallAdapter.notifyDataSetChanged();*/
 
         // getting current year
         int year = LocalDate.now().getYear();

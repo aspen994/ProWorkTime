@@ -1,28 +1,49 @@
 package com.example.ogrdapp.model;
 
+import com.google.firebase.Timestamp;
+
 import java.io.Serializable;
 
-public class TimeModel implements Serializable {
+public class TimeModel  {
     private String userName;
     private String userSurname;
     private String timeBegin;
     private String timeEnd;
     private String timeOverall;
     private String moneyOverall;
-
+    private String id;
     private long timeOverallInLong;
+    private Timestamp timeAdded;
 
-    public TimeModel(String userName, String userSurname, String timeBegin, String timeEnd, String timeOverall, String moneyOverall, long timeOverallInLong) {
+    public TimeModel(String userName, String userSurname, String timeBegin, String timeEnd, String timeOverall, String moneyOverall, String id, long timeOverallInLong, Timestamp timeAdded) {
         this.userName = userName;
         this.userSurname = userSurname;
         this.timeBegin = timeBegin;
         this.timeEnd = timeEnd;
         this.timeOverall = timeOverall;
         this.moneyOverall = moneyOverall;
+        this.id = id;
         this.timeOverallInLong = timeOverallInLong;
+        this.timeAdded = timeAdded;
     }
 
     public TimeModel() {
+    }
+
+    public Timestamp getTimeAdded() {
+        return timeAdded;
+    }
+
+    public void setTimeAdded(Timestamp timeAdded) {
+        this.timeAdded = timeAdded;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public long getTimeOverallInLong() {

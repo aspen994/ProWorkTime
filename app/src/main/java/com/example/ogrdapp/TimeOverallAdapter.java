@@ -48,6 +48,7 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
         holder.endTime.setText(list.get(position).getTimeEnd());
         if(position==(getItemCount()-1))
         {
+            Log.i("LAST RECORD",list.get(position).getTimeBegin());
             long sum = 0;
             for(TimeModel timeModel : list)
             {
