@@ -48,7 +48,7 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
         holder.endTime.setText(list.get(position).getTimeEnd());
         if(position==(getItemCount()-1))
         {
-            Log.i("LAST RECORD",list.get(position).getTimeBegin());
+
             long sum = 0;
             for(TimeModel timeModel : list)
             {
@@ -105,7 +105,6 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
         hoursInDayLastRecord = itemView.findViewById(R.id.hoursInDay_last_record);
         linearLayoutLastRecord = itemView.findViewById(R.id.linearLayout);
         hours_last_record = itemView.findViewById(R.id.hours_last_record);
-        //earnMoney = itemView.findViewById(R.id.money);
     }
 }
 

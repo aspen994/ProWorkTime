@@ -36,9 +36,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="right"
             android:text="0 zł"/>
-
-
     </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
@@ -47,12 +46,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-    <Button
-        android:id="@+id/sum_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Sumuj"
-        android:layout_gravity="center"
-        android:backgroundTint="@color/material_dynamic_neutral50"/>
+
 
 </LinearLayout>

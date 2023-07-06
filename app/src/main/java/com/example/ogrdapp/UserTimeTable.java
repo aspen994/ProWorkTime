@@ -1,11 +1,5 @@
 package com.example.ogrdapp;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,13 +9,17 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.ogrdapp.model.TimeModel;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -29,7 +27,6 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -37,17 +34,15 @@ public class UserTimeTable extends AppCompatActivity {
 
 
     private FirebaseAuth firebaseAuth;
-    private  FirebaseAuth.AuthStateListener authStateListener;
+
     private FirebaseUser user;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private CollectionReference collectionReference = db.collection("Time");
     private Spinner spinnerMonth, spinnerYear;
     private RecyclerView recyclerView;
     private ArrayList<TimeModel> timeModelArrayList = new ArrayList<>();
+    private TimeOverallAdapter timeOverallAdapter = new TimeOverallAdapter(this, timeModelArrayList);
 
-    private Button btn_sum;
-    TimeOverallAdapter timeOverallAdapter = new TimeOverallAdapter(this, timeModelArrayList);
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-    private CollectionReference collectionReference = db.collection("Time");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,14 +51,15 @@ public class UserTimeTable extends AppCompatActivity {
         spinnerMonth = findViewById(R.id.spinner_month);
         spinnerYear = findViewById(R.id.spinner_year);
         recyclerView = findViewById(R.id.recyclerView);
-        btn_sum= findViewById(R.id.sum_btn);
+
+
         //05.07.23 Firebase Auth
         firebaseAuth = FirebaseAuth.getInstance();
         user = firebaseAuth.getCurrentUser();
         String userId = user.getUid();
         String email = user.getEmail();
 
-        // Zakomentowałem to 06.07.2023
+        // Zakomentowałem to 06.07.2023 - For now app working without intent, don't delete it maybe be usefull in next stage of app
         /*Intent i = getIntent();
         timeModelArrayList.addAll((ArrayList<TimeModel>) i.getSerializableExtra("timeModel"));*/
 
@@ -90,12 +86,8 @@ public class UserTimeTable extends AppCompatActivity {
                                 });
 
                             }
-                            // RecyclerView
-                          /*  journalRecyclerAdapter = new JournalRecyclerAdapter(JournalListActivity.this,journalList);
-                            recyclerView.setAdapter(journalRecyclerAdapter);
-                            noPostsEntry.setVisibility(View.INVISIBLE);
-                            journalRecyclerAdapter.notifyDataSetChanged();*/
 
+                            // RecyclerView
                             recyclerView.setHasFixedSize(true);
                             recyclerView.setLayoutManager(new LinearLayoutManager(UserTimeTable.this));
                             recyclerView.setAdapter(timeOverallAdapter);
@@ -113,22 +105,7 @@ public class UserTimeTable extends AppCompatActivity {
                     }
                 });
 
-
-        //Getting userId
-
-
-        btn_sum.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sum();
-            }
-        });
-
-
-        //timeModelArrayList.add((TimeModel) i.getSerializableExtra("timeModel"));
-        Log.i("SIZE ARRAYLIST",timeModelArrayList.size()+"");
-
-
+        // It was used before adding the db
   /*      recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(timeOverallAdapter);
@@ -178,26 +155,5 @@ public class UserTimeTable extends AppCompatActivity {
             }
         });
     }
-
-    private void sum() {
-
-        long sum = 0;
-
-        for (TimeModel timeModel:timeModelArrayList) {
-            sum += timeModel.getTimeOverallInLong();
-        }
-
-        long seconds = sum / 1000;
-        long minutes = seconds / 60;
-        long hours = minutes / 60;
-
-        seconds %= 60;
-        minutes %= 60;
-
-        String formattedTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-
-        Log.i("TIME OVERALL", formattedTime);
-    }
-
 
 }

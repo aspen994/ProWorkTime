@@ -2,8 +2,6 @@ package com.example.ogrdapp.model;
 
 import com.google.firebase.Timestamp;
 
-import java.io.Serializable;
-
 public class TimeModel  {
     private String userName;
     private String userSurname;
