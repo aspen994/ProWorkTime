@@ -81,7 +81,7 @@ public class UserTimeTable extends AppCompatActivity {
                                 Collections.sort(timeModelArrayList, new Comparator<TimeModel>() {
                                     @Override
                                     public int compare(TimeModel o1, TimeModel o2) {
-                                        return o1.getTimeBegin().compareTo(o2.getTimeBegin());
+                                        return o1.getTimeAdded().compareTo(o2.getTimeAdded());
                                     }
                                 });
 
