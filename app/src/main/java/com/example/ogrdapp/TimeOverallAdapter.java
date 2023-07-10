@@ -24,7 +24,10 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
     private Context context;
     private ArrayList<TimeModel> list;
     int positionOfTheNextDay =0;
+    // I commented this 16:58 - 10.07.2023
     int previousPosition = 0;
+
+    boolean flag = false;
 
     public TimeOverallAdapter(Context context, ArrayList<TimeModel> list) {
         this.context = context;
@@ -37,26 +40,30 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         View inflate = layoutInflater.inflate(R.layout.adapter_user_time,parent,false);
 
+
         return new MyViewHolder(inflate);
     }
 
     @Override
     public void onBindViewHolder(@NonNull TimeOverallAdapter.MyViewHolder holder, int position) {
 
-        //Hiding the LinearLayout for summing up
+
+        Log.i("Position !!",position+"");
+
+        //Hiding the LinearLayout for last record of the day
         holder.linearLayoutLastRecord.setVisibility(View.GONE);
+        //Hiding the LinearLayout for last record of the month
         holder.linearLayoutSummingRecord.setVisibility(View.GONE);
         //Getting date from getTimeAdded
         Date date = list.get(position).getTimeAdded().toDate();
 
+        //Setting date
         holder.date.setText(formattedDate(date));
+
+        //Setting lasting time of the current record in String
         holder.hourInDay.setText(list.get(position).getTimeOverall());
         holder.beginTime.setText(list.get(position).getTimeBegin());
         holder.endTime.setText(list.get(position).getTimeEnd());
-
-        list.get(position).getTimeAdded().toDate().getDay();
-
-
 
 
         // Comparing days
@@ -67,15 +74,14 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
             Date first = list.get(position).getTimeAdded().toDate();
             Date second = list.get((position+1)).getTimeAdded().toDate();
 
-
-
             // 1 Comparing days, if the next day is different than current day, make summing
             if(!(simpleDateFormat.format(first).equals(simpleDateFormat.format(second))))
             {
 
+
                 // Assigning the position of the next day.
                 positionOfTheNextDay = position + 1;
-                Log.i("Position !!",position+"");
+
 
                 //Showhing the LinearLayout for last record of the day
                 holder.linearLayoutLastRecord.setVisibility(View.VISIBLE);
@@ -88,6 +94,12 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
                 holder.hours_last_record.setText("H");
                 holder.hours_last_record.setTextColor(Color.WHITE);
 
+                if(flag)
+                {
+                    previousPosition = position;
+                    Log.i("TAG",previousPosition+"");
+                }
+
 
                 // summing time in the last day
                 long sum = 0;
@@ -96,9 +108,10 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
                     sum += list.get(i).getTimeOverallInLong();
                 }
 
-                previousPosition= positionOfTheNextDay-previousPosition;
+                previousPosition+= positionOfTheNextDay-previousPosition;
 
                 String formattedTimeToLastRecord = formattedTime(sum);
+                //sum=0;
 
 
                 holder.hoursInDayLastRecord.setText(formattedTimeToLastRecord);
@@ -117,6 +130,8 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
             {
                 sum += timeModel.getTimeOverallInLong();
             }
+
+            flag = true;
 
             holder.linearLayoutSummingRecord.setVisibility(View.VISIBLE);
             holder.linearLayoutSummingRecord.setBackgroundColor(Color.YELLOW);
@@ -139,6 +154,22 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
             holder.hoursInMonthSumming.setText(formattedTimeToLastRecord);
             holder.hoursInMonthSumming.setTextColor(Color.BLACK);
 
+            // Summing first record of the day for one day only
+
+            holder.linearLayoutLastRecord.setVisibility(View.VISIBLE);
+            holder.linearLayoutLastRecord.setBackgroundColor(Color.GREEN);
+
+            Date date2 = list.get(position).getTimeAdded().toDate();
+            holder.dateLastRecord.setText(formattedDateWithNameDay(date1));
+
+            holder.hoursInDayLastRecord.setText(list.get(position).getTimeOverall());
+
+            holder.dateLastRecord.setTextColor(Color.WHITE);
+            holder.hours_last_record.setText("H");
+            holder.hours_last_record.setTextColor(Color.WHITE);
+
+
+
             // Checking if list size is more than 1 cous I need make a comparssion.
             // Checking in if(position==(getItemCount()-1)) cous I need to make comparssion in the last record
             if(list.size()>1) {
@@ -157,8 +188,8 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
                     holder.linearLayoutLastRecord.setBackgroundColor(Color.GREEN);
                     holder.linearLayoutLastRecord.setVisibility(View.VISIBLE);
 
-                    Date date2 = list.get(position).getTimeAdded().toDate();
-                    holder.dateLastRecord.setText(formattedDateWithNameDay(date1));
+                    Date date3 = list.get(position).getTimeAdded().toDate();
+                    holder.dateLastRecord.setText(formattedDateWithNameDay(date3));
 
                     holder.dateLastRecord.setTextColor(Color.WHITE);
                     holder.hours_last_record.setText("H");
@@ -178,12 +209,15 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
 
                 holder.hoursInDayLastRecord.setText(formattedTimeToLastRecord2);
                 holder.hoursInDayLastRecord.setTextColor(Color.WHITE);
+
+                previousPosition =4;
+
             }
             else {
                 holder.linearLayoutLastRecord.setBackgroundColor(Color.GREEN);
                 holder.linearLayoutLastRecord.setVisibility(View.VISIBLE);
 
-                Date date2 = list.get(position).getTimeAdded().toDate();
+                Date date4 = list.get(position).getTimeAdded().toDate();
                 holder.dateLastRecord.setText(formattedDateWithNameDay(date1));
 
                 holder.dateLastRecord.setTextColor(Color.WHITE);
@@ -195,6 +229,8 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
                     sum3 += list.get(i).getTimeOverallInLong();
 
                 }
+
+                //previousPosition =4;
 
                 String formattedTimeToLastRecord2 = formattedTime(sum3);
 
