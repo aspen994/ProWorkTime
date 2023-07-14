@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -24,11 +23,14 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.Locale;
 
 public class UserTimeTable extends AppCompatActivity {
 
@@ -41,8 +43,14 @@ public class UserTimeTable extends AppCompatActivity {
     private Spinner spinnerMonth, spinnerYear;
     private RecyclerView recyclerView;
     private ArrayList<TimeModel> timeModelArrayList = new ArrayList<>();
-    private TimeOverallAdapter timeOverallAdapter = new TimeOverallAdapter(this, timeModelArrayList);
+    // commented  16:24 12.07.2023
+    boolean flag = true;
 
+    private TimeOverallAdapter timeOverallAdapter = new TimeOverallAdapter(this, timeModelArrayList);
+    //private TimeOverallAdapter timeOverallAdapter;
+
+    String selectedSpinnerOnYear="";
+    private String selectedSpinnerOnMonth="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,14 +93,9 @@ public class UserTimeTable extends AppCompatActivity {
                                     }
                                 });
 
+                                activateSpinner();
+                                activateSpinnerYear();
                             }
-
-                            // RecyclerView
-                            recyclerView.setHasFixedSize(true);
-                            recyclerView.setLayoutManager(new LinearLayoutManager(UserTimeTable.this));
-                            recyclerView.setAdapter(timeOverallAdapter);
-                            timeOverallAdapter.notifyDataSetChanged();
-                            Toast.makeText(UserTimeTable.this, "Data download", Toast.LENGTH_SHORT).show();
 
                         }
 
@@ -114,46 +117,129 @@ public class UserTimeTable extends AppCompatActivity {
         // getting current year
         int year = LocalDate.now().getYear();
 
+        /*ArrayAdapter<CharSequence> adapterYear = ArrayAdapter.createFromResource(this,R.array.year, android.R.layout.simple_spinner_item);
+        adapterYear.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerYear.setAdapter(adapterYear);
+        // Setting the current year
+        spinnerYear.setSelection(adapterYear.getPosition(String.valueOf(year)));*/
+        spinnerYear.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                //Toast.makeText(UserTimeTable.this, "Wybrany rok : " + text, Toast.LENGTH_SHORT).show();
+                selectedSpinnerOnYear = parent.getItemAtPosition(position).toString();
+
+                String year = parent.getItemAtPosition(position).toString();
+
+                if(!timeModelArrayList.isEmpty()) {
+                    ArrayList<TimeModel> arrayListTmp = new ArrayList<>();
+
+                    for (TimeModel model : timeModelArrayList) {
+                        String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate());
+                        //String s1 = text.toLowerCase();
+                        String s1 = selectedSpinnerOnMonth.toLowerCase()+year.toLowerCase();
+
+                        Log.i("S1 year: ",s1);
+                        Log.i("s year", s);
+                        if (s1.equals(s)) {
+                            arrayListTmp.add(model);
+                        }
+
+                    }
+
+                    Log.i("Size of time Model Array List", timeModelArrayList.size() + "");
+
+                    recyclerView.setHasFixedSize(true);
+                    recyclerView.setLayoutManager(new LinearLayoutManager(UserTimeTable.this));
+                    timeOverallAdapter = new TimeOverallAdapter(UserTimeTable.this, arrayListTmp);
+                    recyclerView.setAdapter(timeOverallAdapter);
+                    timeOverallAdapter.notifyDataSetChanged();
+                    Log.i("size arrayListTmp", arrayListTmp.size() + "");
+
+                }
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+
+
+        spinnerMonth.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                String month = parent.getItemAtPosition(position).toString();
+                selectedSpinnerOnMonth = parent.getItemAtPosition(position).toString();
+
+                if(!timeModelArrayList.isEmpty()) {
+                    ArrayList<TimeModel> arrayListTmp = new ArrayList<>();
+
+                    for (TimeModel model : timeModelArrayList) {
+                        String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate());
+                        //String s1 = text.toLowerCase();
+                        String s1 = month.toLowerCase() + selectedSpinnerOnYear;
+
+                        Log.i("S1: ",s1);
+                        Log.i("s", s);
+                        if (s1.equals(s)) {
+                            arrayListTmp.add(model);
+                        }
+
+                    }
+
+                    Log.i("Size of time Model Array List", timeModelArrayList.size() + "");
+
+                    recyclerView.setHasFixedSize(true);
+                    recyclerView.setLayoutManager(new LinearLayoutManager(UserTimeTable.this));
+                    timeOverallAdapter = new TimeOverallAdapter(UserTimeTable.this, arrayListTmp);
+                    recyclerView.setAdapter(timeOverallAdapter);
+                    timeOverallAdapter.notifyDataSetChanged();
+                    Log.i("size arrayListTmp", arrayListTmp.size() + "");
+
+                }
+
+            }
+            int size = 0;
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                Toast.makeText(UserTimeTable.this, "Nothing selected", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+
+    }
+
+    public void activateSpinner()
+    {
+        //Geting the current month
+        Month month = LocalDate.now().getMonth();
+        int monthToSend =month.getValue()-1;
+        ArrayAdapter<CharSequence> adapterMonth = ArrayAdapter.createFromResource(this, R.array.months, android.R.layout.simple_spinner_item);
+        adapterMonth.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerMonth.setAdapter(adapterMonth);
+        //Setting current month to spinner
+        spinnerMonth.setSelection(monthToSend);
+    }
+    public void activateSpinnerYear()
+    {
+        // getting current year
+        int year = LocalDate.now().getYear();
         ArrayAdapter<CharSequence> adapterYear = ArrayAdapter.createFromResource(this,R.array.year, android.R.layout.simple_spinner_item);
         adapterYear.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerYear.setAdapter(adapterYear);
         // Setting the current year
         spinnerYear.setSelection(adapterYear.getPosition(String.valueOf(year)));
-        spinnerYear.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String text = parent.getItemAtPosition(position).toString();
-                Toast.makeText(UserTimeTable.this, "Wybrany rok : " + text, Toast.LENGTH_SHORT).show();
-            }
+    }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        //Geting the current month
-        Month month = LocalDate.now().getMonth();
-        int monthToSend =month.getValue()-1;
-
-
-        ArrayAdapter<CharSequence> adapterMonth = ArrayAdapter.createFromResource(this,R.array.months, android.R.layout.simple_spinner_item);
-        adapterMonth.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerMonth.setAdapter(adapterMonth);
-        //Setting current month to spinner
-        spinnerMonth.setSelection(monthToSend);
-        spinnerMonth.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String text = parent.getItemAtPosition(position).toString();
-                Toast.makeText(UserTimeTable.this, "Wybrany miesiąc : " + text, Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
+    private String formatDateWithMonthAndYear(Date date)
+    {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("LLLLyyyy", Locale.getDefault());
+        return dateFormat.format(date);
     }
 
 }

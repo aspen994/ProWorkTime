@@ -9,10 +9,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ogrdapp.model.TimeModel;
 
+import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,12 +23,15 @@ import java.util.Locale;
 public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.MyViewHolder> {
 
     private Context context;
-    private ArrayList<TimeModel> list;
+    private ArrayList<TimeModel> list = new ArrayList<>();
     long timeOverallInLong = 0;
 
     public TimeOverallAdapter(Context context, ArrayList<TimeModel> list) {
         this.context = context;
         this.list = list;
+    }
+
+    public TimeOverallAdapter() {
     }
 
     @NonNull
@@ -154,6 +159,7 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
 
         return format.format(date);
     }
+
     @Override
     public int getItemCount() {
         return list.size();
@@ -166,16 +172,19 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
     public  MyViewHolder (@NonNull View itemView) {
         super(itemView);
 
+        // for each time
         date = itemView.findViewById(R.id.date);
         beginTime = itemView.findViewById(R.id.startTime);
         endTime = itemView.findViewById(R.id.endTime);
         hourInDay = itemView.findViewById(R.id.hoursInDay);
 
+        // sum for each day
         linearLayoutLastRecord = itemView.findViewById(R.id.linearLayout);
         dateLastRecord = itemView.findViewById(R.id.date_last_record);
         hoursInDayLastRecord = itemView.findViewById(R.id.hoursInDay_last_record);
         hours_last_record = itemView.findViewById(R.id.hours_last_record);
 
+        // sum for month
         linearLayoutSummingRecord = itemView.findViewById(R.id.summinglinearLayout);
         dateSumming = itemView.findViewById(R.id.date_summing);
         hoursInMonthSumming = itemView.findViewById(R.id.hoursInDay_summing);
