@@ -51,6 +51,7 @@ public class UserMainActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth=FirebaseAuth.getInstance();
     private FirebaseUser fireBaseUser;
     public static final String QRCODE1="Tk6&zE8*odwq7G$u2#IVL1e!Q@JvXrFgS0^NbCn5mO9pDyA4(PcHhY3Za6lWsB)";
+    public static final String QRCODE2delay5minutes="yJGZ*q7W#8n6Dv@B1F$%9X4hpYQeS^gU+sa0RwM3zNtVxOcZ2dL5fIHkA6i";
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -65,7 +66,8 @@ public class UserMainActivity extends AppCompatActivity {
     private boolean timerStarted = false;
     private Button qr;
 
-    private long tmpBeginTime,tmpEndTime,tmpOverall;
+    private long tmpBeginTime,tmpEndTime,tmpOverall=0;
+    private long delay5minutes = 300000;
     private static final int REQUEST_CODE =22;
     private TimeModel timeModel;
     private ArrayList<TimeModel> arrayList = new ArrayList<>();
@@ -206,17 +208,23 @@ public class UserMainActivity extends AppCompatActivity {
                     tmpBeginTime = getCurrentTimeInSimpleFormat();
                     startTimer();
                 }
-                else
-                {
+                else {
                     timerStarted = false;
                     textMain.setText("Rozpocznij pracę: ");
                     endingTime.setText("Zakończono pracę o : " + getCurrentTime());
                     timeModel.setTimeEnd(getCurrentTime());
                     tmpEndTime = getCurrentTimeInSimpleFormat();
 
-                    // Counting time overall
-                    tmpOverall = tmpEndTime - tmpBeginTime;
 
+                    // Counting time overall
+                    tmpOverall += tmpEndTime - tmpBeginTime;
+
+                    if (tmpOverall < 0) {
+                        tmpOverall = 0;
+                    }
+
+                    if(tmpOverall!=0)
+                    {
                     long seconds = tmpOverall / 1000;
                     long minutes = seconds / 60;
                     long hours = minutes / 60;
@@ -248,10 +256,87 @@ public class UserMainActivity extends AppCompatActivity {
 
                     timerOverall.setText(formattedTime);
 
+                }
+
                     timerTask.cancel();
                 }
 
             }
+
+            else {
+                Toast.makeText(UserMainActivity.this, "Błąd 2", Toast.LENGTH_SHORT).show();
+            }
+
+            if(result.getContents()!=null && result.getContents().toString().equals(QRCODE2delay5minutes))
+            {
+                Toast.makeText(UserMainActivity.this, "Dobry kod", Toast.LENGTH_SHORT).show();
+
+
+
+                if(timerStarted == false)
+                {
+                    timeModel = new TimeModel();
+                    timerStarted = true;
+                    textMain.setText("Zatrzymaj pracę: ");
+                    timeModel.setTimeBegin(getCurrentTime());
+                    begingTime.setText("Rozpoczęto pracę o: " + getCurrentTime());
+                    tmpBeginTime = getCurrentTimeInSimpleFormat();
+                    startTimer();
+                    // Setting delay for the qr code
+                    tmpOverall-=delay5minutes;
+                    Log.i("Logging","logged");
+                }
+                else
+                {
+                    timerStarted = false;
+                    textMain.setText("Rozpocznij pracę: ");
+                    endingTime.setText("Zakończono pracę o : " + getCurrentTime());
+                    timeModel.setTimeEnd(getCurrentTime());
+                    tmpEndTime = getCurrentTimeInSimpleFormat();
+
+                    // Counting time overall
+                    tmpOverall = (tmpEndTime - tmpBeginTime);
+
+
+                    if(tmpOverall<0) {
+                    tmpOverall=0;
+                    }
+                    else {
+                        long seconds = tmpOverall / 1000;
+                        long minutes = seconds / 60;
+                        long hours = minutes / 60;
+
+                        seconds %= 60;
+                        minutes %= 60;
+
+                        String formattedTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+                        timeModel.setTimeOverall(formattedTime);
+                        timeModel.setTimeOverallInLong(tmpOverall);
+                        timeModel.setId(currentUserId);
+                        timeModel.setUserName(userName.getText().toString());
+                        timeModel.setTimeAdded(new Timestamp(new Date()));
+
+                        arrayList.add(timeModel);
+
+                        collectionReferenceTime.add(timeModel).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                            @Override
+                            public void onSuccess(DocumentReference documentReference) {
+                                Toast.makeText(UserMainActivity.this, "Data added sucesfully 5 minutes dellay", Toast.LENGTH_SHORT).show();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(UserMainActivity.this, "Fail on adding data", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                        timerOverall.setText(formattedTime);
+                    }
+                    timerTask.cancel();
+                }
+
+            }
+
             else {
                 Toast.makeText(UserMainActivity.this, "Błąd 2", Toast.LENGTH_SHORT).show();
             }

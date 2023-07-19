@@ -49,11 +49,13 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
 
         //Hiding the LinearLayout for last record of the day
         holder.linearLayoutLastRecord.setVisibility(View.VISIBLE);
+
         //Setting highlights for last record on Color Green
         holder.linearLayoutLastRecord.setBackgroundColor(Color.GREEN);
         holder.dateLastRecord.setTextColor(Color.BLACK);
         holder.hoursInDayLastRecord.setTextColor(Color.BLACK);
         holder.hours_last_record.setTextColor(Color.BLACK);
+
         //Hiding the LinearLayout for last record of the month
         holder.linearLayoutSummingRecord.setVisibility(View.GONE);
 
