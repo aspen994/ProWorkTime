@@ -8,6 +8,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,6 +30,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.ogrdapp.model.TimeModel;
 import com.example.ogrdapp.services.ForegroundServices;
+import com.example.ogrdapp.services.MyBroadcastReceiver;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
@@ -52,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Handler;
 
 public class UserMainActivity extends AppCompatActivity {
 
@@ -129,13 +133,26 @@ public class UserMainActivity extends AppCompatActivity {
         endingTime = findViewById(R.id.ending_time);
         timerOverall = findViewById(R.id.timeOverall);
 
+        // Loading and updating data from SharedPreferences
         loadData();
         updateData();
 
+        // Loading proper text Main accroidng if the time of work is started or not.
+        if(timerStarted==false)
+        {
+            textMain.setText("Rozpocznij pracę: ");
+        }
+        else if(timerStarted)
+        {
+            textMain.setText("Zatrzymaj pracę: ");
+        }
+
+        // Getting current user Id.
         FirebaseUser user = firebaseAuth.getCurrentUser();
         assert  user !=null;
         final String currentUserId = user.getUid();
 
+        // Assignment user name and surname to textView from collectionReferences
         collectionReference.whereEqualTo("userId",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -156,28 +173,36 @@ public class UserMainActivity extends AppCompatActivity {
             }
         });
 
-        timer = new Timer();
-
+        /*// Assign timer to new Object
+        timer = new Timer();*/
 
         date.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
 
         firebaseAuth = FirebaseAuth.getInstance();
         // To Foreground service-------------------------------------------------------------------------
+        //Permission for the post notification
         if(ContextCompat.checkSelfPermission(UserMainActivity.this, android.Manifest.permission.POST_NOTIFICATIONS)!= PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(UserMainActivity.this,new String[]{android.Manifest.permission.POST_NOTIFICATIONS},101);
         }
-
         timer = new Timer();
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("Counter");
-
+        //intentFilter.addAction(Intent.Action);
+/*
+        try {
+            broadcastReceiver.clearAbortBroadcast();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }*/
         if(flagService) {
-            //TODO WORKS GOOD but i added
             if(timerTask!=null) {
                 timerTask.cancel();
             }
             broadcastReceiver = new BroadcastReceiver() {
+
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     //timerTask.cancel();
@@ -189,7 +214,6 @@ public class UserMainActivity extends AppCompatActivity {
 
             registerReceiver(broadcastReceiver, intentFilter);
             flagService =false;
-
         }
 
         // To Foreground service-------------------------------------------------------------------------
@@ -325,6 +349,7 @@ public class UserMainActivity extends AppCompatActivity {
 
     private long startTimer() {
 
+        //timer = new Timer();
         timerTask = new TimerTask() {
             @Override
             public void run() {
@@ -349,11 +374,11 @@ public class UserMainActivity extends AppCompatActivity {
         if(timerTask!=null)
         {
             timerTask.cancel();
-            timeLong=0;
+            //timeLong=0;
         }
 
 
-        Intent serviceIntent = new Intent(this, ForegroundServices.class);
+        /*Intent serviceIntent = new Intent(this, ForegroundServices.class);
         stopService(serviceIntent);
         //Log.i("Time finnaly",time+"");
         flag=true;
@@ -368,7 +393,13 @@ public class UserMainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-        }
+        }*/
+        Intent serviceIntent = new Intent(this,ForegroundServices.class);
+        stopService(serviceIntent);
+        Log.i("Time finnaly",time+"");
+        flag=true;
+        flagService=false;
+
     }
 
 // To Foreground service-------------------------------------------------------------------------
@@ -676,8 +707,8 @@ public class UserMainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         // starting service when time on clock is more than 0 and it's not ending time
-        if(timeLong>0 && endingTime.getText().toString().equals(""))
-        {
+        active = false;
+        if(!flag) {
             startForegroundServiceToCountTime();
         }
         // saving data when only started time not ending time
@@ -689,7 +720,6 @@ public class UserMainActivity extends AppCompatActivity {
         {
             clearData();
         }
-        active = false;
 
     }
 }

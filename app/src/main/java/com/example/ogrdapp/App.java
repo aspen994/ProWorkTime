@@ -6,7 +6,7 @@ import android.app.NotificationManager;
 import android.os.Build;
 
 public class App extends Application {
-    public static final String CHANNEl_ID = "exampleServiceChannel";
+    public static final String CHANNEl_ID = "countingTimeServiceChannel";
 
     @Override
     public void onCreate() {
@@ -19,7 +19,7 @@ public class App extends Application {
         {
             NotificationChannel serviceChannel = new NotificationChannel(
                     CHANNEl_ID,
-                    "Example Service Channel"
+                    "Counting Time Service Channel"
                     , NotificationManager.IMPORTANCE_DEFAULT
             );
 
