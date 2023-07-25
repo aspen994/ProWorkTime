@@ -22,28 +22,28 @@
         android:theme="@style/Theme.OgródApp"
         tools:targetApi="31">
         <activity
-            android:name=".ForgotPassword"
+            android:name=".view.ForgotPassword"
             android:exported="false" />
         <activity
-            android:name=".AdminWithdraw"
+            android:name=".view.AdminWithdraw"
             android:exported="false" />
         <activity
-            android:name=".UserOverall"
+            android:name=".view.UserOverall"
             android:exported="false" />
         <activity
-            android:name=".AdminView"
+            android:name=".view.AdminView"
             android:exported="false" />
         <activity
-            android:name=".UserTimeTable"
+            android:name=".view.UserTimeTable"
             android:exported="false" />
         <activity
             android:name=".UserMainActivity"
             android:exported="false" />
         <activity
-            android:name=".RegisterActivity"
+            android:name=".view.RegisterActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".view.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

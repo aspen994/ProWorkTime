@@ -1,4 +1,4 @@
-package com.example.ogrdapp;
+package com.example.ogrdapp.view;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,6 +11,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.ogrdapp.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -38,7 +39,7 @@ public class ForgotPassword extends AppCompatActivity {
                         @Override
                         public void onSuccess(Void unused) {
                             Toast.makeText(ForgotPassword.this, "Wysłaliśmy link do zmiany hasła, sprawdź maila", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(ForgotPassword.this,MainActivity.class));
+                            startActivity(new Intent(ForgotPassword.this, MainActivity.class));
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override

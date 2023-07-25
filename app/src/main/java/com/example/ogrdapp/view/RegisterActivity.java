@@ -1,4 +1,4 @@
-package com.example.ogrdapp;
+package com.example.ogrdapp.view;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.ogrdapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -109,7 +110,7 @@ public class RegisterActivity extends AppCompatActivity {
                     }).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                         @Override
                         public void onSuccess(AuthResult authResult) {
-                            startActivity(new Intent(RegisterActivity.this,MainActivity.class));
+                            startActivity(new Intent(RegisterActivity.this, MainActivity.class));
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override

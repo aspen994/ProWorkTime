@@ -25,9 +25,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.ogrdapp.model.TimeModel;
 import com.example.ogrdapp.services.ForegroundServices;
+import com.example.ogrdapp.view.MainActivity;
+import com.example.ogrdapp.view.UserTimeTable;
+import com.example.ogrdapp.viewmodel.AuthViewModel;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
@@ -111,6 +116,9 @@ public class UserMainActivity extends AppCompatActivity {
 
     // To Foreground service-------------------------------------------------------------------------
 
+    // MVVM PATTERN
+    private AuthViewModel viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+
 
 
 
@@ -129,6 +137,14 @@ public class UserMainActivity extends AppCompatActivity {
         endingTime = findViewById(R.id.ending_time);
         timerOverall = findViewById(R.id.timeOverall);
 
+
+        //MVVM PATTERN
+        viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+
+        //Log.i("MAIN_ACTIVITY",viewModel.getCurrentUser().getEmail().toString());
+
+        Log.i("UserMainActivity","on Create");
+
         Toast.makeText(this, "On Create", Toast.LENGTH_SHORT).show();
 
         // Loading and updating data from SharedPreferences
@@ -145,13 +161,43 @@ public class UserMainActivity extends AppCompatActivity {
             textMain.setText("Zatrzymaj pracę: ");
         }
 
+        //TODO 25/07/23
         // Getting current user Id.
         FirebaseUser user = firebaseAuth.getCurrentUser();
         assert  user !=null;
         final String currentUserId = user.getUid();
 
+      /*  FirebaseUser currentUser = viewModel.getCurrentUser();
+        assert currentUser !=null;
+        String currentUserId=  currentUser.getUid();
+*/
+        //MVVM PATTERN
+
+            collectionReference.whereEqualTo("userId",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                    // 16.06.23 Zmieniłem z if(!value.isEmpty()) na  error == null i potem znów.
+                    if(!value.isEmpty()) //  error == null
+                    {
+                        for(QueryDocumentSnapshot snapshot: value)
+                        {
+                            String username = snapshot.getString("username");
+                            String surName = snapshot.getString("surName");
+
+                            userName.setText(username+" " + surName);
+                        }
+                    }
+                    else {
+                        Toast.makeText(UserMainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+
+
+
+        //TODO 25/07/23
         // Assignment user name and surname to textView from collectionReferences
-        collectionReference.whereEqualTo("userId",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
+        /*collectionReference.whereEqualTo("userId", currentUserId[0]).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 // 16.06.23 Zmieniłem z if(!value.isEmpty()) na  error == null i potem znów.
@@ -169,7 +215,7 @@ public class UserMainActivity extends AppCompatActivity {
                     Toast.makeText(UserMainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
-        });
+        });*/
 
         /*// Assign timer to new Object
         timer = new Timer();*/
@@ -239,15 +285,17 @@ public class UserMainActivity extends AppCompatActivity {
 
                 if(R.id.action_time==item.getItemId())
                 {
-                    Intent i = new Intent(UserMainActivity.this,UserTimeTable.class);
+                    Intent i = new Intent(UserMainActivity.this, UserTimeTable.class);
                     //Log.i("SIZE ARRAY LIST FROM MAIN",arrayList.size()+"");
                     startActivity(i);
                     restartFlag=false;
                 }
                 else if(R.id.action_logout==item.getItemId())
                 {
+                    //TODO 25/07/23
                     firebaseAuth.signOut();
-                    startActivity(new Intent(UserMainActivity.this,MainActivity.class));
+                    //viewModel.signOut();
+                    startActivity(new Intent(UserMainActivity.this, MainActivity.class));
                     restartFlag=false;
                 }
                 return true;

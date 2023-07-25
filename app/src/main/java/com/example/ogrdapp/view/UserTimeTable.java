@@ -1,4 +1,4 @@
-package com.example.ogrdapp;
+package com.example.ogrdapp.view;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +13,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.ogrdapp.R;
+import com.example.ogrdapp.TimeOverallAdapter;
 import com.example.ogrdapp.model.TimeModel;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;

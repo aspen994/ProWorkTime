@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/orchard_child"
-    tools:context=".MainActivity">
+    tools:context=".view.MainActivity">
 
     <AutoCompleteTextView
         android:id="@+id/autoCompleteTextView_password_main"

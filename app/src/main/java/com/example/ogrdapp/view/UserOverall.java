@@ -1,8 +1,10 @@
-package com.example.ogrdapp;
+package com.example.ogrdapp.view;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+
+import com.example.ogrdapp.R;
 
 public class UserOverall extends AppCompatActivity {
 
