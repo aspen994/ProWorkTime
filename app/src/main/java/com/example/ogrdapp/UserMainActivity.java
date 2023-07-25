@@ -8,8 +8,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.HandlerThread;
-import android.os.Looper;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,7 +28,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.ogrdapp.model.TimeModel;
 import com.example.ogrdapp.services.ForegroundServices;
-import com.example.ogrdapp.services.MyBroadcastReceiver;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
@@ -55,7 +52,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Handler;
 
 public class UserMainActivity extends AppCompatActivity {
 
@@ -78,7 +74,7 @@ public class UserMainActivity extends AppCompatActivity {
     private TextView userName,date,timeDisplay,textMain,begingTime,endingTime,timerOverall;
 
     private Timer timer;
-    private TimerTask timerTask;
+    private  TimerTask timerTask;
     private Double time = 0.0;
 
     private boolean timerStarted = false;
@@ -133,6 +129,8 @@ public class UserMainActivity extends AppCompatActivity {
         endingTime = findViewById(R.id.ending_time);
         timerOverall = findViewById(R.id.timeOverall);
 
+        Toast.makeText(this, "On Create", Toast.LENGTH_SHORT).show();
+
         // Loading and updating data from SharedPreferences
         loadData();
         updateData();
@@ -184,36 +182,30 @@ public class UserMainActivity extends AppCompatActivity {
         if(ContextCompat.checkSelfPermission(UserMainActivity.this, android.Manifest.permission.POST_NOTIFICATIONS)!= PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(UserMainActivity.this,new String[]{android.Manifest.permission.POST_NOTIFICATIONS},101);
         }
+
+        // assign timer
         timer = new Timer();
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("Counter");
         //intentFilter.addAction(Intent.Action);
-/*
-        try {
-            broadcastReceiver.clearAbortBroadcast();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }*/
+
         if(flagService) {
-            if(timerTask!=null) {
+            if (timerTask != null) {
                 timerTask.cancel();
             }
             broadcastReceiver = new BroadcastReceiver() {
 
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    //timerTask.cancel();
-                    Long longTime = intent.getLongExtra("TimeRemaining", 0);
-                    timeLong = longTime;
+                    Long longTimeFromBroadcastReceiver = intent.getLongExtra("TimeRemaining", 0);
+                    timeLong = longTimeFromBroadcastReceiver;
                     timeDisplay.setText(getTimerText(timeLong));
                 }
             };
 
             registerReceiver(broadcastReceiver, intentFilter);
-            flagService =false;
+            flagService = false;
         }
 
         // To Foreground service-------------------------------------------------------------------------
@@ -240,6 +232,7 @@ public class UserMainActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        // For menu on the left swipe
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -263,10 +256,9 @@ public class UserMainActivity extends AppCompatActivity {
         active = true;
     }
 
-    public String checkMethod(long some)
+    public String checkMethod(long timeLong)
     {
-        long seconds = some / 1000;
-        //long seconds = timeLong / 1000;
+        long seconds = timeLong / 1000;
         long minutes = seconds / 60;
         long hours = minutes / 60;
 
@@ -374,7 +366,8 @@ public class UserMainActivity extends AppCompatActivity {
         if(timerTask!=null)
         {
             timerTask.cancel();
-            //timeLong=0;
+            //timerOverall.setText(checkMethod(timeLong));
+            timeLong=0;
         }
 
 
@@ -394,6 +387,13 @@ public class UserMainActivity extends AppCompatActivity {
             }
 
         }*/
+        try {
+            unregisterReceiver(broadcastReceiver);
+        }
+        catch(IllegalArgumentException e)
+        {
+            e.printStackTrace();
+        }
         Intent serviceIntent = new Intent(this,ForegroundServices.class);
         stopService(serviceIntent);
         Log.i("Time finnaly",time+"");
@@ -430,10 +430,10 @@ public class UserMainActivity extends AppCompatActivity {
                 Toast.makeText(UserMainActivity.this, "Dobry kod", Toast.LENGTH_SHORT).show();
 
 
-
                 if(timerStarted == false)
                 {
 
+                    timeDisplay.setText("");
                     textMain.setText("Zatrzymaj pracę: ");
                     cleanDataForTimeModel();
                     currentTime = getCurrentTime();
@@ -456,42 +456,33 @@ public class UserMainActivity extends AppCompatActivity {
                     //TODO Over here
                     timeModel.setTimeBegin(loadAndUpdatedTimeModel());
                     //TODO i get
-                    //tmpOverall = timeLong;
+                    tmpOverall = timeLong;
                     stopTime();
 
-                    // TODO I will chaning the tmpOverall for time
+                    if (tmpOverall <=0) {
+                        tmpOverall += tmpEndTime - tmpBeginTime;
+                        long seconds = tmpOverall / 1000;
+                        //long seconds = timeLong / 1000;
+                        long minutes = seconds / 60;
+                        long hours = minutes / 60;
 
-                    // Counting time overall
-                    tmpOverall += tmpEndTime - tmpBeginTime;
-                    Log.i("tmpBeginTime",checkMethod(tmpBeginTime));
-                    Log.i("tmpEndTime",checkMethod(tmpEndTime));
-                    Log.i("tmpOVerall",checkMethod(tmpOverall));
+                        seconds %= 60;
+                        minutes %= 60;
 
-                    if (tmpOverall < 0) {
-                        tmpOverall = 0;
+                        String formattedTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+                        timerOverall.setText(formattedTime);
+                        timeModel.setTimeOverall(formattedTime);
+                        timeModel.setTimeOverallInLong(tmpOverall);
+                    } else if (tmpOverall>0) {
+                        //timerOverall.setText(getTimerText(tmpOverall));
+                        timerOverall.setText(timeDisplay.getText().toString());
+                        timeModel.setTimeOverall(getTimerText(tmpOverall));
+                        timeModel.setTimeOverallInLong(tmpOverall*1000);
                     }
 
-/*
-                    if (timeLong < 0) {
-                        timeLong = 0;
-                    }*/
 
-                    if(tmpOverall!=0)
-                    //if(timeLong!=0)
-                    {
-                    long seconds = tmpOverall / 1000;
-                    //long seconds = timeLong / 1000;
-                    long minutes = seconds / 60;
-                    long hours = minutes / 60;
-
-                    seconds %= 60;
-                    minutes %= 60;
-
-                    String formattedTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-
-                    timeModel.setTimeOverall(formattedTime);
+                    //timeModel.setTimeOverall(checkMethod(timeLong));
                     //timeModel.setTimeOverallInLong(timeLong);
-                    timeModel.setTimeOverallInLong(tmpOverall);
                     timeModel.setId(currentUserId);
                     timeModel.setUserName(userName.getText().toString());
                     timeModel.setTimeAdded(new Timestamp(new Date()));
@@ -509,15 +500,7 @@ public class UserMainActivity extends AppCompatActivity {
                             Toast.makeText(UserMainActivity.this, "Fail on adding data", Toast.LENGTH_SHORT).show();
                         }
                     });
-                    if(timeLong>0)
-                    {
-
-                    }
-                    timerOverall.setText(formattedTime);
-
-                }
-
-                    //timerTask.cancel();
+//                    timerTask.cancel();
                     tmpOverall=0;
                 }
 
@@ -589,7 +572,7 @@ public class UserMainActivity extends AppCompatActivity {
                                 Toast.makeText(UserMainActivity.this, "Fail on adding data", Toast.LENGTH_SHORT).show();
                             }
                         });
-
+                        // QR with dellay
                         timerOverall.setText(formattedTime);
                     }
                     timerTask.cancel();
@@ -624,27 +607,6 @@ public class UserMainActivity extends AppCompatActivity {
     }
 
 
-    /*private void startTimer()
-    {
-        timerTask = new TimerTask()
-        {
-            @Override
-            public void run()
-            {
-                runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        time++;
-                        timeDisplay.setText(getTimerText());
-                    }
-                });
-            }
-
-        };
-        timer.scheduleAtFixedRate(timerTask, 0 ,1000);
-    }*/
 
     private String getTimerText()
     {
@@ -700,7 +662,33 @@ public class UserMainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        //active = true;
+       /* IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("Counter");
+        //intentFilter.addAction(Intent.Action);
+        unregisterReceiver(broadcastReceiver);
+        flagService = true;
+        if(flagService) {
+            if (timerTask != null) {
+                timerTask.cancel();
+            }
+            broadcastReceiver = new BroadcastReceiver() {
+
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    timerTask.cancel();
+                    Long longTimeFromBroadcastReceiver = intent.getLongExtra("TimeRemaining", 0);
+                    timeLong = longTimeFromBroadcastReceiver;
+                    timeDisplay.setText(getTimerText(timeLong));
+                }
+            };
+
+            registerReceiver(broadcastReceiver, intentFilter);
+            flagService = false;
+        }*/
+
+
+        active = true;
+        Toast.makeText(this, "On start", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -709,7 +697,9 @@ public class UserMainActivity extends AppCompatActivity {
         // starting service when time on clock is more than 0 and it's not ending time
         active = false;
         if(!flag) {
+            //timerTask.cancel();
             startForegroundServiceToCountTime();
+            Toast.makeText(this, "Run ForeGround", Toast.LENGTH_SHORT).show();
         }
         // saving data when only started time not ending time
         if(endingTime.getText().toString().equals("")) {
@@ -720,6 +710,12 @@ public class UserMainActivity extends AppCompatActivity {
         {
             clearData();
         }
+        Toast.makeText(this, "OnStop", Toast.LENGTH_SHORT).show();
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Toast.makeText(this, "On Destroy", Toast.LENGTH_SHORT).show();
     }
 }
