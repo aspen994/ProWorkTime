@@ -25,6 +25,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -32,7 +33,7 @@ import com.example.ogrdapp.model.TimeModel;
 import com.example.ogrdapp.services.ForegroundServices;
 import com.example.ogrdapp.view.MainActivity;
 import com.example.ogrdapp.view.UserTimeTable;
-import com.example.ogrdapp.viewmodel.AuthViewModel;
+import com.example.ogrdapp.viewmodel.UserMainActivityViewModel;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
@@ -99,10 +100,12 @@ public class UserMainActivity extends AppCompatActivity {
     // To Foreground service-------------------------------------------------------------------------
     //private TimerTask timerTask;
     //private Timer timer;
+
     private long timeLong;
     private boolean flag = true;
     private boolean flagService = true;
     public static boolean active = false;
+    public static boolean flagForForegroundService = true;
     String beginingTime = "";
     String endingTTime = "";
     private long tmpBeginTimeFromSharedPreferences;
@@ -114,10 +117,14 @@ public class UserMainActivity extends AppCompatActivity {
 
     private  String currentTime = "";
 
-    // To Foreground service-------------------------------------------------------------------------
+    //ViewModel
+    UserMainActivityViewModel userMainActivityViewModel;
+    LiveData<Long> timerLiveData;
 
-    // MVVM PATTERN
-    private AuthViewModel viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+    boolean flagForBroadCastService = false;
+
+
+    // To Foreground service-------------------------------------------------------------------------
 
 
 
@@ -136,14 +143,24 @@ public class UserMainActivity extends AppCompatActivity {
         begingTime = findViewById(R.id.begining_time);
         endingTime = findViewById(R.id.ending_time);
         timerOverall = findViewById(R.id.timeOverall);
+        userMainActivityViewModel = new ViewModelProvider(this).get(UserMainActivityViewModel.class);
+        flagForForegroundService = true;
 
+        //TODO I Change 26.07.23
+        //LiveData<Long> timerLiveData = userMainActivityViewModel.initialValue();
+        timerLiveData = userMainActivityViewModel.initialValue();
 
-        //MVVM PATTERN
-        viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
-
-        //Log.i("MAIN_ACTIVITY",viewModel.getCurrentUser().getEmail().toString());
-
-        Log.i("UserMainActivity","on Create");
+        timerLiveData.observe(this, new Observer<Long>() {
+            @Override
+            public void onChanged(Long aLong) {
+                timeDisplay.setText(getTimerText(aLong));
+                Log.i("HERE!: " ,getTimerText(aLong));
+                if(aLong>0)
+                {
+                    timerOverall.setText("Przepracowałeś już : " + getTimerText(aLong));
+                }
+            }
+        });
 
         Toast.makeText(this, "On Create", Toast.LENGTH_SHORT).show();
 
@@ -161,43 +178,13 @@ public class UserMainActivity extends AppCompatActivity {
             textMain.setText("Zatrzymaj pracę: ");
         }
 
-        //TODO 25/07/23
         // Getting current user Id.
         FirebaseUser user = firebaseAuth.getCurrentUser();
         assert  user !=null;
         final String currentUserId = user.getUid();
 
-      /*  FirebaseUser currentUser = viewModel.getCurrentUser();
-        assert currentUser !=null;
-        String currentUserId=  currentUser.getUid();
-*/
-        //MVVM PATTERN
-
-            collectionReference.whereEqualTo("userId",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
-                @Override
-                public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                    // 16.06.23 Zmieniłem z if(!value.isEmpty()) na  error == null i potem znów.
-                    if(!value.isEmpty()) //  error == null
-                    {
-                        for(QueryDocumentSnapshot snapshot: value)
-                        {
-                            String username = snapshot.getString("username");
-                            String surName = snapshot.getString("surName");
-
-                            userName.setText(username+" " + surName);
-                        }
-                    }
-                    else {
-                        Toast.makeText(UserMainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-
-
-
-        //TODO 25/07/23
         // Assignment user name and surname to textView from collectionReferences
-        /*collectionReference.whereEqualTo("userId", currentUserId[0]).addSnapshotListener(new EventListener<QuerySnapshot>() {
+        collectionReference.whereEqualTo("userId",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 // 16.06.23 Zmieniłem z if(!value.isEmpty()) na  error == null i potem znów.
@@ -215,7 +202,7 @@ public class UserMainActivity extends AppCompatActivity {
                     Toast.makeText(UserMainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
-        });*/
+        });
 
         /*// Assign timer to new Object
         timer = new Timer();*/
@@ -236,6 +223,11 @@ public class UserMainActivity extends AppCompatActivity {
         intentFilter.addAction("Counter");
         //intentFilter.addAction(Intent.Action);
 
+        //userMainActivityViewModel.initialValue().getValue();
+
+
+        flagForForegroundService = true;
+        int counter = 0;
         if(flagService) {
             if (timerTask != null) {
                 timerTask.cancel();
@@ -245,14 +237,25 @@ public class UserMainActivity extends AppCompatActivity {
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     Long longTimeFromBroadcastReceiver = intent.getLongExtra("TimeRemaining", 0);
-                    timeLong = longTimeFromBroadcastReceiver;
-                    timeDisplay.setText(getTimerText(timeLong));
+                        userMainActivityViewModel.setValue(longTimeFromBroadcastReceiver);
+                        userMainActivityViewModel.startTimerSecondTime();
+                        flagForBroadCastService=true;
+
+                        Log.i("On Receive ","On receive");
+
                 }
             };
-
+            Log.i("FLAG SERVICE CHECKING","How many times invoked: " + ++counter);
             registerReceiver(broadcastReceiver, intentFilter);
             flagService = false;
         }
+
+
+       /* if(flagForBroadCastService)
+        {
+            userMainActivityViewModel.startTimer();
+            Toast.makeText(this, "Start Timer should invoked once", Toast.LENGTH_SHORT).show();
+        }*/
 
         // To Foreground service-------------------------------------------------------------------------
         qr.setOnClickListener(new View.OnClickListener() {
@@ -292,9 +295,7 @@ public class UserMainActivity extends AppCompatActivity {
                 }
                 else if(R.id.action_logout==item.getItemId())
                 {
-                    //TODO 25/07/23
                     firebaseAuth.signOut();
-                    //viewModel.signOut();
                     startActivity(new Intent(UserMainActivity.this, MainActivity.class));
                     restartFlag=false;
                 }
@@ -387,30 +388,20 @@ public class UserMainActivity extends AppCompatActivity {
 
     // To Foreground service-------------------------------------------------------------------------
 
-    private long startTimer() {
+    private void startTimer() {
 
         //timer = new Timer();
-        timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        timeLong++;
-                        timeDisplay.setText(getTimerText(timeLong));
-                    }
-                });
-            }
+        userMainActivityViewModel.startTimer();
 
-        };
-        timer.scheduleAtFixedRate(timerTask, 0, 1000);
         flag = false;
 
-        return timeLong;
+
     }
 
     public void stopTime()
     {
+        userMainActivityViewModel.stopTimerTask();
+        userMainActivityViewModel.setValue(0L);
         if(timerTask!=null)
         {
             timerTask.cancel();
@@ -490,6 +481,7 @@ public class UserMainActivity extends AppCompatActivity {
                     begingTime.setText("Rozpoczęto pracę o: " + getCurrentTime());
                     tmpBeginTime = getCurrentTimeInSimpleFormat();
                     startTimer();
+                    //timeDisplay.setText(userMainActivityViewModel.startTimer());
                     //flagForSignText =false;
                     timerStarted = true;
                     endingTime.setText("");
@@ -501,10 +493,11 @@ public class UserMainActivity extends AppCompatActivity {
                     endingTime.setText("Zakończono pracę o : " + getCurrentTime());
                     timeModel.setTimeEnd(getCurrentTime());
                     tmpEndTime = getCurrentTimeInSimpleFormat();
-                    //TODO Over here
+
                     timeModel.setTimeBegin(loadAndUpdatedTimeModel());
                     //TODO i get
-                    tmpOverall = timeLong;
+                    //tmpOverall = timeLong;
+                    tmpOverall = userMainActivityViewModel.initialValue().getValue();
                     stopTime();
 
                     if (tmpOverall <=0) {
@@ -518,12 +511,13 @@ public class UserMainActivity extends AppCompatActivity {
                         minutes %= 60;
 
                         String formattedTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-                        timerOverall.setText(formattedTime);
-                        timeModel.setTimeOverall(formattedTime);
+                        String s = formatTime((int) seconds, (int) minutes, (int) hours);
+                        timerOverall.setText("Przepracowałeś : " + s);
+                        timeModel.setTimeOverall(s);
                         timeModel.setTimeOverallInLong(tmpOverall);
                     } else if (tmpOverall>0) {
                         //timerOverall.setText(getTimerText(tmpOverall));
-                        timerOverall.setText(timeDisplay.getText().toString());
+                        timerOverall.setText("Przepracowałeś : " + timeDisplay.getText().toString());
                         timeModel.setTimeOverall(getTimerText(tmpOverall));
                         timeModel.setTimeOverallInLong(tmpOverall*1000);
                     }
@@ -600,8 +594,9 @@ public class UserMainActivity extends AppCompatActivity {
                         seconds %= 60;
                         minutes %= 60;
 
-                        String formattedTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-                        timeModel.setTimeOverall(formattedTime);
+                      //  String formattedTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+                        String s = formatTime((int) hours, (int) minutes, (int) seconds);
+                        timeModel.setTimeOverall(s);
                         timeModel.setTimeOverallInLong(tmpOverall);
                         timeModel.setId(currentUserId);
                         timeModel.setUserName(userName.getText().toString());
@@ -621,7 +616,7 @@ public class UserMainActivity extends AppCompatActivity {
                             }
                         });
                         // QR with dellay
-                        timerOverall.setText(formattedTime);
+                        timerOverall.setText(s);
                     }
                     timerTask.cancel();
                 }
@@ -637,7 +632,7 @@ public class UserMainActivity extends AppCompatActivity {
 
     private void startForegroundServiceToCountTime() {
         Intent intentService = new Intent(this, ForegroundServices.class);
-        intentService.putExtra("TimeValue", timeLong);
+        intentService.putExtra("TimeValue", timerLiveData.getValue());
         startService(intentService);
     }
 
@@ -744,6 +739,13 @@ public class UserMainActivity extends AppCompatActivity {
         super.onStop();
         // starting service when time on clock is more than 0 and it's not ending time
         active = false;
+        try {
+            unregisterReceiver(broadcastReceiver);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
         if(!flag) {
             //timerTask.cancel();
             startForegroundServiceToCountTime();
@@ -764,6 +766,5 @@ public class UserMainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Toast.makeText(this, "On Destroy", Toast.LENGTH_SHORT).show();
     }
 }

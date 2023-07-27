@@ -19,6 +19,8 @@ import com.example.ogrdapp.UserMainActivity;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class ForegroundServices extends Service {
 
@@ -33,31 +35,78 @@ public class ForegroundServices extends Service {
 
     //Intent will be text from editText
     // Callled every time is called start service
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if(intent!=null) {
             final Long[] input = {intent.getLongExtra("TimeValue", 0)};
 
+            ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(5);
+            executor.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    //if(!UserMainActivity.active)
+                    //{
+                        notificationUpdate(input[0]);
 
-            timer = new Timer();
-            if(!UserMainActivity.active) {
+                        time = input[0]++;
+                    //}
+                    if(UserMainActivity.flagForForegroundService)
+                    {
+                        Intent intent1 = new Intent();
+                        intent1.setAction("Counter");
+                        intent1.putExtra("TimeRemaining", time);
+                        Log.i("WHAT I AM SENDING", time+"");
+                        sendBroadcast(intent1);
+                        UserMainActivity.flagForForegroundService = false;
+                        Log.i("HOW MANY TIMES","HOW MANY TIMES");
+                    }
+
+                }
+            },0,1000,TimeUnit.MILLISECONDS);
+
+
+
+            //timer = new Timer();
+           /* if(!UserMainActivity.active) {
                 timer.scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
-                        Intent intent1 = new Intent();
-                        intent1.setAction("Counter");
+//                        Intent intent1 = new Intent();
+  //                      intent1.setAction("Counter");
 
                         notificationUpdate(input[0]);
 
                         time = input[0]++;
-                        //Log.i("INPUT", input[0] + "");
 
-                        intent1.putExtra("TimeRemaining", input[0]);
-                        sendBroadcast(intent1);
+                        *//*intent1.putExtra("TimeRemaining", input[0]);
+                        sendBroadcast(intent1);*//*
+                         Log.i("Here I am extecuting", input[0] + " ");
+
                     }
                 }, 0, 1000);
-              //  Log.i("Here I am extecuting", input[0] + " ");
+
+            }*/
+/*
+
+            if(UserMainActivity.active) {
+
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        timer.cancel();
+                        Intent intent1 = new Intent();
+                        intent1.setAction("Counter");
+                        intent1.putExtra("TimeRemaining", time);
+                        sendBroadcast(intent1);
+                        Log.i("EXECTUING BROADCAST", getTimerText(time));
+                    }
+
+                });
             }
+*/
+
+
 
 
 
@@ -133,7 +182,7 @@ public class ForegroundServices extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        timer.cancel();
+       // timer.cancel();
     }
 
     @Nullable
