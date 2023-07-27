@@ -14,6 +14,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutionException;
 
 public class UserMainActivityViewModel extends ViewModel {
     private long timeLong;
@@ -62,15 +63,18 @@ public class UserMainActivityViewModel extends ViewModel {
         timer.scheduleAtFixedRate(timerTask, 0, 1000);
         return timeLong;
     }
-
-
-    public void setValue(long longTimeFromBroadcastReceiver) {
-        timeLong = longTimeFromBroadcastReceiver;
-    }
-
     public long startTimerSecondTime() {
 
-        timer = new Timer();
+        try {
+            timerTask.cancel();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        startTimerTask();
+
+        /*timer = new Timer();
 
         timerTask = new TimerTask() {
             @Override
@@ -78,10 +82,9 @@ public class UserMainActivityViewModel extends ViewModel {
                 timerLiveData.postValue(timeLong++);
             }
         };
-        timer.scheduleAtFixedRate(timerTask, 0, 1000);
+        timer.scheduleAtFixedRate(timerTask, 0, 1000);*/
         return timeLong;
     }
-
     public void stopTimerTask() {
         if(timerTask!=null)
         {
@@ -89,4 +92,14 @@ public class UserMainActivityViewModel extends ViewModel {
         }
 
     }
+
+
+    public void setValue(long longTimeFromBroadcastReceiver) {
+        timeLong = longTimeFromBroadcastReceiver;
+        timerLiveData.setValue(longTimeFromBroadcastReceiver);
+    }
+
+
+
+
 }

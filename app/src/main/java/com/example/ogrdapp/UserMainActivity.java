@@ -391,6 +391,7 @@ public class UserMainActivity extends AppCompatActivity {
     private void startTimer() {
 
         //timer = new Timer();
+        userMainActivityViewModel.setValue(0L);
         userMainActivityViewModel.startTimer();
 
         flag = false;
@@ -401,13 +402,13 @@ public class UserMainActivity extends AppCompatActivity {
     public void stopTime()
     {
         userMainActivityViewModel.stopTimerTask();
-        userMainActivityViewModel.setValue(0L);
-        if(timerTask!=null)
+
+    /*    if(timerTask!=null)
         {
             timerTask.cancel();
             //timerOverall.setText(checkMethod(timeLong));
             timeLong=0;
-        }
+        }*/
 
 
         /*Intent serviceIntent = new Intent(this, ForegroundServices.class);
