@@ -42,32 +42,6 @@ public class ForegroundServices extends Service {
         if(intent!=null) {
             final Long[] input = {intent.getLongExtra("TimeValue", 0)};
 
-            /*ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-            if(!UserMainActivity.active)
-            {
-            executor.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-
-                    notificationUpdate(input[0]);
-                    time = input[0]++;
-
-
-                    if(UserMainActivity.flagForForegroundService)
-                    {
-                        Intent intent1 = new Intent();
-                        intent1.setAction("Counter");
-                        intent1.putExtra("TimeRemaining", time);
-                        Log.i("WHAT I AM SENDING", time+"");
-                        sendBroadcast(intent1);
-                        UserMainActivity.flagForForegroundService = false;
-                        Log.i("HOW MANY TIMES","HOW MANY TIMES");
-                    }
-
-                }
-            },0,1000,TimeUnit.MICROSECONDS);
-            }*/
-
             if(!UserMainActivity.active)
             {
                 timer = new Timer();
@@ -75,8 +49,8 @@ public class ForegroundServices extends Service {
                 timerTask = new TimerTask() {
                     @Override
                     public void run() {
-                        time = input[0]++;
-                        notificationUpdate(input[0]);
+                        notificationUpdate(input[0]++);
+                        time = input[0];
 
 
                         if(UserMainActivity.flagForForegroundService)
@@ -212,7 +186,7 @@ public class ForegroundServices extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-       // timer.cancel();
+        timer.cancel();
     }
 
     @Nullable

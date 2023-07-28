@@ -17,7 +17,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 
 public class UserMainActivityViewModel extends ViewModel {
-    private long timeLong;
+    private long timeLong=0;
     private Timer timer;
     private TimerTask timerTask;
     private MutableLiveData<Long> timerLiveData = new MutableLiveData<>();
@@ -56,8 +56,8 @@ public class UserMainActivityViewModel extends ViewModel {
         timerTask = new TimerTask() {
             @Override
             public void run() {
-                timeLong++;
-                timerLiveData.postValue(timeLong);
+                //timeLong++;
+                timerLiveData.postValue(timeLong++);
             }
         };
         timer.scheduleAtFixedRate(timerTask, 0, 1000);
@@ -93,10 +93,13 @@ public class UserMainActivityViewModel extends ViewModel {
 
     }
 
+    public long getTimeLong() {
+        return timeLong;
+    }
 
     public void setValue(long longTimeFromBroadcastReceiver) {
         timeLong = longTimeFromBroadcastReceiver;
-        timerLiveData.setValue(longTimeFromBroadcastReceiver);
+        //timerLiveData.setValue(longTimeFromBroadcastReceiver);
     }
 
 
