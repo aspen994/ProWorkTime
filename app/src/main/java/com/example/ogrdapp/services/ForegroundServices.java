@@ -13,9 +13,11 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.lifecycle.LiveData;
 
 import com.example.ogrdapp.R;
 import com.example.ogrdapp.UserMainActivity;
+import com.example.ogrdapp.viewmodel.UserMainActivityViewModel;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -29,6 +31,7 @@ public class ForegroundServices extends Service {
     private Timer timer;
     // First time when we create service
     TimerTask timerTask;
+    LiveData<Long> liveData;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -49,26 +52,22 @@ public class ForegroundServices extends Service {
                 timerTask = new TimerTask() {
                     @Override
                     public void run() {
-                        notificationUpdate(input[0]++);
-                        time = input[0];
-
+                        time = input[0]++;
+                        notificationUpdate(input[0]);
 
                         if(UserMainActivity.flagForForegroundService)
                         {
                             Intent intent1 = new Intent();
                             intent1.setAction("Counter");
                             intent1.putExtra("TimeRemaining", time);
-                            Log.i("WHAT I AM SENDING", time+"");
                             sendBroadcast(intent1);
                             UserMainActivity.flagForForegroundService = false;
-                            Log.i("HOW MANY TIMES","HOW MANY TIMES");
                         }
                     }
                 };
                 timer.scheduleAtFixedRate(timerTask, 0, 1000);
 
             }
-
 
 
             //timer = new Timer();
@@ -186,7 +185,7 @@ public class ForegroundServices extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        timer.cancel();
+        //timer.cancel();
     }
 
     @Nullable

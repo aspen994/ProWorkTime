@@ -12,11 +12,12 @@ import com.example.ogrdapp.repository.AuthRepository;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.io.Serializable;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 
-public class UserMainActivityViewModel extends ViewModel {
+public class UserMainActivityViewModel extends ViewModel implements Serializable {
     private long timeLong=0;
     private Timer timer;
     private TimerTask timerTask;

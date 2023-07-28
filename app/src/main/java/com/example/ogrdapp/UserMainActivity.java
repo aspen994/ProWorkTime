@@ -236,7 +236,7 @@ public class UserMainActivity extends AppCompatActivity {
 
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    Long longTimeFromBroadcastReceiver = intent.getLongExtra("TimeRemaining", 0);
+                    long longTimeFromBroadcastReceiver = intent.getLongExtra("TimeRemaining", 0);
                         userMainActivityViewModel.setValue(longTimeFromBroadcastReceiver);
                         //userMainActivityViewModel.startTimerSecondTime();
                         startTimerSecondTime();
@@ -401,6 +401,7 @@ public class UserMainActivity extends AppCompatActivity {
     private void startTimerSecondTime()
     {
         userMainActivityViewModel.startTimerSecondTime();
+        //flag = false;
     }
     public void stopTime()
     {
@@ -636,8 +637,7 @@ public class UserMainActivity extends AppCompatActivity {
 
     private void startForegroundServiceToCountTime() {
         Intent intentService = new Intent(this, ForegroundServices.class);
-        intentService.putExtra("TimeValue",userMainActivityViewModel.getTimeLong());
-        //timerLiveData.getValue()
+        intentService.putExtra("TimeValue", timerLiveData.getValue());
         startService(intentService);
     }
 
