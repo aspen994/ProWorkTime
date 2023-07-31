@@ -2,6 +2,7 @@ package com.example.ogrdapp.viewmodel;
 
 import android.app.Application;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -54,14 +55,23 @@ public class UserMainActivityViewModel extends ViewModel implements Serializable
 
         timer = new Timer();
 
+     /*   Long aLong = timeLong;
+        final long[] delay = {1000 - (aLong % 1000)};
+        if(delay[0] ==1000)
+        {
+            delay[0] =0;
+        }*/
+
         timerTask = new TimerTask() {
             @Override
             public void run() {
                 //timeLong++;
                 timerLiveData.postValue(timeLong++);
+                //Log.i("Time units: ",timeLong+"");
+                //delay[0] =0;
             }
         };
-        timer.scheduleAtFixedRate(timerTask, 0, 1000);
+        timer.scheduleAtFixedRate(timerTask,0, 1);
         return timeLong;
     }
     public long startTimerSecondTime() {
@@ -74,6 +84,7 @@ public class UserMainActivityViewModel extends ViewModel implements Serializable
             e.printStackTrace();
         }
         startTimerTask();
+        Log.i("I am exectuing from Start TImer second Time","");
 
         /*timer = new Timer();
 

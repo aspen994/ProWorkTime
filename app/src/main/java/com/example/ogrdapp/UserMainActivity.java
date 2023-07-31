@@ -122,6 +122,7 @@ public class UserMainActivity extends AppCompatActivity {
     LiveData<Long> timerLiveData;
 
     boolean flagForBroadCastService = false;
+    long addToEndingTime=0;
 
 
     // To Foreground service-------------------------------------------------------------------------
@@ -145,6 +146,7 @@ public class UserMainActivity extends AppCompatActivity {
         timerOverall = findViewById(R.id.timeOverall);
         userMainActivityViewModel = new ViewModelProvider(this).get(UserMainActivityViewModel.class);
         flagForForegroundService = true;
+        Toast.makeText(this, "on Create", Toast.LENGTH_SHORT).show();
 
         //TODO I Change 26.07.23
         //LiveData<Long> timerLiveData = userMainActivityViewModel.initialValue();
@@ -154,15 +156,15 @@ public class UserMainActivity extends AppCompatActivity {
             @Override
             public void onChanged(Long aLong) {
                 timeDisplay.setText(getTimerText(aLong));
-                Log.i("HERE!: " ,getTimerText(aLong));
+               // Log.i("HERE!: " ,getTimerText(aLong));
                 if(aLong>0)
                 {
                     timerOverall.setText("Przepracowałeś już : " + getTimerText(aLong));
+
                 }
             }
         });
 
-        Toast.makeText(this, "On Create", Toast.LENGTH_SHORT).show();
 
         // Loading and updating data from SharedPreferences
         loadData();
@@ -199,7 +201,7 @@ public class UserMainActivity extends AppCompatActivity {
                     }
                 }
                 else {
-                    Toast.makeText(UserMainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                   // Toast.makeText(UserMainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -239,14 +241,15 @@ public class UserMainActivity extends AppCompatActivity {
                     long longTimeFromBroadcastReceiver = intent.getLongExtra("TimeRemaining", 0);
                         userMainActivityViewModel.setValue(longTimeFromBroadcastReceiver);
                         //userMainActivityViewModel.startTimerSecondTime();
+                    Toast.makeText(context, "Here I am", Toast.LENGTH_SHORT).show();
                         startTimerSecondTime();
                         flagForBroadCastService=true;
 
-                        Log.i("On Receive ","On receive");
+                      //  Log.i("On Receive ","On receive");
 
                 }
             };
-            Log.i("FLAG SERVICE CHECKING","How many times invoked: " + ++counter);
+            //Log.i("FLAG SERVICE CHECKING","How many times invoked: " + ++counter);
             registerReceiver(broadcastReceiver, intentFilter);
             flagService = false;
         }
@@ -305,6 +308,22 @@ public class UserMainActivity extends AppCompatActivity {
         });
         active = true;
     }
+
+    private String getTimeMethod(long l) {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");//dd/MM/yyyy
+        Date now = new Date(l);
+        String sf = sdf.format(now);
+        return sf;
+    }
+    private String getCurrentTime() {
+        //"yyyy-MM-dd HH:mm:ss.SSS"
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");//dd/MM/yyyy
+        Date now = new Date();
+        addToEndingTime = now.getTime();
+        String sf = sdf.format(now);
+        return sf;
+    }
+
 
     public String checkMethod(long timeLong)
     {
@@ -401,6 +420,7 @@ public class UserMainActivity extends AppCompatActivity {
     private void startTimerSecondTime()
     {
         userMainActivityViewModel.startTimerSecondTime();
+
         //flag = false;
     }
     public void stopTime()
@@ -440,7 +460,7 @@ public class UserMainActivity extends AppCompatActivity {
         }
         Intent serviceIntent = new Intent(this,ForegroundServices.class);
         stopService(serviceIntent);
-        Log.i("Time finnaly",time+"");
+       // Log.i("Time finnaly",time+"");
         flag=true;
         flagService=false;
 
@@ -471,12 +491,11 @@ public class UserMainActivity extends AppCompatActivity {
             // For QRCODE 1
             if(result.getContents()!=null && result.getContents().toString().equals(QRCODE1))
             {
-                Toast.makeText(UserMainActivity.this, "Dobry kod", Toast.LENGTH_SHORT).show();
+             //   Toast.makeText(UserMainActivity.this, "Dobry kod", Toast.LENGTH_SHORT).show();
 
 
                 if(timerStarted == false)
                 {
-
                     timeDisplay.setText("");
                     textMain.setText("Zatrzymaj pracę: ");
                     cleanDataForTimeModel();
@@ -495,10 +514,12 @@ public class UserMainActivity extends AppCompatActivity {
                     timeModel = new TimeModel();
                     timerStarted = false;
                     textMain.setText("Rozpocznij pracę: ");
-                    endingTime.setText("Zakończono pracę o : " + getCurrentTime());
-                    timeModel.setTimeEnd(getCurrentTime());
+                    //endingTime.setText("Zakończono pracę o : " + getCurrentTime());
+
+                   // timeModel.setTimeEnd(getCurrentTime());
                     tmpEndTime = getCurrentTimeInSimpleFormat();
 
+                    endingTime.setText("Zakończono pracę o : " + getCurrentTime());
                     timeModel.setTimeBegin(loadAndUpdatedTimeModel());
                     //TODO i get
                     //tmpOverall = timeLong;
@@ -524,8 +545,13 @@ public class UserMainActivity extends AppCompatActivity {
                         //timerOverall.setText(getTimerText(tmpOverall));
                         timerOverall.setText("Przepracowałeś : " + timeDisplay.getText().toString());
                         timeModel.setTimeOverall(getTimerText(tmpOverall));
-                        timeModel.setTimeOverallInLong(tmpOverall*1000);
+                        //timeModel.setTimeOverall(endingTime.getText().toString());
+                        //timeModel.setTimeOverallInLong(tmpOverall*1000);
+                        timeModel.setTimeOverallInLong(tmpOverall);
                     }
+                    // TODO Overhere
+                    //endingTime.setText("Zakończono pracę o : " + getCurrentTime());
+
 
 
                     //timeModel.setTimeOverall(checkMethod(timeLong));
@@ -539,12 +565,12 @@ public class UserMainActivity extends AppCompatActivity {
                     collectionReferenceTime.add(timeModel).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                         @Override
                         public void onSuccess(DocumentReference documentReference) {
-                            Toast.makeText(UserMainActivity.this, "Data added sucesfully", Toast.LENGTH_SHORT).show();
+                         //   Toast.makeText(UserMainActivity.this, "Data added sucesfully", Toast.LENGTH_SHORT).show();
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(UserMainActivity.this, "Fail on adding data", Toast.LENGTH_SHORT).show();
+                          //  Toast.makeText(UserMainActivity.this, "Fail on adding data", Toast.LENGTH_SHORT).show();
                         }
                     });
 //                    timerTask.cancel();
@@ -554,12 +580,12 @@ public class UserMainActivity extends AppCompatActivity {
             }
 
             else {
-                Toast.makeText(UserMainActivity.this, "Błąd 2", Toast.LENGTH_SHORT).show();
+              //  Toast.makeText(UserMainActivity.this, "Błąd 2", Toast.LENGTH_SHORT).show();
             }
 
             if(result.getContents()!=null && result.getContents().toString().equals(QRCODE2delay5minutes))
             {
-                Toast.makeText(UserMainActivity.this, "Dobry kod", Toast.LENGTH_SHORT).show();
+               // Toast.makeText(UserMainActivity.this, "Dobry kod", Toast.LENGTH_SHORT).show();
 
 
 
@@ -580,7 +606,7 @@ public class UserMainActivity extends AppCompatActivity {
                 {
                     timerStarted = false;
                     textMain.setText("Rozpocznij pracę: ");
-                    endingTime.setText("Zakończono pracę o : " + getCurrentTime());
+                    //endingTime.setText("Zakończono pracę o : " + getCurrentTime());
                     timeModel.setTimeEnd(getCurrentTime());
                     tmpEndTime = getCurrentTimeInSimpleFormat();
 
@@ -612,12 +638,12 @@ public class UserMainActivity extends AppCompatActivity {
                         collectionReferenceTime.add(timeModel).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                             @Override
                             public void onSuccess(DocumentReference documentReference) {
-                                Toast.makeText(UserMainActivity.this, "Data added sucesfully 5 minutes dellay", Toast.LENGTH_SHORT).show();
+                          //      Toast.makeText(UserMainActivity.this, "Data added sucesfully 5 minutes dellay", Toast.LENGTH_SHORT).show();
                             }
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(UserMainActivity.this, "Fail on adding data", Toast.LENGTH_SHORT).show();
+                            //    Toast.makeText(UserMainActivity.this, "Fail on adding data", Toast.LENGTH_SHORT).show();
                             }
                         });
                         // QR with dellay
@@ -629,7 +655,7 @@ public class UserMainActivity extends AppCompatActivity {
             }
 
             else {
-                Toast.makeText(UserMainActivity.this, "Błąd 2", Toast.LENGTH_SHORT).show();
+              //  Toast.makeText(UserMainActivity.this, "Błąd 2", Toast.LENGTH_SHORT).show();
             }
         }
     });
@@ -637,17 +663,11 @@ public class UserMainActivity extends AppCompatActivity {
 
     private void startForegroundServiceToCountTime() {
         Intent intentService = new Intent(this, ForegroundServices.class);
+        //Time is in seconds
         intentService.putExtra("TimeValue", timerLiveData.getValue());
         startService(intentService);
     }
 
-    private String getCurrentTime() {
-        //"yyyy-MM-dd HH:mm:ss.SSS"
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");//dd/MM/yyyy
-        Date now = new Date();
-        String sf = sdf.format(now);
-        return sf;
-    }
 
     private long getCurrentTimeInSimpleFormat() {
         //"yyyy-MM-dd HH:mm:ss.SSS"
@@ -656,7 +676,7 @@ public class UserMainActivity extends AppCompatActivity {
 
 
 
-    private String getTimerText()
+  /*  private String getTimerText()
     {
         int rounded = (int) Math.round(time);
 
@@ -682,8 +702,22 @@ public class UserMainActivity extends AppCompatActivity {
     private String formatTime(int seconds, int minutes, int hours)
     {
         return String.format("%02d",hours) + " : " + String.format("%02d",minutes) + " : " + String.format("%02d",seconds);
+    }*/
+
+    private String getTimerText(long milliseconds)
+    {
+        int seconds = (int) (milliseconds / 1000) % 60 ;
+        int minutes = (int) ((milliseconds / (1000*60)) % 60);
+        int hours   = (int) ((milliseconds / (1000*60*60)) % 24);
+
+        return formatTime(seconds, minutes, hours);
     }
 
+
+    private String formatTime(int seconds, int minutes, int hours)
+    {
+        return String.format("%02d",hours) + " : " + String.format("%02d",minutes) + " : " + String.format("%02d",seconds);
+    }
 
 
     @Override
@@ -736,7 +770,7 @@ public class UserMainActivity extends AppCompatActivity {
 
 
         active = true;
-        Toast.makeText(this, "On start", Toast.LENGTH_SHORT).show();
+       // Toast.makeText(this, "On start", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -754,7 +788,7 @@ public class UserMainActivity extends AppCompatActivity {
         if(!flag) {
             //timerTask.cancel();
             startForegroundServiceToCountTime();
-            Toast.makeText(this, "Run ForeGround", Toast.LENGTH_SHORT).show();
+           // Toast.makeText(this, "Run ForeGround", Toast.LENGTH_SHORT).show();
         }
         // saving data when only started time not ending time
         if(endingTime.getText().toString().equals("")) {
@@ -765,7 +799,7 @@ public class UserMainActivity extends AppCompatActivity {
         {
             clearData();
         }
-        Toast.makeText(this, "OnStop", Toast.LENGTH_SHORT).show();
+      //  Toast.makeText(this, "OnStop", Toast.LENGTH_SHORT).show();
     }
 
     @Override

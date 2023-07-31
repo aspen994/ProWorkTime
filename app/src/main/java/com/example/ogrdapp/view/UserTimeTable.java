@@ -106,7 +106,7 @@ public class UserTimeTable extends AppCompatActivity {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         // Any Failuer
-                        Toast.makeText(UserTimeTable.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    //    Toast.makeText(UserTimeTable.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -208,7 +208,7 @@ public class UserTimeTable extends AppCompatActivity {
             int size = 0;
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                Toast.makeText(UserTimeTable.this, "Nothing selected", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(UserTimeTable.this, "Nothing selected", Toast.LENGTH_SHORT).show();
             }
         });
 

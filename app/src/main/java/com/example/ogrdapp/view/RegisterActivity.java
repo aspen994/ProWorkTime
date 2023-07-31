@@ -115,7 +115,7 @@ public class RegisterActivity extends AppCompatActivity {
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(RegisterActivity.this, "Błąd", Toast.LENGTH_SHORT).show();
+                       //     Toast.makeText(RegisterActivity.this, "Błąd", Toast.LENGTH_SHORT).show();
                         }
                     });
                 }

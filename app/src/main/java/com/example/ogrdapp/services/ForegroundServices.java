@@ -10,10 +10,12 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.ogrdapp.R;
 import com.example.ogrdapp.UserMainActivity;
@@ -32,6 +34,9 @@ public class ForegroundServices extends Service {
     // First time when we create service
     TimerTask timerTask;
     LiveData<Long> liveData;
+    //View Model
+
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -42,8 +47,17 @@ public class ForegroundServices extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
         if(intent!=null) {
             final Long[] input = {intent.getLongExtra("TimeValue", 0)};
+
+            /*// Setting delay
+            Long aLong = input[0];
+            final long[] delay = {1000 - (aLong % 1000)};
+            if(delay[0] ==1000)
+            {
+                delay[0] =0;
+            }*/
 
             if(!UserMainActivity.active)
             {
@@ -52,8 +66,18 @@ public class ForegroundServices extends Service {
                 timerTask = new TimerTask() {
                     @Override
                     public void run() {
+                        // Increasing value about one time count in miliseconds
                         time = input[0]++;
-                        notificationUpdate(input[0]);
+                        //Updatding notifiaction every 1 seconds
+                        if(input[0]%1000==0)
+                        {
+                            notificationUpdate(input[0]);
+                            // Setting dellay to 0 after will be 1 seconds
+                            //delay[0]=0;
+                        }
+
+                        //delay[0] =0;
+                        //Log.i("FROM Foreground service: ",input[0]+"");
 
                         if(UserMainActivity.flagForForegroundService)
                         {
@@ -62,10 +86,12 @@ public class ForegroundServices extends Service {
                             intent1.putExtra("TimeRemaining", time);
                             sendBroadcast(intent1);
                             UserMainActivity.flagForForegroundService = false;
+                            Log.i("HERE USER MAIN ","");
                         }
+
                     }
                 };
-                timer.scheduleAtFixedRate(timerTask, 0, 1000);
+                timer.scheduleAtFixedRate(timerTask,0, 1);
 
             }
 
@@ -146,8 +172,8 @@ public class ForegroundServices extends Service {
 
             final Notification[] notification = {new NotificationCompat.Builder(this, CHANNEl_ID)
                     .setOngoing(true)
-                    .setContentTitle("My timer")
-                    .setContentText("Time : " + getTimerText(time))
+                    .setContentTitle("Licznik")
+                    .setContentText("Pracujesz już : " + getTimerText(time))
                     .setSmallIcon(R.drawable.time24_vector)
                     .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
                     .setContentIntent(pendingIntent)
@@ -165,6 +191,8 @@ public class ForegroundServices extends Service {
     }
 
 
+
+/*
     private String getTimerText(Long time)
     {
         int rounded = (int) Math.round(time);
@@ -181,6 +209,23 @@ public class ForegroundServices extends Service {
     {
         return String.format("%02d",hours) + " : " + String.format("%02d",minutes) + " : " + String.format("%02d",seconds);
     }
+*/
+
+    private String getTimerText(long milliseconds)
+    {
+        int seconds = (int) (milliseconds / 1000) % 60 ;
+        int minutes = (int) ((milliseconds / (1000*60)) % 60);
+        int hours   = (int) ((milliseconds / (1000*60*60)) % 24);
+
+        return formatTime(seconds, minutes, hours);
+    }
+
+
+    private String formatTime(int seconds, int minutes, int hours)
+    {
+        return String.format("%02d",hours) + " : " + String.format("%02d",minutes) + " : " + String.format("%02d",seconds);
+    }
+
     // When stop is called on destroy
     @Override
     public void onDestroy() {
