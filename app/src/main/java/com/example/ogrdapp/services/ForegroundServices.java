@@ -32,11 +32,11 @@ import java.util.TimerTask;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class ForegroundServices extends Service  {
+public class ForegroundServices extends Service   {
 
     public static MutableLiveData<Long> time = new MutableLiveData<>(0L);
-    public LiveData <Long> timeForUpdated;
-    private long timeLong = 0;
+
+    public static long timeLong = 0;
     String stop ="";
     private Timer timer;
     // First time when we create service
@@ -45,10 +45,14 @@ public class ForegroundServices extends Service  {
     //View Model
 
 
+    public void setTimeLong(long timeLong) {
+        this.timeLong = timeLong;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
-        timeForUpdated = time;
+        //timeForUpdated = time;
     }
 
     //Intent will be text from editText

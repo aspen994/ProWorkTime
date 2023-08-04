@@ -73,6 +73,7 @@ public class UserMainActivity extends AppCompatActivity {
     public static final String TIME_MODEL = "text_2";
     public static final String TMP_BEGIN_TIME = "tmp_Begin_Time";
     public static final String TIMER_STARTED ="timerStarted";
+    public static final String SECONDS_STOPWATCH= "secondsStopWatch";
 
 
     private DrawerLayout drawerLayout;
@@ -150,7 +151,22 @@ public class UserMainActivity extends AppCompatActivity {
         endingTime = findViewById(R.id.ending_time);
         timerOverall = findViewById(R.id.timeOverall);
       //  userMainActivityViewModel =  new ViewModelProvider(this).get(UserMainActivityViewModel.class);
-        Toast.makeText(this, "ON create", Toast.LENGTH_SHORT).show();
+
+        // Loading and updating data from SharedPreferences
+        loadData();
+        updateData();
+
+        Toast.makeText(this, isMyServiceRunning(ForegroundServices.class)+"", Toast.LENGTH_SHORT).show();
+
+        // Starting time for stopWatch when phone down or app crash
+        if(!isMyServiceRunning(ForegroundServices.class) && endingTime.getText().toString().equals("") && !begingTime.getText().toString().equals(""))
+        {
+        startForegroundServiceToCountTime();
+            // Divied by 1000 to get from milis to seconds
+            long timeInSeconds = (getCurrentTimeInSimpleFormat() - tmpBeginTime) / 1000;
+            ForegroundServices.timeLong =timeInSeconds;
+            Toast.makeText(this, "TEST IT", Toast.LENGTH_SHORT).show();
+        }
         //flagForForegroundService = true;
 
         // TODO
@@ -213,9 +229,7 @@ public class UserMainActivity extends AppCompatActivity {
             }
         });
 
-        // Loading and updating data from SharedPreferences
-        loadData();
-        updateData();
+
 
         //Log.i("Format time for timeDisplay",timeDisplay.getText().toString());
         //Setting counting time for start when phone down
@@ -474,6 +488,8 @@ public class UserMainActivity extends AppCompatActivity {
         editor.putBoolean(TIMER_STARTED,timerStarted);
         editor.putLong(TMP_BEGIN_TIME,tmpBeginTime);
 
+        Toast.makeText(this, "Save" +ForegroundServices.time.getValue(), Toast.LENGTH_SHORT).show();
+
         editor.apply();
     }
     public void clearData()
@@ -501,10 +517,17 @@ public class UserMainActivity extends AppCompatActivity {
        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS,MODE_PRIVATE);
        if(endingTime.getText().toString().equals("")) {
            beginingTime = sharedPreferences.getString(TEXT, begingTime.getText().toString());
-           tmpBeginTimeFromSharedPreferences = sharedPreferences.getLong(TMP_BEGIN_TIME,tmpBeginTime);
        }
-       isTimerStarted = sharedPreferences.getBoolean(TIMER_STARTED,timerStarted);
+        isTimerStarted = sharedPreferences.getBoolean(TIMER_STARTED,timerStarted);
+        tmpBeginTimeFromSharedPreferences = sharedPreferences.getLong(TMP_BEGIN_TIME,tmpBeginTime);
 
+
+    }
+    public void loadDataForStopWatch()
+    {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS,MODE_PRIVATE);
+        ForegroundServices.time.setValue((sharedPreferences.getLong(SECONDS_STOPWATCH,0)));
+        Toast.makeText(this, "load data" +ForegroundServices.time.getValue(), Toast.LENGTH_SHORT).show();
     }
 
     public void updateData()
@@ -525,6 +548,7 @@ public class UserMainActivity extends AppCompatActivity {
         userMainActivityViewModel.startTimer();*/
 
         ForegroundServices.time.setValue(0L);
+        ForegroundServices.timeLong=0;
 
         flag = false;
     }
@@ -664,7 +688,7 @@ public class UserMainActivity extends AppCompatActivity {
                     } else if (tmpOverall>0) {
                         //timerOverall.setText(getTimerText(tmpOverall));
                         timerOverall.setText("Przepracowałeś : " + timeDisplay.getText().toString());
-                        timeModel.setTimeOverall(getTimerText(tmpOverall));
+                        timeModel.setTimeOverall(checkMethod(tmpOverall));
                         //timeModel.setTimeOverall(endingTime.getText().toString());
                         //timeModel.setTimeOverallInLong(tmpOverall*1000);
                         timeModel.setTimeOverallInLong(tmpOverall);
@@ -926,7 +950,7 @@ public class UserMainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         //Toast.makeText(this, "onPause", Toast.LENGTH_SHORT).show();
-        if(isMyServiceRunning(ForegroundServices.class)) {
+      /*  if(isMyServiceRunning(ForegroundServices.class)) {
             try {
                 unregisterReceiver(broadcastReceiver);
             }
@@ -935,7 +959,7 @@ public class UserMainActivity extends AppCompatActivity {
                 e.getMessage();
             }
 
-        }
+        }*/
         /*try {
             unregisterReceiver(broadcastReceiver);
         }catch(Exception e)
@@ -970,6 +994,7 @@ public class UserMainActivity extends AppCompatActivity {
         }
         // saving data when only started time not ending time
         if(endingTime.getText().toString().equals("")) {
+            Toast.makeText(this, "Invoked", Toast.LENGTH_SHORT).show();
             saveData();
         }
         // if end time was set, clearing data.
