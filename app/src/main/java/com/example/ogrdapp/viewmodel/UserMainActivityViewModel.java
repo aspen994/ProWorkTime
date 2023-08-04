@@ -1,6 +1,9 @@
 package com.example.ogrdapp.viewmodel;
 
 import android.app.Application;
+import android.content.ComponentName;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -20,9 +23,23 @@ import java.util.concurrent.ExecutionException;
 
 public class UserMainActivityViewModel extends ViewModel implements Serializable {
     private long timeLong=0;
+    private static int counter = 0;
     private Timer timer;
     private TimerTask timerTask;
     private MutableLiveData<Long> timerLiveData = new MutableLiveData<>();
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
+
     //When user startTimer
     public void startTimer()
     {
@@ -35,32 +52,15 @@ public class UserMainActivityViewModel extends ViewModel implements Serializable
         return timerLiveData;
     }
 
-    private String getTimerText(long timeLong)
-    {
-        int rounded = (int) Math.round(timeLong);
 
-        int seconds = ((rounded % 86400) % 3600) % 60;
-        int minutes = ((rounded % 86400) % 3600) / 60;
-        int hours = ((rounded % 86400) / 3600);
-
-        return formatTime(seconds, minutes, hours);
-    }
-
-    private String formatTime(int seconds, int minutes, int hours)
-    {
-        return String.format("%02d",hours) + " : " + String.format("%02d",minutes) + " : " + String.format("%02d",seconds);
-    }
 
     private long startTimerTask() {
 
-        timer = new Timer();
-
-     /*   Long aLong = timeLong;
-        final long[] delay = {1000 - (aLong % 1000)};
-        if(delay[0] ==1000)
+        if(timerTask!=null)
         {
-            delay[0] =0;
-        }*/
+            timerTask.cancel();
+        }
+        timer = new Timer();
 
         timerTask = new TimerTask() {
             @Override
@@ -76,15 +76,19 @@ public class UserMainActivityViewModel extends ViewModel implements Serializable
     }
     public long startTimerSecondTime() {
 
-        try {
-            timerTask.cancel();
-        }
-        catch (Exception e)
+        if(timerTask!=null)
         {
-            e.printStackTrace();
+            try {
+                timerTask.cancel();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
+        Log.i("Cunter form startTimer Second method",++counter +"");
         startTimerTask();
-        Log.i("I am exectuing from Start TImer second Time","");
+        Log.i("TROLOLOLO","");
 
         /*timer = new Timer();
 
@@ -111,7 +115,7 @@ public class UserMainActivityViewModel extends ViewModel implements Serializable
 
     public void setValue(long longTimeFromBroadcastReceiver) {
         timeLong = longTimeFromBroadcastReceiver;
-        //timerLiveData.setValue(longTimeFromBroadcastReceiver);
+        timerLiveData.postValue(longTimeFromBroadcastReceiver);
     }
 
 

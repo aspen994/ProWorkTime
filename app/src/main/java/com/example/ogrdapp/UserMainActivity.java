@@ -1,5 +1,6 @@
 package com.example.ogrdapp;
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -73,6 +74,7 @@ public class UserMainActivity extends AppCompatActivity {
     public static final String TMP_BEGIN_TIME = "tmp_Begin_Time";
     public static final String TIMER_STARTED ="timerStarted";
 
+
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private ActionBarDrawerToggle toogle;
@@ -103,7 +105,7 @@ public class UserMainActivity extends AppCompatActivity {
 
     private long timeLong;
     private boolean flag = true;
-    private boolean flagService = true;
+    public  boolean flagService = true;
     public static boolean active = false;
     public static boolean flagForForegroundService = true;
     String beginingTime = "";
@@ -123,6 +125,9 @@ public class UserMainActivity extends AppCompatActivity {
 
     boolean flagForBroadCastService = false;
     long addToEndingTime=0;
+    public IntentFilter intentFilter;
+    public boolean kolejnaJebanaFlaga = true;
+
 
 
     // To Foreground service-------------------------------------------------------------------------
@@ -144,13 +149,56 @@ public class UserMainActivity extends AppCompatActivity {
         begingTime = findViewById(R.id.begining_time);
         endingTime = findViewById(R.id.ending_time);
         timerOverall = findViewById(R.id.timeOverall);
-        userMainActivityViewModel = new ViewModelProvider(this).get(UserMainActivityViewModel.class);
-        flagForForegroundService = true;
-        Toast.makeText(this, "on Create", Toast.LENGTH_SHORT).show();
+      //  userMainActivityViewModel =  new ViewModelProvider(this).get(UserMainActivityViewModel.class);
+        Toast.makeText(this, "ON create", Toast.LENGTH_SHORT).show();
+        //flagForForegroundService = true;
 
-        //TODO I Change 26.07.23
+        // TODO
+        // Jeśli czas time display równa się 00:00:00 to wtedy daj z serwisu dane jeśli nie to już nie dawaj danych.
+
+       /* intentFilter = new IntentFilter();
+        intentFilter.addAction("Counter");
+        flagForForegroundService =true;
+
+        if(flagService) {
+            Log.i("FLAG SERVICE IS :",flagService+"");
+            if (timerTask != null) {
+                timerTask.cancel();
+            }
+
+            //Toast.makeText(this, "flag service", Toast.LENGTH_SHORT).show();
+            broadcastReceiver = new BroadcastReceiver() {
+
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    long longTimeFromBroadcastReceiver = intent.getLongExtra("TimeRemaining", 0);
+                    Log.i("On receive", timeDisplay.getText().toString());
+                    Toast.makeText(UserMainActivity.this, timeDisplay.getText().toString(), Toast.LENGTH_SHORT).show();
+                    if(timeDisplay.getText().toString().equals("00 : 00 : 00")) {
+                        userMainActivityViewModel.setValue(0);
+                        Log.i("On receive", timeDisplay.getText().toString());
+                        userMainActivityViewModel.setValue(longTimeFromBroadcastReceiver);
+                        startTimerSecondTime();
+                        flagForBroadCastService = true;
+                        flagForForegroundService = true;
+                        Toast.makeText(UserMainActivity.this, "Executing broadcast", Toast.LENGTH_SHORT).show();
+
+                    }
+                    //  Log.i("On Receive ","On receive");
+
+                }
+            };
+            registerReceiver(broadcastReceiver,intentFilter);
+            //Log.i("FLAG SERVICE CHECKING","How many times invoked: " + ++counter);
+            Log.i("REGISTER RECEIVER","REGISTER RECEIVER");
+            flagService = false;
+
+        }*/
+
+
+
         //LiveData<Long> timerLiveData = userMainActivityViewModel.initialValue();
-        timerLiveData = userMainActivityViewModel.initialValue();
+        timerLiveData = ForegroundServices.time;
 
         timerLiveData.observe(this, new Observer<Long>() {
             @Override
@@ -165,10 +213,21 @@ public class UserMainActivity extends AppCompatActivity {
             }
         });
 
-
         // Loading and updating data from SharedPreferences
         loadData();
         updateData();
+
+        //Log.i("Format time for timeDisplay",timeDisplay.getText().toString());
+        //Setting counting time for start when phone down
+       /* if(tmpBeginTime !=System.currentTimeMillis() && timeDisplay.getText().toString().equals("00 : 00 : 00"))
+        {
+            userMainActivityViewModel.setValue(System.currentTimeMillis()-tmpBeginTime);
+            startTimeWhenPhoneDown();
+            Log.i("Phone down I Am executing","something");
+        }
+*/
+
+
 
         // Loading proper text Main accroidng if the time of work is started or not.
         if(timerStarted==false)
@@ -221,38 +280,14 @@ public class UserMainActivity extends AppCompatActivity {
         // assign timer
         timer = new Timer();
 
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("Counter");
+
+
         //intentFilter.addAction(Intent.Action);
 
         //userMainActivityViewModel.initialValue().getValue();
 
-
-        flagForForegroundService = true;
         int counter = 0;
-        if(flagService) {
-            if (timerTask != null) {
-                timerTask.cancel();
-            }
-            broadcastReceiver = new BroadcastReceiver() {
 
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    long longTimeFromBroadcastReceiver = intent.getLongExtra("TimeRemaining", 0);
-                        userMainActivityViewModel.setValue(longTimeFromBroadcastReceiver);
-                        //userMainActivityViewModel.startTimerSecondTime();
-                    Toast.makeText(context, "Here I am", Toast.LENGTH_SHORT).show();
-                        startTimerSecondTime();
-                        flagForBroadCastService=true;
-
-                      //  Log.i("On Receive ","On receive");
-
-                }
-            };
-            //Log.i("FLAG SERVICE CHECKING","How many times invoked: " + ++counter);
-            registerReceiver(broadcastReceiver, intentFilter);
-            flagService = false;
-        }
 
 
        /* if(flagForBroadCastService)
@@ -306,7 +341,82 @@ public class UserMainActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+        /* intentFilter = new IntentFilter();
+         intentFilter.addAction("com.osin.myBroadcastMessage");*/
+
+       /* if(flagService) {
+            Log.i("FLAG SERVICE IS :",flagService+"");
+            if (timerTask != null) {
+                timerTask.cancel();
+            }
+
+            broadcastReceiver = new BroadcastReceiver() {
+
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    long longTimeFromBroadcastReceiver = intent.getLongExtra("TimeRemaining", 0);
+                    Log.i("OnReceive",timeDisplay.getText().toString());
+                    //userMainActivityViewModel.setValue(0);
+                    userMainActivityViewModel.setValue(longTimeFromBroadcastReceiver);
+                    //startTimerSecondTime();
+                    flagForBroadCastService=true;
+                    flagForForegroundService=true;
+
+                    //  Log.i("On Receive ","On receive");
+
+                }
+            };
+            registerReceiver(broadcastReceiver,intentFilter);
+            //Log.i("FLAG SERVICE CHECKING","How many times invoked: " + ++counter);
+            Log.i("REGISTER RECEIVER","REGISTER RECEIVER");
+            flagService = false;
+
+        }*/
+
         active = true;
+
+        intentFilter = new IntentFilter();
+        intentFilter.addAction("Counter");
+        flagForForegroundService =true;
+
+
+        if(flagService) {
+        /*    Log.i("FLAG SERVICE IS :",flagService+"");
+            if (timerTask != null) {
+                timerTask.cancel();
+            }
+
+            //Toast.makeText(this, "flag service", Toast.LENGTH_SHORT).show();
+            broadcastReceiver = new BroadcastReceiver() {
+
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    long longTimeFromBroadcastReceiver = intent.getLongExtra("TimeRemaining", 0);
+                    Log.i("On receive", timeDisplay.getText().toString());
+                    Toast.makeText(UserMainActivity.this, timeDisplay.getText().toString(), Toast.LENGTH_SHORT).show();
+                    if(timeDisplay.getText().toString().equals("00 : 00 : 00")&& kolejnaJebanaFlaga) {
+                        userMainActivityViewModel.setValue(0);
+                        Log.i("On receive", timeDisplay.getText().toString());
+                        userMainActivityViewModel.setValue(longTimeFromBroadcastReceiver);
+                        startTimerSecondTime();
+                        flagForBroadCastService = true;
+                        //flagForForegroundService = true;
+                        Toast.makeText(UserMainActivity.this, "Executing broadcast", Toast.LENGTH_SHORT).show();
+                        kolejnaJebanaFlaga = false;
+                    }
+                    //  Log.i("On Receive ","On receive");
+
+                }
+            };
+            registerReceiver(broadcastReceiver,intentFilter);
+            //Log.i("FLAG SERVICE CHECKING","How many times invoked: " + ++counter);
+            Log.i("REGISTER RECEIVER","REGISTER RECEIVER");*/
+            flagService = false;
+
+        }
+
+
     }
 
     private String getTimeMethod(long l) {
@@ -317,7 +427,7 @@ public class UserMainActivity extends AppCompatActivity {
     }
     private String getCurrentTime() {
         //"yyyy-MM-dd HH:mm:ss.SSS"
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");//dd/MM/yyyy
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");//dd/MM/yyyy
         Date now = new Date();
         addToEndingTime = now.getTime();
         String sf = sdf.format(now);
@@ -411,8 +521,10 @@ public class UserMainActivity extends AppCompatActivity {
     private void startTimer() {
 
         //timer = new Timer();
-        userMainActivityViewModel.setValue(0);
-        userMainActivityViewModel.startTimer();
+        /*userMainActivityViewModel.setValue(0);
+        userMainActivityViewModel.startTimer();*/
+
+        ForegroundServices.time.setValue(0L);
 
         flag = false;
     }
@@ -421,11 +533,19 @@ public class UserMainActivity extends AppCompatActivity {
     {
         userMainActivityViewModel.startTimerSecondTime();
 
-        //flag = false;
+        flag = false;
     }
+    private void startTimeWhenPhoneDown()
+    {
+        userMainActivityViewModel.startTimer();
+        flag = false;
+    }
+
     public void stopTime()
     {
-        userMainActivityViewModel.stopTimerTask();
+        Intent serviceIntent = new Intent(this,ForegroundServices.class);
+        stopService(serviceIntent);
+        //userMainActivityViewModel.stopTimerTask();
 
     /*    if(timerTask!=null)
         {
@@ -434,8 +554,8 @@ public class UserMainActivity extends AppCompatActivity {
             timeLong=0;
         }*/
 
-
-        /*Intent serviceIntent = new Intent(this, ForegroundServices.class);
+/*
+        Intent serviceIntent = new Intent(this, ForegroundServices.class);
         stopService(serviceIntent);
         //Log.i("Time finnaly",time+"");
         flag=true;
@@ -451,15 +571,14 @@ public class UserMainActivity extends AppCompatActivity {
             }
 
         }*/
-        try {
-            unregisterReceiver(broadcastReceiver);
-        }
-        catch(IllegalArgumentException e)
-        {
-            e.printStackTrace();
-        }
-        Intent serviceIntent = new Intent(this,ForegroundServices.class);
-        stopService(serviceIntent);
+       /* if(broadcastReceiver!=null) {
+            try {
+                unregisterReceiver(broadcastReceiver);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
+        }*/
+
        // Log.i("Time finnaly",time+"");
         flag=true;
         flagService=false;
@@ -496,6 +615,7 @@ public class UserMainActivity extends AppCompatActivity {
 
                 if(timerStarted == false)
                 {
+                    startForegroundServiceToCountTime();
                     timeDisplay.setText("");
                     textMain.setText("Zatrzymaj pracę: ");
                     cleanDataForTimeModel();
@@ -516,14 +636,14 @@ public class UserMainActivity extends AppCompatActivity {
                     textMain.setText("Rozpocznij pracę: ");
                     //endingTime.setText("Zakończono pracę o : " + getCurrentTime());
 
-                   // timeModel.setTimeEnd(getCurrentTime());
+                    timeModel.setTimeEnd(getCurrentTime());
                     tmpEndTime = getCurrentTimeInSimpleFormat();
 
                     endingTime.setText("Zakończono pracę o : " + getCurrentTime());
                     timeModel.setTimeBegin(loadAndUpdatedTimeModel());
                     //TODO i get
                     //tmpOverall = timeLong;
-                    tmpOverall = userMainActivityViewModel.initialValue().getValue();
+                    tmpOverall = ForegroundServices.time.getValue();
                     stopTime();
 
                     if (tmpOverall <=0) {
@@ -661,11 +781,23 @@ public class UserMainActivity extends AppCompatActivity {
     });
 
 
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     private void startForegroundServiceToCountTime() {
         Intent intentService = new Intent(this, ForegroundServices.class);
         //Time is in seconds
         intentService.putExtra("TimeValue", timerLiveData.getValue());
         startService(intentService);
+        Log.i("Start ForeGround","Start Foregroundservice");
     }
 
 
@@ -774,21 +906,63 @@ public class UserMainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        //registerReceiver(broadcastReceiver,intentFilter);
+      /*  try{
+            registerReceiver(broadcastReceiver, intentFilter);
+        }
+        catch(Exception e)
+        {
+            e.getMessage();
+        }*/
+
+    }
+
+    @Override
+    protected void onPause() {
+        //Toast.makeText(this, "onPause", Toast.LENGTH_SHORT).show();
+        if(isMyServiceRunning(ForegroundServices.class)) {
+            try {
+                unregisterReceiver(broadcastReceiver);
+            }
+            catch(Exception e)
+            {
+                e.getMessage();
+            }
+
+        }
+        /*try {
+            unregisterReceiver(broadcastReceiver);
+        }catch(Exception e)
+        {
+            e.getMessage();
+        }*/
+        super.onPause();
+
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
+        Toast.makeText(this, "On stop", Toast.LENGTH_SHORT).show();
         // starting service when time on clock is more than 0 and it's not ending time
         active = false;
-        try {
-            unregisterReceiver(broadcastReceiver);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+
+     /*   if(broadcastReceiver!=null) {
+            try {
+                unregisterReceiver(broadcastReceiver);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }*/
+        // TODO Before was if(!flag)
         if(!flag) {
-            //timerTask.cancel();
-            startForegroundServiceToCountTime();
-           // Toast.makeText(this, "Run ForeGround", Toast.LENGTH_SHORT).show();
+            if (!isMyServiceRunning(ForegroundServices.class)) {
+                //timerTask.cancel();
+                //startForegroundServiceToCountTime();
+                // Toast.makeText(this, "Run ForeGround", Toast.LENGTH_SHORT).show();
+            }
         }
         // saving data when only started time not ending time
         if(endingTime.getText().toString().equals("")) {
@@ -806,4 +980,6 @@ public class UserMainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
     }
+
+
 }

@@ -15,8 +15,10 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.ogrdapp.Helper;
 import com.example.ogrdapp.R;
 import com.example.ogrdapp.UserMainActivity;
 import com.example.ogrdapp.viewmodel.UserMainActivityViewModel;
@@ -28,7 +30,8 @@ import java.util.concurrent.TimeUnit;
 
 public class ForegroundServices extends Service {
 
-    private long time;
+    public static MutableLiveData<Long> time = new MutableLiveData<>(0L);
+    private long timeLong = 0;
     String stop ="";
     private Timer timer;
     // First time when we create service
@@ -48,16 +51,30 @@ public class ForegroundServices extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        if(intent!=null) {
-            final Long[] input = {intent.getLongExtra("TimeValue", 0)};
+                timer = new Timer();
 
-            /*// Setting delay
-            Long aLong = input[0];
-            final long[] delay = {1000 - (aLong % 1000)};
-            if(delay[0] ==1000)
-            {
-                delay[0] =0;
-            }*/
+                timerTask = new TimerTask() {
+                    @Override
+                    public void run() {
+                        // Increasing value about one time count in miliseconds
+                        time.postValue(timeLong++);
+                        //Updatding notifiaction every 1 seconds
+                        if(timeLong%1000==0)
+                        {
+                            notificationUpdate(timeLong);
+
+                        }
+
+                    }
+                };
+                timer.scheduleAtFixedRate(timerTask,0, 1);
+
+                return super.onStartCommand(intent,flags,startId);
+            }
+
+
+       /* if(intent!=null) {
+            final Long[] input = {intent.getLongExtra("TimeValue", 0)};
 
             if(!UserMainActivity.active)
             {
@@ -72,12 +89,9 @@ public class ForegroundServices extends Service {
                         if(input[0]%1000==0)
                         {
                             notificationUpdate(input[0]);
-                            // Setting dellay to 0 after will be 1 seconds
-                            //delay[0]=0;
+
                         }
 
-                        //delay[0] =0;
-                        //Log.i("FROM Foreground service: ",input[0]+"");
 
                         if(UserMainActivity.flagForForegroundService)
                         {
@@ -89,11 +103,17 @@ public class ForegroundServices extends Service {
                             Log.i("HERE USER MAIN ","");
                         }
 
+
+
+
+
                     }
                 };
                 timer.scheduleAtFixedRate(timerTask,0, 1);
+                }
+                */
 
-            }
+
 
 
             //timer = new Timer();
@@ -159,10 +179,10 @@ public class ForegroundServices extends Service {
                 .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
                 .build();
         startForeground(1,notification);*/
-        }
+
         //return START_NOT_STICKY;
-        return super.onStartCommand(intent,flags,startId);
-    }
+
+
 
     public void notificationUpdate(Long time)
     {
@@ -230,7 +250,7 @@ public class ForegroundServices extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        //timer.cancel();
+        timer.cancel();
     }
 
     @Nullable
