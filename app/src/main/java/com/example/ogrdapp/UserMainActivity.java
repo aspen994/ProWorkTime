@@ -427,7 +427,7 @@ public class UserMainActivity extends AppCompatActivity {
     }
     private String getCurrentTime() {
         //"yyyy-MM-dd HH:mm:ss.SSS"
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");//dd/MM/yyyy
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");//dd/MM/yyyy
         Date now = new Date();
         addToEndingTime = now.getTime();
         String sf = sdf.format(now);
@@ -643,7 +643,7 @@ public class UserMainActivity extends AppCompatActivity {
                     timeModel.setTimeBegin(loadAndUpdatedTimeModel());
                     //TODO i get
                     //tmpOverall = timeLong;
-                    tmpOverall = ForegroundServices.time.getValue();
+                    tmpOverall = ForegroundServices.time.getValue()*1000;
                     stopTime();
 
                     if (tmpOverall <=0) {
@@ -795,7 +795,7 @@ public class UserMainActivity extends AppCompatActivity {
     private void startForegroundServiceToCountTime() {
         Intent intentService = new Intent(this, ForegroundServices.class);
         //Time is in seconds
-        intentService.putExtra("TimeValue", timerLiveData.getValue());
+        //intentService.putExtra("TimeValue", timerLiveData.getValue());
         startService(intentService);
         Log.i("Start ForeGround","Start Foregroundservice");
     }
@@ -836,13 +836,17 @@ public class UserMainActivity extends AppCompatActivity {
         return String.format("%02d",hours) + " : " + String.format("%02d",minutes) + " : " + String.format("%02d",seconds);
     }*/
 
-    private String getTimerText(long milliseconds)
+    private String getTimerText(long timeInSeconds)
     {
-        int seconds = (int) (milliseconds / 1000) % 60 ;
-        int minutes = (int) ((milliseconds / (1000*60)) % 60);
-        int hours   = (int) ((milliseconds / (1000*60*60)) % 24);
+
+        int rounded = (int) Math.round(timeInSeconds);
+
+        int seconds = ((rounded % 86400) % 3600) % 60;
+        int minutes = ((rounded % 86400) % 3600) / 60;
+        int hours = ((rounded % 86400) / 3600);
 
         return formatTime(seconds, minutes, hours);
+
     }
 
 

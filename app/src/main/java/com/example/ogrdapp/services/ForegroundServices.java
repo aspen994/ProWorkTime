@@ -12,10 +12,14 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.ogrdapp.Helper;
@@ -28,9 +32,10 @@ import java.util.TimerTask;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class ForegroundServices extends Service {
+public class ForegroundServices extends Service  {
 
     public static MutableLiveData<Long> time = new MutableLiveData<>(0L);
+    public LiveData <Long> timeForUpdated;
     private long timeLong = 0;
     String stop ="";
     private Timer timer;
@@ -43,6 +48,7 @@ public class ForegroundServices extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        timeForUpdated = time;
     }
 
     //Intent will be text from editText
@@ -56,18 +62,14 @@ public class ForegroundServices extends Service {
                 timerTask = new TimerTask() {
                     @Override
                     public void run() {
-                        // Increasing value about one time count in miliseconds
+                        //Updatding notifiaction starts from 0
+                        notificationUpdate(timeLong);
+                        // Increasing value about one second
                         time.postValue(timeLong++);
-                        //Updatding notifiaction every 1 seconds
-                        if(timeLong%1000==0)
-                        {
-                            notificationUpdate(timeLong);
-
-                        }
 
                     }
                 };
-                timer.scheduleAtFixedRate(timerTask,0, 1);
+                timer.scheduleAtFixedRate(timerTask,0, 1000);
 
                 return super.onStartCommand(intent,flags,startId);
             }
@@ -231,11 +233,13 @@ public class ForegroundServices extends Service {
     }
 */
 
-    private String getTimerText(long milliseconds)
+    private String getTimerText(long timeInSeconds)
     {
-        int seconds = (int) (milliseconds / 1000) % 60 ;
-        int minutes = (int) ((milliseconds / (1000*60)) % 60);
-        int hours   = (int) ((milliseconds / (1000*60*60)) % 24);
+        int rounded = (int) Math.round(timeInSeconds);
+
+        int seconds = ((rounded % 86400) % 3600) % 60;
+        int minutes = ((rounded % 86400) % 3600) / 60;
+        int hours = ((rounded % 86400) / 3600);
 
         return formatTime(seconds, minutes, hours);
     }
@@ -258,4 +262,6 @@ public class ForegroundServices extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
+
+
 }
