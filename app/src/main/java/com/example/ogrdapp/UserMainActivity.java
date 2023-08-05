@@ -1,7 +1,6 @@
 package com.example.ogrdapp;
 
 import android.app.ActivityManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -13,6 +12,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,13 +28,12 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.example.ogrdapp.model.TimeModel;
+import com.example.ogrdapp.scanner.CustomScannerActivity;
 import com.example.ogrdapp.services.ForegroundServices;
 import com.example.ogrdapp.view.MainActivity;
 import com.example.ogrdapp.view.UserTimeTable;
-import com.example.ogrdapp.viewmodel.UserMainActivityViewModel;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
@@ -57,8 +56,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class UserMainActivity extends AppCompatActivity {
 
@@ -82,12 +79,9 @@ public class UserMainActivity extends AppCompatActivity {
 
     private TextView userName,date,timeDisplay,textMain,begingTime,endingTime,timerOverall;
 
-    private Timer timer;
-    private  TimerTask timerTask;
-    private Double time = 0.0;
 
     private boolean timerStarted = false;
-    private Button qr;
+    private ImageButton qr;
 
     private long tmpBeginTime,tmpEndTime,tmpOverall=0;
     private long delay5minutes = 300000;
@@ -101,40 +95,21 @@ public class UserMainActivity extends AppCompatActivity {
     private CollectionReference collectionReference = db.collection("Users");
     private CollectionReference collectionReferenceTime = db.collection("Time");
     // To Foreground service-------------------------------------------------------------------------
-    //private TimerTask timerTask;
-    //private Timer timer;
-
-    private long timeLong;
     private boolean flag = true;
     public  boolean flagService = true;
     public static boolean active = false;
     public static boolean flagForForegroundService = true;
     String beginingTime = "";
-    String endingTTime = "";
-    private long tmpBeginTimeFromSharedPreferences;
-    private boolean restartFlag = false;
-    private boolean flagForSignText = false;
-    private boolean isTimerStarted=false;
 
-    BroadcastReceiver broadcastReceiver;
+    private long tmpBeginTimeFromSharedPreferences;
+    private boolean isTimerStarted=false;
 
     private  String currentTime = "";
 
-    //ViewModel
-    UserMainActivityViewModel userMainActivityViewModel;
     LiveData<Long> timerLiveData;
 
-    boolean flagForBroadCastService = false;
     long addToEndingTime=0;
     public IntentFilter intentFilter;
-    public boolean kolejnaJebanaFlaga = true;
-
-
-
-    // To Foreground service-------------------------------------------------------------------------
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,77 +125,38 @@ public class UserMainActivity extends AppCompatActivity {
         begingTime = findViewById(R.id.begining_time);
         endingTime = findViewById(R.id.ending_time);
         timerOverall = findViewById(R.id.timeOverall);
-      //  userMainActivityViewModel =  new ViewModelProvider(this).get(UserMainActivityViewModel.class);
+        Toast.makeText(this, "on Create", Toast.LENGTH_SHORT).show();
 
-        // Loading and updating data from SharedPreferences
+        // ---------------- P - E - R - M -I - S - S - I - O - N -S -------------
+
+        //Permission for the post notification
+        if(ContextCompat.checkSelfPermission(UserMainActivity.this, android.Manifest.permission.POST_NOTIFICATIONS)!= PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(UserMainActivity.this,new String[]{android.Manifest.permission.POST_NOTIFICATIONS},101);
+        }
+        // ---------------- P - E - R - M -I - S - S - I - O - N -S -------------  >
+
+        // Loading and updating data from SharedPreferences (timeStarted, flag for isStarted time  and so on)
         loadData();
         updateData();
 
-        Toast.makeText(this, isMyServiceRunning(ForegroundServices.class)+"", Toast.LENGTH_SHORT).show();
-
-        // Starting time for stopWatch when phone down or app crash
+        // Starting time for stopWatch when phone down or app crash and time was counted to start ( Connected with Shared Pref)
+        // Checking is mySrevice runing if not check if ending time is equal to to"" and beging time has text
         if(!isMyServiceRunning(ForegroundServices.class) && endingTime.getText().toString().equals("") && !begingTime.getText().toString().equals(""))
         {
-        startForegroundServiceToCountTime();
-            // Divied by 1000 to get from milis to seconds
+            //Retreving data do tmpBeginTime for Shared preff
+            // Divied by 1000 to get from milliseconds to seconds
             long timeInSeconds = (getCurrentTimeInSimpleFormat() - tmpBeginTime) / 1000;
-            ForegroundServices.timeLong =timeInSeconds;
-            Toast.makeText(this, "TEST IT", Toast.LENGTH_SHORT).show();
+            // Setting static variable timeLong for the difrenece between time.
+            startTimer(timeInSeconds);
         }
-        //flagForForegroundService = true;
 
-        // TODO
-        // Jeśli czas time display równa się 00:00:00 to wtedy daj z serwisu dane jeśli nie to już nie dawaj danych.
-
-       /* intentFilter = new IntentFilter();
-        intentFilter.addAction("Counter");
-        flagForForegroundService =true;
-
-        if(flagService) {
-            Log.i("FLAG SERVICE IS :",flagService+"");
-            if (timerTask != null) {
-                timerTask.cancel();
-            }
-
-            //Toast.makeText(this, "flag service", Toast.LENGTH_SHORT).show();
-            broadcastReceiver = new BroadcastReceiver() {
-
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    long longTimeFromBroadcastReceiver = intent.getLongExtra("TimeRemaining", 0);
-                    Log.i("On receive", timeDisplay.getText().toString());
-                    Toast.makeText(UserMainActivity.this, timeDisplay.getText().toString(), Toast.LENGTH_SHORT).show();
-                    if(timeDisplay.getText().toString().equals("00 : 00 : 00")) {
-                        userMainActivityViewModel.setValue(0);
-                        Log.i("On receive", timeDisplay.getText().toString());
-                        userMainActivityViewModel.setValue(longTimeFromBroadcastReceiver);
-                        startTimerSecondTime();
-                        flagForBroadCastService = true;
-                        flagForForegroundService = true;
-                        Toast.makeText(UserMainActivity.this, "Executing broadcast", Toast.LENGTH_SHORT).show();
-
-                    }
-                    //  Log.i("On Receive ","On receive");
-
-                }
-            };
-            registerReceiver(broadcastReceiver,intentFilter);
-            //Log.i("FLAG SERVICE CHECKING","How many times invoked: " + ++counter);
-            Log.i("REGISTER RECEIVER","REGISTER RECEIVER");
-            flagService = false;
-
-        }*/
-
-
-
-        //LiveData<Long> timerLiveData = userMainActivityViewModel.initialValue();
+        //Setting timerLiveData from ForegroundService
         timerLiveData = ForegroundServices.time;
 
         timerLiveData.observe(this, new Observer<Long>() {
             @Override
             public void onChanged(Long aLong) {
                 timeDisplay.setText(getTimerText(aLong));
-               // Log.i("HERE!: " ,getTimerText(aLong));
                 if(aLong>0)
                 {
                     timerOverall.setText("Przepracowałeś już : " + getTimerText(aLong));
@@ -229,30 +165,7 @@ public class UserMainActivity extends AppCompatActivity {
             }
         });
 
-
-
-        //Log.i("Format time for timeDisplay",timeDisplay.getText().toString());
-        //Setting counting time for start when phone down
-       /* if(tmpBeginTime !=System.currentTimeMillis() && timeDisplay.getText().toString().equals("00 : 00 : 00"))
-        {
-            userMainActivityViewModel.setValue(System.currentTimeMillis()-tmpBeginTime);
-            startTimeWhenPhoneDown();
-            Log.i("Phone down I Am executing","something");
-        }
-*/
-
-
-
-        // Loading proper text Main accroidng if the time of work is started or not.
-        if(timerStarted==false)
-        {
-            textMain.setText("Rozpocznij pracę: ");
-        }
-        else if(timerStarted)
-        {
-            textMain.setText("Zatrzymaj pracę: ");
-        }
-
+        // TODO Set the layer for Database
         // Getting current user Id.
         FirebaseUser user = firebaseAuth.getCurrentUser();
         assert  user !=null;
@@ -274,43 +187,16 @@ public class UserMainActivity extends AppCompatActivity {
                     }
                 }
                 else {
-                   // Toast.makeText(UserMainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(UserMainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
-        /*// Assign timer to new Object
-        timer = new Timer();*/
 
         date.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
 
         firebaseAuth = FirebaseAuth.getInstance();
-        // To Foreground service-------------------------------------------------------------------------
-        //Permission for the post notification
-        if(ContextCompat.checkSelfPermission(UserMainActivity.this, android.Manifest.permission.POST_NOTIFICATIONS)!= PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(UserMainActivity.this,new String[]{android.Manifest.permission.POST_NOTIFICATIONS},101);
-        }
 
-        // assign timer
-        timer = new Timer();
-
-
-
-        //intentFilter.addAction(Intent.Action);
-
-        //userMainActivityViewModel.initialValue().getValue();
-
-        int counter = 0;
-
-
-
-       /* if(flagForBroadCastService)
-        {
-            userMainActivityViewModel.startTimer();
-            Toast.makeText(this, "Start Timer should invoked once", Toast.LENGTH_SHORT).show();
-        }*/
-
-        // To Foreground service-------------------------------------------------------------------------
         qr.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -319,10 +205,9 @@ public class UserMainActivity extends AppCompatActivity {
                 options.setPrompt("Zeskanuj kod");
                 options.setBeepEnabled(true);
                 options.setOrientationLocked(true);
-                options.setCaptureActivity(Scanner.class);
-                flagForSignText=false;
+                //options.setCaptureActivity(Scanner.class);
+                options.setCaptureActivity(CustomScannerActivity.class);
                 barLauncher.launch(options);
-                restartFlag = false;
 
             }
         });
@@ -344,13 +229,11 @@ public class UserMainActivity extends AppCompatActivity {
                     Intent i = new Intent(UserMainActivity.this, UserTimeTable.class);
                     //Log.i("SIZE ARRAY LIST FROM MAIN",arrayList.size()+"");
                     startActivity(i);
-                    restartFlag=false;
                 }
                 else if(R.id.action_logout==item.getItemId())
                 {
                     firebaseAuth.signOut();
                     startActivity(new Intent(UserMainActivity.this, MainActivity.class));
-                    restartFlag=false;
                 }
                 return true;
             }
@@ -541,29 +424,18 @@ public class UserMainActivity extends AppCompatActivity {
 
     // To Foreground service-------------------------------------------------------------------------
 
-    private void startTimer() {
+    private void startTimer(long seconds) {
 
-        //timer = new Timer();
-        /*userMainActivityViewModel.setValue(0);
-        userMainActivityViewModel.startTimer();*/
 
+
+        startForegroundServiceToCountTime();
         ForegroundServices.time.setValue(0L);
-        ForegroundServices.timeLong=0;
+        ForegroundServices.timeLong=seconds;
 
         flag = false;
     }
 
-    private void startTimerSecondTime()
-    {
-        userMainActivityViewModel.startTimerSecondTime();
 
-        flag = false;
-    }
-    private void startTimeWhenPhoneDown()
-    {
-        userMainActivityViewModel.startTimer();
-        flag = false;
-    }
 
     public void stopTime()
     {
@@ -639,7 +511,7 @@ public class UserMainActivity extends AppCompatActivity {
 
                 if(timerStarted == false)
                 {
-                    startForegroundServiceToCountTime();
+                    //startForegroundServiceToCountTime();
                     timeDisplay.setText("");
                     textMain.setText("Zatrzymaj pracę: ");
                     cleanDataForTimeModel();
@@ -648,7 +520,7 @@ public class UserMainActivity extends AppCompatActivity {
                     saveTimeModel();
                     begingTime.setText("Rozpoczęto pracę o: " + getCurrentTime());
                     tmpBeginTime = getCurrentTimeInSimpleFormat();
-                    startTimer();
+                    startTimer(0);
                     //timeDisplay.setText(userMainActivityViewModel.startTimer());
                     //flagForSignText =false;
                     timerStarted = true;
@@ -741,7 +613,7 @@ public class UserMainActivity extends AppCompatActivity {
                     timeModel.setTimeBegin(getCurrentTime());
                     begingTime.setText("Rozpoczęto pracę o: " + getCurrentTime());
                     tmpBeginTime = getCurrentTimeInSimpleFormat();
-                    startTimer();
+                    startTimer(0);
                     // Setting delay for the qr code
                     tmpOverall-=delay5minutes;
                    // Log.i("Logging","logged");
@@ -793,7 +665,7 @@ public class UserMainActivity extends AppCompatActivity {
                         // QR with dellay
                         timerOverall.setText(s);
                     }
-                    timerTask.cancel();
+
                 }
 
             }
