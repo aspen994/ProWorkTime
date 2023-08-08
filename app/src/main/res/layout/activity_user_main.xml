@@ -88,7 +88,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginTop="10dp"
                 android:layout_marginBottom="40dp"
                 android:text="Użytkownik: "
                 app:layout_constraintBottom_toTopOf="@+id/textView_begin_work"
@@ -103,6 +102,26 @@
                 android:text="Data:"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/buttonQR" />
+
+            <TextView
+                android:id="@+id/textView_pausa"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="14dp"
+                android:text=""
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView6" />
+
+            <TextView
+                android:id="@+id/textView_pausa_display"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="20dp"
+                android:text=""
+                app:layout_constraintBaseline_toBaselineOf="@+id/textView_pausa"
+                app:layout_constraintStart_toEndOf="@+id/textView_pausa" />
 
             <TextView
                 android:id="@+id/begining_time"
@@ -134,6 +153,29 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/ending_time" />
+
+            <Button
+                android:id="@+id/hold_resume_work"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:layout_marginBottom="43dp"
+                android:backgroundTint="#A214D5"
+                android:text="Wstrzymaj pracę"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/stop_work"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <Button
+                android:id="@+id/stop_work"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="2dp"
+                android:backgroundTint="#AF0000"
+                android:text="Zatrzymaj pracę"
+                app:layout_constraintBaseline_toBaselineOf="@+id/hold_resume_work"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/hold_resume_work" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

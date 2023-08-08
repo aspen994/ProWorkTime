@@ -9,34 +9,25 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
-import android.util.Log;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
 
-import com.example.ogrdapp.Helper;
 import com.example.ogrdapp.R;
 import com.example.ogrdapp.UserMainActivity;
-import com.example.ogrdapp.viewmodel.UserMainActivityViewModel;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class ForegroundServices extends Service   {
 
     public static MutableLiveData<Long> time = new MutableLiveData<>(0L);
+    public static MutableLiveData<Long> mutableLiveDataTimeForPause = new MutableLiveData<>(0L);
 
-    public static long timeLong = 0;
+    public static long timeLongForClock = 0;
+    public static long timeLongForPause = 0;
     private Timer timer;
     // First time when we create service
     TimerTask timerTask;
@@ -61,10 +52,16 @@ public class ForegroundServices extends Service   {
                 timerTask = new TimerTask() {
                     @Override
                     public void run() {
-                        //Updatding notifiaction starts from 0
-                        notificationUpdate(timeLong);
-                        // Increasing value about one second
-                        time.postValue(timeLong++);
+                        if(!UserMainActivity.isPaused) {
+                            //Updatding notifiaction starts from 0
+                            notificationUpdate(timeLongForClock);
+                            // Increasing value about one second
+                            time.postValue(timeLongForClock++);
+                        }
+                        else{
+                            notificationUpdate(timeLongForPause,"Pauza: ");
+                         mutableLiveDataTimeForPause.postValue(timeLongForPause++);
+                        }
 
                     }
                 };
@@ -195,6 +192,31 @@ public class ForegroundServices extends Service   {
                     .setOngoing(true)
                     .setContentTitle("Licznik")
                     .setContentText("Pracujesz już : " + getTimerText(time))
+                    .setSmallIcon(R.drawable.time24_vector)
+                    .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+                    .setContentIntent(pendingIntent)
+                    .build()};
+
+            startForeground(1, notification[0]);
+            NotificationChannel notificationChannel = new NotificationChannel(CHANNEl_ID, "My timer", NotificationManager.IMPORTANCE_LOW);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+    public void notificationUpdate(Long time,String text)
+    {
+        try {
+            Intent notificationIntent = new Intent(this, UserMainActivity.class);
+            final PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+
+            final Notification[] notification = {new NotificationCompat.Builder(this, CHANNEl_ID)
+                    .setOngoing(true)
+                    .setContentTitle("Licznik")
+                    .setContentText(text + getTimerText(time))
                     .setSmallIcon(R.drawable.time24_vector)
                     .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
                     .setContentIntent(pendingIntent)
