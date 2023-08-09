@@ -10,27 +10,24 @@
         android:id="@+id/drawerLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".UserMainActivity"
-        tools:layout_editor_absoluteX="63dp"
-        tools:layout_editor_absoluteY="0dp">
+        tools:context=".UserMainActivity">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:layout_editor_absoluteX="0dp"
-            tools:layout_editor_absoluteY="48dp">
+            android:layout_height="match_parent">
 
             <ImageButton
                 android:id="@+id/buttonQR"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="52dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginEnd="52dp"
-                android:layout_marginBottom="416dp"
                 android:background="@drawable/baseline_qr_code_scanner_24_v3"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintHorizontal_bias="0.496"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView_begin_work" />
 
             <TextView
                 android:id="@+id/textView6"
@@ -66,32 +63,32 @@
                 android:id="@+id/textView_begin_work"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
                 android:text="Rozpocznij pracę:"
                 android:textSize="20sp"
-                app:layout_constraintBottom_toTopOf="@+id/buttonQR"
+                android:layout_marginTop="20dp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/username" />
 
             <TextView
                 android:id="@+id/username"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="5dp"
-                android:layout_marginBottom="40dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginStart="20dp"
                 android:text="Użytkownik nr 1"
-                app:layout_constraintBottom_toTopOf="@+id/textView_begin_work"
-                app:layout_constraintStart_toEndOf="@+id/usernameTitle" />
+                app:layout_constraintStart_toEndOf="@+id/usernameTitle"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/usernameTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginBottom="40dp"
+                android:layout_marginTop="20dp"
                 android:text="Użytkownik: "
-                app:layout_constraintBottom_toTopOf="@+id/textView_begin_work"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/textView_date"

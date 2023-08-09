@@ -1,5 +1,7 @@
 package com.example.ogrdapp;
 
+import static com.example.ogrdapp.services.ForegroundServices.isPaused;
+
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
@@ -62,6 +64,9 @@ public class UserMainActivity extends AppCompatActivity {
 
 
     private static final String SHARED_PREFS_TIME_MODEL = "SharedPrefforTimeModel";
+    private static final String SHARED_PREF_PAUSED_TIME = "SharedPreffForPausedTime";
+    private static final String PAUSED_TIME = "pausedTime";
+    private static final String PAUSED_TIME_BOOLEAN = "booleanIsPaused";
     private FirebaseAuth firebaseAuth=FirebaseAuth.getInstance();
     private FirebaseUser fireBaseUser;
     public static final String QRCODE1="Tk6&zE8*odwq7G$u2#IVL1e!Q@JvXrFgS0^NbCn5mO9pDyA4(PcHhY3Za6lWsB)";
@@ -87,6 +92,8 @@ public class UserMainActivity extends AppCompatActivity {
 
     private long tmpBeginTime,tmpEndTime,tmpOverall=0;
     private long delay5minutes = 300000;
+
+    private long pausedTimeToSharedPref;
     private static final int REQUEST_CODE =22;
     private TimeModel timeModel;
     private ArrayList<TimeModel> arrayList = new ArrayList<>();
@@ -112,7 +119,7 @@ public class UserMainActivity extends AppCompatActivity {
 
     long addToEndingTime=0;
     public IntentFilter intentFilter;
-    public static boolean isPaused;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,6 +142,10 @@ public class UserMainActivity extends AppCompatActivity {
         loadData();
         updateData();
 
+        //
+        uploadAndLoadPausedTime();
+
+
         // After loading data checking if clock is running if it is show the buttons
         if(timerStarted || isPaused)
         {
@@ -151,6 +162,14 @@ public class UserMainActivity extends AppCompatActivity {
         {
             stopWork.setVisibility(View.INVISIBLE);
             holdResumeWork.setVisibility(View.INVISIBLE);
+        }
+
+
+        if(!isMyServiceRunning(ForegroundServices.class)&&pausedTimeToSharedPref>0&& isPaused)
+        {
+            long l = (System.currentTimeMillis() - pausedTimeToSharedPref) / 1000;
+            Toast.makeText(this, "PAUSED TIME RESUME", Toast.LENGTH_SHORT).show();
+            startPausedTime(l);
         }
 
         fireBaseUser = firebaseAuth.getCurrentUser();
@@ -259,6 +278,8 @@ public class UserMainActivity extends AppCompatActivity {
             // Setting static variable timeLong for the difrenece between time.
             startTimer(timeInSeconds);
         }
+
+
 
         //Setting timerLiveData from ForegroundService
         timerLiveData = ForegroundServices.time;
@@ -492,6 +513,32 @@ public class UserMainActivity extends AppCompatActivity {
 
         editor.apply();
     }
+    public void savePausedTime(long pausedTime)
+    {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREF_PAUSED_TIME,MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putLong(PAUSED_TIME,pausedTime);
+        editor.putBoolean(PAUSED_TIME_BOOLEAN,isPaused);
+        editor.apply();
+    }
+
+    public void uploadAndLoadPausedTime()
+    {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREF_PAUSED_TIME,MODE_PRIVATE);
+        pausedTimeToSharedPref = sharedPreferences.getLong(PAUSED_TIME, pausedTimeToSharedPref);
+        isPaused = sharedPreferences.getBoolean(PAUSED_TIME_BOOLEAN,isPaused);
+        Toast.makeText(this, "Upload Paused", Toast.LENGTH_SHORT).show();
+    }
+
+    public void clearDataForLoadPausedTime()
+    {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS,MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putLong(PAUSED_TIME,0);
+
+        editor.apply();
+    }
+
     public void clearData()
     {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS,MODE_PRIVATE);
@@ -550,6 +597,13 @@ public class UserMainActivity extends AppCompatActivity {
         flag = false;
     }
 
+    private void startPausedTime(long seconds) {
+
+        startForegroundServiceToCountTime();
+        ForegroundServices.mutableLiveDataTimeForPause.setValue(0L);
+        ForegroundServices.timeLongForPause =seconds;
+
+    }
 
 
     public void stopTime()
@@ -1027,42 +1081,8 @@ public class UserMainActivity extends AppCompatActivity {
        // Toast.makeText(this, "On start", Toast.LENGTH_SHORT).show();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        //registerReceiver(broadcastReceiver,intentFilter);
-      /*  try{
-            registerReceiver(broadcastReceiver, intentFilter);
-        }
-        catch(Exception e)
-        {
-            e.getMessage();
-        }*/
 
-    }
 
-    @Override
-    protected void onPause() {
-        //Toast.makeText(this, "onPause", Toast.LENGTH_SHORT).show();
-      /*  if(isMyServiceRunning(ForegroundServices.class)) {
-            try {
-                unregisterReceiver(broadcastReceiver);
-            }
-            catch(Exception e)
-            {
-                e.getMessage();
-            }
-
-        }*/
-        /*try {
-            unregisterReceiver(broadcastReceiver);
-        }catch(Exception e)
-        {
-            e.getMessage();
-        }*/
-        super.onPause();
-
-    }
 
     @Override
     protected void onStop() {
@@ -1071,13 +1091,8 @@ public class UserMainActivity extends AppCompatActivity {
         // starting service when time on clock is more than 0 and it's not ending time
         active = false;
 
-     /*   if(broadcastReceiver!=null) {
-            try {
-                unregisterReceiver(broadcastReceiver);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }*/
+            savePausedTime(System.currentTimeMillis());
+
         // TODO Before was if(!flag)
         if(!flag) {
             if (!isMyServiceRunning(ForegroundServices.class)) {

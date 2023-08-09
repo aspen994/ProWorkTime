@@ -26,6 +26,7 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
     }
 }
 
@@ -43,4 +44,7 @@ dependencies {
 
     //bar code zxing
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
+
+    //LocalDateTime- Desugaring
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
 }
