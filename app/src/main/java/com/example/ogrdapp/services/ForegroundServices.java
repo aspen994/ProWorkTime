@@ -31,7 +31,6 @@ public class ForegroundServices extends Service   {
     private Timer timer;
     // First time when we create service
     TimerTask timerTask;
-    LiveData<Long> liveData;
     //View Model
 
 
@@ -54,7 +53,7 @@ public class ForegroundServices extends Service   {
                     public void run() {
                         if(!UserMainActivity.isPaused) {
                             //Updatding notifiaction starts from 0
-                            notificationUpdate(timeLongForClock);
+                            notificationUpdate(timeLongForClock,"Pracujesz już: ");
                             // Increasing value about one second
                             time.postValue(timeLongForClock++);
                         }
@@ -67,7 +66,8 @@ public class ForegroundServices extends Service   {
                 };
                 timer.scheduleAtFixedRate(timerTask,0, 1000);
 
-                return super.onStartCommand(intent,flags,startId);
+                return START_STICKY;
+                //return super.onStartCommand(intent,flags,startId);
             }
 
 
@@ -182,7 +182,7 @@ public class ForegroundServices extends Service   {
 
 
 
-    public void notificationUpdate(Long time)
+   /* public void notificationUpdate(Long time)
     {
         try {
             Intent notificationIntent = new Intent(this, UserMainActivity.class);
@@ -206,7 +206,7 @@ public class ForegroundServices extends Service   {
         {
             e.printStackTrace();
         }
-    }
+    }*/
     public void notificationUpdate(Long time,String text)
     {
         try {
