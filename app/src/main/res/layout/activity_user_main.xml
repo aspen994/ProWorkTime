@@ -156,23 +156,24 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="2dp"
-                android:layout_marginBottom="43dp"
+                android:layout_marginTop="50dp"
                 android:backgroundTint="#A214D5"
                 android:text="Wstrzymaj pracę"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/stop_work"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/timeOverall" />
 
             <Button
                 android:id="@+id/stop_work"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
                 android:layout_marginEnd="2dp"
                 android:backgroundTint="#AF0000"
                 android:text="Zatrzymaj pracę"
-                app:layout_constraintBaseline_toBaselineOf="@+id/hold_resume_work"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/hold_resume_work" />
+                app:layout_constraintStart_toEndOf="@+id/hold_resume_work"
+                app:layout_constraintTop_toBottomOf="@+id/timeOverall" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

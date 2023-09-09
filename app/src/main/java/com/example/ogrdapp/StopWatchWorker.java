@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.work.ListenableWorker;
@@ -56,6 +57,12 @@ public class StopWatchWorker extends Worker {
         }
 
         return ListenableWorker.Result.success();
+    }
+
+    @Override
+    public void onStopped() {
+        Toast.makeText(context, "Worker stopped", Toast.LENGTH_SHORT).show();
+        super.onStopped();
     }
 
     private boolean getIsPausedFromSharedPreferences() {

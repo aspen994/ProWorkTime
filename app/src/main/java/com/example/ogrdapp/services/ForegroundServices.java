@@ -70,91 +70,20 @@ public class ForegroundServices extends Service {
     @Override
     public void onCreate() {
 
-
+        Toast.makeText(this, "Creating a service", Toast.LENGTH_SHORT).show();
         isServiceStarted = loadAndUpdateServiceStartedFromSharedPreferences();
         timeOfCreation = loadAndUpdateTimeCreationFromSharedPreferences();
         timerStarted = getIsTimerStartedFromSharedPreferences();
         isPaused=getIsPausedFromSharedPreferences();
-
-        //FOR CHECKING LOGING PURPOSE ONLY
-        howManyTimesServiceStarted = getHowManyTimesServiceStartedFromSharedPreferences();
-        howManyTimesServiceStarted ++;
-        Log.i("Times Service Started: ",howManyTimesServiceStarted+"");
-        Log.i("Is timer started: ",timerStarted+"");
-        saveHowManyTimesServiceStartedToSharedPreferences(howManyTimesServiceStarted);
-
+        isServiceStarted=true;
 
         // POWER MANAGER
         PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                 "MyApp::MyWakelockTag");
-      /*  isServiceStarted=true;
-        if (isServiceStarted) {
-            Toast.makeText(this, "Service started", Toast.LENGTH_SHORT).show();
-            //deleteData();
-            //timeOfCreation = new Date().getTime();
-            //saveDataToSharePreff(timeOfCreation);
-            saveDataToSharePreffServiceStarted(true);
-        } else {
-            //timeOfCreation = loadAndUpdateData();
-            Toast.makeText(this, "Service not started", Toast.LENGTH_SHORT).show();
-        }
-*/
-
-        isServiceStarted=true;
-        if (timerStarted||isPaused) {
-            Toast.makeText(this, "Service started", Toast.LENGTH_SHORT).show();
-            //deleteData();
-            //timeOfCreation = new Date().getTime();
-            //saveDataToSharePreff(timeOfCreation);
-            saveDataToSharePreffServiceStarted(true);
-        } else if(!timerStarted&& !isPaused) {
-            //timeOfCreation = loadAndUpdateData();
-            Toast.makeText(this, "Service not started", Toast.LENGTH_SHORT).show();
-        }
 
 
-        Log.i("LOG timerStarted: ", timerStarted+"");
-        Log.i("Log paused",isPaused+"");
         countingWorkTimeAndPausedTime();
-
-/*
-        HandlerThread handlerThread = new HandlerThread("StopWatchThreadOgrodApp");
-        handlerThread.start();
-        handler = new android.os.Handler(handlerThread.getLooper());
-
-        if(timerStarted) {
-
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-
-                    //long currentTimeMillis = System.currentTimeMillis();
-                    long currentTimeMillis = new Date().getTime();
-                    long toPost = (currentTimeMillis - timeOfCreation) / 1000;
-
-
-                        //Updatding notifiaction starts from 0
-                        notificationUpdate(toPost, "Pracujesz już: ");
-                        Log.i("TO POST", getTimerText(toPost));
-                        Log.i("Current time", currentTimeMillis + "");
-                        Log.i("Time of Creation", timeOfCreation + "");
-//                    time.postValue(toPost);
-                        // Increasing value about one second
-
-
-                     *//*   notificationUpdate(++timeLongForPause, "Pauza: ");
-                        mutableLiveDataTimeForPause.postValue(timeLongForPause);*//*
-
-
-
-                    handler.postDelayed(this, 1000);
-                }
-            });
-        }
-        else {
-            handler.removeCallbacksAndMessages(null);
-        }*/
 
         super.onCreate();
     }
@@ -173,36 +102,22 @@ public class ForegroundServices extends Service {
                 public void run() {
                     timeOfCreation = loadAndUpdateTimeCreationFromSharedPreferences();
                     if(timerStarted) {
-                        //timeOfCreation = loadAndUpdateTimeCreationFromSharedPreferences();
-                        //long currentTimeMillis = System.currentTimeMillis();
+
                         long currentTimeMillis = new Date().getTime();
                         long toPost = (currentTimeMillis - timeOfCreation) / 1000;
 
-                        //Toast.makeText(ForegroundServices.this, "timerStarted", Toast.LENGTH_SHORT).show();
-                        //Updatding notifiaction starts from 0
                         notificationUpdate(toPost, "Pracujesz już: ");
-                        /*Log.i("TO POST", getTimerText(toPost));
-                        Log.i("Current time", currentTimeMillis + "");
-                        Log.i("Time of Creation", timeOfCreation + "");*/
-//                    time.postValue(toPost);
-                        // Increasing value about one second
 
-
-                     /*   notificationUpdate(++timeLongForPause, "Pauza: ");
-                        mutableLiveDataTimeForPause.postValue(timeLongForPause);*/
                         handler.postDelayed(this, 1000);
                     }
                      else if(isPaused)
                     {
-                       // timeOfCreation = loadAndUpdateTimeCreationFromSharedPreferences();
-                        //Toast.makeText(ForegroundServices.this, "isPaused", Toast.LENGTH_SHORT).show();
-                        //long currentTimeMillis = System.currentTimeMillis();
+
                         long currentTimeMillis = new Date().getTime();
                         long toPost = (currentTimeMillis - timeOfCreation) / 1000;
 
 
                         if(toPost<=8*HOUR_IN_SECONDS) {
-                            //Updatding notifiaction starts from 0
                             notificationUpdate(toPost, "Odpoczywasz już: ");
                             handler.postDelayed(this, 1000);
                         }
@@ -213,7 +128,6 @@ public class ForegroundServices extends Service {
                         }
                     }
                     else {
-                        Toast.makeText(ForegroundServices.this, "handlerRemove", Toast.LENGTH_SHORT).show();
                         handler.removeCallbacksAndMessages(null);
                     }
                 }
@@ -222,6 +136,8 @@ public class ForegroundServices extends Service {
 
     }
 
+    //Shared Preferences block
+    // TODO Make a Layer for SharedPreferences https://www.youtube.com/watch?v=EWIlxY-_pDY&ab_channel=CodingReel
     public void saveIsPausedToSharedPreferences(boolean isPaused)
     {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
@@ -233,102 +149,38 @@ public class ForegroundServices extends Service {
      SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
      return sharedPreferences.getBoolean(KEY_IS_PAUSED,false);
     }
-    private int getHowManyTimesServiceStartedFromSharedPreferences() {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        return sharedPreferences.getInt(KEY_CHECKING_HOW_MANY_TIMES_SERVICE_RUN,0);
-    }
 
-    private void saveHowManyTimesServiceStartedToSharedPreferences(int howManyTimesServiceStarted) {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt(KEY_CHECKING_HOW_MANY_TIMES_SERVICE_RUN,howManyTimesServiceStarted);
-        editor.apply();
-    }
 
     private boolean getIsTimerStartedFromSharedPreferences() {
         SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
         return sharedPreferencesTimeModel.getBoolean(KEY_TIMER_STARTED, false);
     }
 
-    @Override
-    public void onTaskRemoved(Intent rootIntent) {
-        super.onTaskRemoved(rootIntent);
-    }
 
     private boolean loadAndUpdateServiceStartedFromSharedPreferences() {
         SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
         return sharedPreferencesTimeModel.getBoolean(KEY_PREFS_SERVICE_STARTED, false);
     }
-    private void saveDataToSharePreffServiceStarted(boolean isServiceStarted) {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(KEY_PREFS_SERVICE_STARTED,isServiceStarted);
-        editor.apply();
-    }
-    private void deleteDataToSharedPreferences()
-    {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        editor.putLong(KEY_TIME_OF_CREATION,0);
-
-        editor.apply();
-    }
 
     private long loadAndUpdateTimeCreationFromSharedPreferences() {
             SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
             return sharedPreferencesTimeModel.getLong(KEY_TIME_OF_CREATION, 0);
     }
 
-    /*private void saveDataToSharePreff(long timeOfCreation) {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putLong(KEY_TIME_OF_CREATION,timeOfCreation);
-        editor.apply();
-    }*/
 
-
-
-    public synchronized void countingTime()
-{
-    handler = new android.os.Handler(getMainLooper());
-    handler.post(new Runnable() {
-        @Override
-        public void run() {
-            //wakeLock.acquire();
-
-            if(isPaused==false) {
-                //Updatding notifiaction starts from 0
-                time.postValue(timeLongForClock++);
-                notificationUpdate(timeLongForClock,"Pracujesz już: ");
-                // Increasing value about one second
-            }
-            else{
-                mutableLiveDataTimeForPause.postValue(timeLongForPause++);
-                notificationUpdate(timeLongForPause,"Pauza: ");
-            }
-
-            handler.postDelayed(this,1000);
-        }
-    });
-
-}
-    //Intent will be text from editText
-    // Callled every time is called start service
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
-                //TODO Watch the behave
-                return START_STICKY;
-            }
+        return START_STICKY;
+    }
 
 
+
+    //TODO make a layer for notification updated
     public void notificationUpdate(long time,String text)
     {
-
-
-            startPostStamp = loadAndUpdateTimeCreationFromSharedPreferences();
+        startPostStamp = loadAndUpdateTimeCreationFromSharedPreferences();
 
 
         try {
@@ -375,27 +227,8 @@ public class ForegroundServices extends Service {
         }
     }
 
-
-
-/*
-    private String getTimerText(Long time)
-    {
-        int rounded = (int) Math.round(time);
-
-        int seconds = ((rounded % 86400) % 3600) % 60;
-        int minutes = ((rounded % 86400) % 3600) / 60;
-        int hours = ((rounded % 86400) / 3600);
-
-        return formatTime(seconds, minutes, hours);
-    }
-
-
-    private String formatTime(int seconds, int minutes, int hours)
-    {
-        return String.format("%02d",hours) + " : " + String.format("%02d",minutes) + " : " + String.format("%02d",seconds);
-    }
-*/
-
+    // Block for timerText
+    // Todo Make a layer for timerText
     private String getTimerText(long totalSecs)
     {
 
@@ -416,7 +249,6 @@ public class ForegroundServices extends Service {
     @Override
     public void onDestroy() {
         Toast.makeText(this, "On destroy service", Toast.LENGTH_SHORT).show();
-        handler.removeCallbacksAndMessages(null);
         if(wakeLock.isHeld())
         {
             wakeLock.release();
