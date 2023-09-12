@@ -123,8 +123,8 @@ public class ForegroundServices extends Service {
                         }
                         else{
                             handler.removeCallbacksAndMessages(null);
-                            isPaused=false;
-                            saveIsPausedToSharedPreferences(isPaused);
+                            /*isPaused=false;
+                            saveIsPausedToSharedPreferences(isPaused);*/
                         }
                     }
                     else {

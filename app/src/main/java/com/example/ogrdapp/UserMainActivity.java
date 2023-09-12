@@ -2,32 +2,27 @@ package com.example.ogrdapp;
 
 
 import static com.example.ogrdapp.services.ForegroundServices.HOUR_IN_SECONDS;
-import static com.example.ogrdapp.services.ForegroundServices.MINUTE_IN_SECONDS;
 import static com.example.ogrdapp.services.ForegroundServices.isPaused;
 import static com.example.ogrdapp.utility.SharedPreferencesConstants.KEY_IS_PAUSED;
 import static com.example.ogrdapp.utility.SharedPreferencesConstants.KEY_TIMER_STARTED;
 import static com.example.ogrdapp.utility.SharedPreferencesConstants.KEY_TIME_OF_CREATION;
 import static com.example.ogrdapp.utility.SharedPreferencesConstants.PAUSED_TIME;
 import static com.example.ogrdapp.utility.SharedPreferencesConstants.PAUSED_TIME_BOOLEAN;
-import static com.example.ogrdapp.utility.SharedPreferencesConstants.SECONDS_STOPWATCH;
 import static com.example.ogrdapp.utility.SharedPreferencesConstants.SHARED_PREFS_OGROD_APP;
 import static com.example.ogrdapp.utility.SharedPreferencesConstants.TEXT;
 import static com.example.ogrdapp.utility.SharedPreferencesConstants.TMP_BEGIN_TIME;
 import static com.example.ogrdapp.utility.SharedPreferencesConstants.TMP_BEGIN_TIME_STRING;
 
 import android.app.ActivityManager;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -46,7 +41,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.lifecycle.LiveData;
 import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
 import androidx.work.OneTimeWorkRequest;
@@ -94,6 +88,7 @@ public class UserMainActivity extends AppCompatActivity {
 
     public static final String QRCODE1="Tk6&zE8*odwq7G$u2#IVL1e!Q@JvXrFgS0^NbCn5mO9pDyA4(PcHhY3Za6lWsB)";
     public static final String QRCODE2delay5minutes="yJGZ*q7W#8n6Dv@B1F$%9X4hpYQeS^gU+sa0RwM3zNtVxOcZ2dL5fIHkA6i";
+    public static final long MINUTE_IN_SECONDS =60;
 
 
 
@@ -113,7 +108,7 @@ public class UserMainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE =22;
 
     private long tmpBeginTime,tmpEndTime,tmpOverall=0;
-    private long delay5minutes = 300000;
+    public static long delayToAssign;
 
     private long pausedTimeToSharedPref;
     private TimeModel timeModel;
@@ -132,6 +127,7 @@ public class UserMainActivity extends AppCompatActivity {
     private long addToEndingTime=0;
     public IntentFilter intentFilter;
     Handler handler1 = new Handler(Looper.getMainLooper());
+    private long timeOfCreation=0;
 
 
     @Override
@@ -161,6 +157,7 @@ public class UserMainActivity extends AppCompatActivity {
         uploadAndLoadPausedTimeFromSharedPreferences();
 
 
+
         // Should start the service if the timer i started.
         if(!isMyServiceRunning(ForegroundServices.class)&&(timerStarted||isPaused))
         {
@@ -173,11 +170,17 @@ public class UserMainActivity extends AppCompatActivity {
         {
             stopWork.setVisibility(View.VISIBLE);
             holdResumeWork.setVisibility(View.VISIBLE);
-            if(isPaused)
+            //((currentTimeInLong - timeOfCreation)/1000);
+            // TODO Repair it 09.09.2023
+            if(isPaused&&((new Date().getTime()-getTimeOfCreationFromSharedPreferences())/1000)<8*HOUR_IN_SECONDS)
             {
                 holdResumeWork.setBackgroundColor(Color.GREEN);
                 qr.setVisibility(View.INVISIBLE);
                 textMain.setVisibility(View.INVISIBLE);
+            } else if (isPaused&&((new Date().getTime()-getTimeOfCreationFromSharedPreferences())/1000)>8*HOUR_IN_SECONDS) {
+                holdResumeWork.setVisibility(View.INVISIBLE);
+                qr.setVisibility(View.VISIBLE);
+                stopWork.setVisibility(View.INVISIBLE);
             }
         }
         else
@@ -204,12 +207,14 @@ public class UserMainActivity extends AppCompatActivity {
                 if(!timerStarted) {
                     qr.setVisibility(View.VISIBLE);
                     textMain.setVisibility(View.VISIBLE);
-                    timerStarted=false;
+                    //timerStarted=false;
                 }
                 else{
                     //TODO masz dwie podobne metody
                     stopCountingTime();
                     stopTime();
+                    delayToAssign=0;
+                    qr.setVisibility(View.VISIBLE);
                 }
                 handler1.removeCallbacksAndMessages(null);
 
@@ -228,13 +233,15 @@ public class UserMainActivity extends AppCompatActivity {
                 isPaused = !isPaused;
 
                 //TODO Check if it's properly
-                holdResumeWork.setText("Zastopuj pracę");
-                startCountingTimeWithHandler(0);
+                Toast.makeText(UserMainActivity.this, "is Paused: "+ isPaused, Toast.LENGTH_SHORT).show();
+
                 saveCreationTimeToSharedPref(new Date().getTime());
+                startCountingTimeWithHandler(delayToAssign);
                 if(isPaused)
                 {
                     Toast.makeText(UserMainActivity.this, "Paused", Toast.LENGTH_SHORT).show();
                     stopWork.setVisibility(View.VISIBLE);
+
                     holdResumeWork.setVisibility(View.VISIBLE);
                     holdResumeWork.setBackgroundColor(Color.GREEN);
 
@@ -246,8 +253,9 @@ public class UserMainActivity extends AppCompatActivity {
                     saveTimeModelToSharedPreferences();
                     tmpBeginTime = getCurrentTimeInSimpleFormat();
 
-                    qr.setVisibility(View.INVISIBLE);
-                    textMain.setVisibility(View.INVISIBLE);
+                    qr.setVisibility(View.VISIBLE);
+                    textMain.setVisibility(View.VISIBLE);
+                    delayToAssign=0;
 
                 }
                 else {
@@ -257,6 +265,7 @@ public class UserMainActivity extends AppCompatActivity {
                     startTimerWithoutStartingNewService();
                     qr.setVisibility(View.VISIBLE);
                     textMain.setVisibility(View.VISIBLE);
+                    holdResumeWork.setText("Wstrzymaj pracę");
                 }
 
             }
@@ -364,6 +373,14 @@ public class UserMainActivity extends AppCompatActivity {
         Date now = new Date();
         addToEndingTime = now.getTime();
         String sf = sdf.format(now);
+        return sf;
+    }
+    private String getCurrentTimeWithDelay(long delay) {
+        //"yyyy-MM-dd HH:mm:ss.SSS"
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");//dd/MM/yyyy
+        Date now = new Date();
+        addToEndingTime = now.getTime()+delay;
+        String sf = sdf.format(addToEndingTime);
         return sf;
     }
 
@@ -509,7 +526,7 @@ public class UserMainActivity extends AppCompatActivity {
     {
         begingTime.setText(beginingTime);
 
-        tmpBeginTime = tmpBeginTimeFromSharedPreferences;
+        timeOfCreation = getTimeOfCreationFromSharedPreferences();
     }
 
 
@@ -520,6 +537,7 @@ public class UserMainActivity extends AppCompatActivity {
 
         ServiceHelper.isCountingTimeActive = true;
         saveCreationTimeToSharedPref(miliseconds);
+        timeOfCreation=getTimeOfCreationFromSharedPreferences();
         startForegroundServiceToCountTimeWithWorkManger();
         timerStarted=true;
         Intent i = new Intent(UserMainActivity.this,ForegroundServices.class);
@@ -538,21 +556,32 @@ public class UserMainActivity extends AppCompatActivity {
             handler1.post(new Runnable() {
                 @Override
                 public void run() {
-                    long timeOfCreation = getTimeOfCreationFromSharedPreferences();
+                    timeOfCreation = getTimeOfCreationFromSharedPreferences();
                     long currentTimeInLong = new Date().getTime()-delay;
                     long toPost = ((currentTimeInLong - timeOfCreation)/1000);
+
                     if (timerStarted) {
+
+                        //TODO I am working delay
+                        if(delayToAssign>0)
+                        {
+                            delayToAssign=-toPost;
                             timeDisplay.setText(getTimerText(toPost));
                             handler1.postDelayed(this, 1000);
+                        }
+                        else {
+                            timeDisplay.setText(getTimerText(toPost));
+                            handler1.postDelayed(this, 1000);
+                        }
                     }
                     else if (isPaused) {
-                        if(toPost<=1*MINUTE_IN_SECONDS) {
+                        if(toPost<=8*HOUR_IN_SECONDS) {
 
                             holdResumeWork.setText("Zakończ pauzę: \n"+getTimerText(toPost));
                             handler1.postDelayed(this,1000);
                         }
                         else{
-
+                            stopTime();
                             stopWork.setVisibility(View.INVISIBLE);
                             holdResumeWork.setVisibility(View.INVISIBLE);
                             qr.setVisibility(View.VISIBLE);
@@ -623,6 +652,7 @@ public class UserMainActivity extends AppCompatActivity {
                     timerOverall.setText("");
                     Toast.makeText(UserMainActivity.this, "QR", Toast.LENGTH_SHORT).show();
                     timerStarted = true;
+                    isPaused=false;
                     saveIsTimeStartedToSharedPreferences(timerStarted);
 
                     timeDisplay.setText("");
@@ -631,11 +661,11 @@ public class UserMainActivity extends AppCompatActivity {
                     currentTime = getCurrentTime();
 
                     saveTimeModelToSharedPreferences();
-                    begingTime.setText("Rozpoczęto pracę o: " + getCurrentTime());
+                    begingTime.setText("Rozpoczęto pracę o: " + currentTime);
                     tmpBeginTime = getCurrentTimeInSimpleFormat();
                     startTimer(new Date().getTime());
                     holdResumeWork.setText("Wstrzymaj pracę");
-                    startCountingTimeWithHandler(0);
+                    startCountingTimeWithHandler(delayToAssign);
 
 
                     endingTime.setText("");
@@ -658,7 +688,7 @@ public class UserMainActivity extends AppCompatActivity {
 
                     endingTime.setText("Zakończono pracę o : " + getCurrentTime());
                     timeModel.setTimeBegin(loadAndUpdatedTimeModelFromSharedPreferences());
-
+                    delayToAssign=0;
                     stopTime();
 
                     if (tmpOverall <=0) {
@@ -704,18 +734,19 @@ public class UserMainActivity extends AppCompatActivity {
                     Toast.makeText(UserMainActivity.this, "QR", Toast.LENGTH_SHORT).show();
                     timerStarted = true;
                     saveIsTimeStartedToSharedPreferences(timerStarted);
-
+                    isPaused=false;
                     timeDisplay.setText("");
                     textMain.setText("Zatrzymaj pracę: ");
                     cleanDataForTimeModelToSharedPreferences();
                     currentTime = getCurrentTime();
 
                     saveTimeModelToSharedPreferences();
-                    begingTime.setText("Rozpoczęto pracę o: " + getCurrentTime());
                     tmpBeginTime = getCurrentTimeInSimpleFormat();
-                    startTimer((new Date().getTime()+delay5minutes));
+                    delayToAssign= 5* MINUTE_IN_SECONDS;
+                    startTimer((new Date().getTime()+ (delayToAssign*1000)));
+                    begingTime.setText("Rozpoczęto pracę o: " +getCurrentTimeWithDelay(delayToAssign*1000));
                     holdResumeWork.setText("Wstrzymaj pracę");
-                    startCountingTimeWithHandler(delay5minutes);
+                    startCountingTimeWithHandler(delayToAssign);
 
 
 
@@ -739,6 +770,7 @@ public class UserMainActivity extends AppCompatActivity {
 
                     endingTime.setText("Zakończono pracę o : " + getCurrentTime());
                     timeModel.setTimeBegin(loadAndUpdatedTimeModelFromSharedPreferences());
+                    delayToAssign=0;
 
                     stopTime();
 
@@ -934,11 +966,12 @@ public class UserMainActivity extends AppCompatActivity {
         tmpEndTime = getCurrentTimeInSimpleFormat();
 
         endingTime.setText("Zakończono pracę o : " + getCurrentTime());
-        timeModel.setTimeBegin(loadAndUpdatedTimeModelFromSharedPreferences());
+        timeModel.setTimeBegin(checkMethod(timeOfCreation));
 
         tmpOverall = ForegroundServices.time.getValue()*1000;
 
-        if (tmpOverall <=0) {
+        //TODO I COMMENTED THIS 12.09.2023
+        /*if (tmpOverall <=0) {
 
             tmpOverall += tmpEndTime - tmpBeginTime;
             long seconds = tmpOverall / 1000;
@@ -961,7 +994,8 @@ public class UserMainActivity extends AppCompatActivity {
             //timeModel.setTimeOverall(endingTime.getText().toString());
             //timeModel.setTimeOverallInLong(tmpOverall*1000);
             timeModel.setTimeOverallInLong(tmpOverall);
-        }
+        }*/
+        timerOverall.setText("Przepracowałeś : " + timeDisplay.getText().toString());
         //sy
 
         if(!timerStarted)
@@ -973,8 +1007,11 @@ public class UserMainActivity extends AppCompatActivity {
 
 
 
-        timeModel.setTimeOverall(checkMethod(tmpOverall));
-        timeModel.setTimeOverallInLong(tmpOverall);
+
+        //timeModel.setTimeOverall(checkMethod(tmpOverall));
+        timeModel.setTimeOverall(timeDisplay.getText().toString().contains("-")?"00:00:00":timeDisplay.getText().toString().replaceAll(" ",""));
+        //timeModel.setTimeOverallInLong(tmpOverall);
+        timeModel.setTimeOverallInLong((new Date().getTime()-timeOfCreation)>0?new Date().getTime()-timeOfCreation:0);
         timeModel.setId(currentUserId);
         timeModel.setUserName(userName.getText().toString());
         timeModel.setTimeAdded(new Timestamp(new Date()));
@@ -1003,9 +1040,9 @@ public class UserMainActivity extends AppCompatActivity {
         Toast.makeText(this, "on Start", Toast.LENGTH_SHORT).show();
         loadDataFromSharedPreferences();
         updateData();
-        startCountingTimeWithHandler(0);
+         startCountingTimeWithHandler(delayToAssign);
         // I commetend this 07.09.2023
-        //startForegroundServiceToCountTimeWithWorkManger();
+        startForegroundServiceToCountTimeWithWorkManger();
         super.onStart();
        /* IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("Counter");
