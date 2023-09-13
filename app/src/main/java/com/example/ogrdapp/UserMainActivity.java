@@ -675,56 +675,16 @@ public class UserMainActivity extends AppCompatActivity {
                     holdResumeWork.setBackgroundColor(Color.parseColor("#A214D5"));
                 }
                 else {
-                    ServiceHelper.isCountingTimeActive = false;
-                    holdResumeWork.setVisibility(View.INVISIBLE);
-                    stopWork.setVisibility(View.INVISIBLE);
-                    timeModel = new TimeModel();
-                    timerStarted = false;
-                    saveIsTimeStartedToSharedPreferences(timerStarted);
-                    textMain.setText("Rozpocznij pracę: ");
-
-                    timeModel.setTimeEnd(getCurrentTime());
-                    tmpEndTime = getCurrentTimeInSimpleFormat();
-
-                    endingTime.setText("Zakończono pracę o : " + getCurrentTime());
-                    timeModel.setTimeBegin(loadAndUpdatedTimeModelFromSharedPreferences());
-                    delayToAssign=0;
+                    stopCountingTime();
                     stopTime();
+                    delayToAssign=0;
+                    qr.setVisibility(View.VISIBLE);
 
-                    if (tmpOverall <=0) {
-
-                    } else if (tmpOverall>0) {
-                        timerOverall.setText("Przepracowałeś : " + timeDisplay.getText().toString());
-                        timeModel.setTimeOverall(checkMethod(tmpOverall));
-                        timeModel.setTimeOverallInLong(tmpOverall);
-                    }
-
-                    timeModel.setId(currentUserId);
-                    timeModel.setUserName(userName.getText().toString());
-                    timeModel.setTimeAdded(new Timestamp(new Date()));
-
-                    arrayList.add(timeModel);
-
-                    collectionReferenceTime.add(timeModel).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                        @Override
-                        public void onSuccess(DocumentReference documentReference) {
-                            Toast.makeText(UserMainActivity.this, "Data added sucesfully", Toast.LENGTH_SHORT).show();
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(UserMainActivity.this, "Fail on adding data", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-//                    timerTask.cancel();
-                    tmpOverall=0;
                 }
 
             }
 
-            else {
-              //  Toast.makeText(UserMainActivity.this, "Błąd 2", Toast.LENGTH_SHORT).show();
-            }
+
 
             if(result.getContents()!=null && result.getContents().toString().equals(QRCODE2delay5minutes))
             {
@@ -757,58 +717,17 @@ public class UserMainActivity extends AppCompatActivity {
                     holdResumeWork.setBackgroundColor(Color.parseColor("#A214D5"));
                 }
                 else {
-                    ServiceHelper.isCountingTimeActive = false;
-                    holdResumeWork.setVisibility(View.INVISIBLE);
-                    stopWork.setVisibility(View.INVISIBLE);
-                    timeModel = new TimeModel();
-                    timerStarted = false;
-                    saveIsTimeStartedToSharedPreferences(timerStarted);
-                    textMain.setText("Rozpocznij pracę: ");
 
-                    timeModel.setTimeEnd(getCurrentTime());
-                    tmpEndTime = getCurrentTimeInSimpleFormat();
-
-                    endingTime.setText("Zakończono pracę o : " + getCurrentTime());
-                    timeModel.setTimeBegin(loadAndUpdatedTimeModelFromSharedPreferences());
-                    delayToAssign=0;
-
+                    stopCountingTime();
                     stopTime();
+                    delayToAssign=0;
+                    qr.setVisibility(View.VISIBLE);
 
-                    if (tmpOverall <=0) {
 
-                    } else if (tmpOverall>0) {
-                        //timerOverall.setText("Przepracowałeś : " + timeDisplay.getText().toString());
-                        timeModel.setTimeOverall(checkMethod(tmpOverall));
-                        timeModel.setTimeOverallInLong(tmpOverall);
-//sz
-                    }
-
-                    timeModel.setId(currentUserId);
-                    timeModel.setUserName(userName.getText().toString());
-                    timeModel.setTimeAdded(new Timestamp(new Date()));
-
-                    arrayList.add(timeModel);
-
-                    collectionReferenceTime.add(timeModel).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                        @Override
-                        public void onSuccess(DocumentReference documentReference) {
-                            Toast.makeText(UserMainActivity.this, "Data added sucesfully", Toast.LENGTH_SHORT).show();
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(UserMainActivity.this, "Fail on adding data", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-//                    timerTask.cancel();
-                    tmpOverall=0;
                 }
 
             }
 
-            else {
-              //  Toast.makeText(UserMainActivity.this, "Błąd 2", Toast.LENGTH_SHORT).show();
-            }
         }
     });
 
@@ -960,77 +879,45 @@ public class UserMainActivity extends AppCompatActivity {
         timeModel = new TimeModel();
         timerStarted = false;
         textMain.setText("Rozpocznij pracę: ");
-        //endingTime.setText("Zakończono pracę o : " + getCurrentTime());
+
 
         timeModel.setTimeEnd(getCurrentTime());
         tmpEndTime = getCurrentTimeInSimpleFormat();
 
         endingTime.setText("Zakończono pracę o : " + getCurrentTime());
-        timeModel.setTimeBegin(checkMethod(timeOfCreation));
+        timeModel.setTimeBegin(loadAndUpdatedTimeModelFromSharedPreferences());
 
         tmpOverall = ForegroundServices.time.getValue()*1000;
 
-        //TODO I COMMENTED THIS 12.09.2023
-        /*if (tmpOverall <=0) {
-
-            tmpOverall += tmpEndTime - tmpBeginTime;
-            long seconds = tmpOverall / 1000;
-            //long seconds = timeLong / 1000;
-            long minutes = seconds / 60;
-            long hours = minutes / 60;
-
-            seconds %= 60;
-            minutes %= 60;
-
-            String formattedTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-            String s = formatTime((int) seconds, (int) minutes, (int) hours);
-            timerOverall.setText("Przepracowałeś : " + s);
-            timeModel.setTimeOverall(s);
-            timeModel.setTimeOverallInLong(tmpOverall);
-        } else if (tmpOverall>0) {
-            //timerOverall.setText(getTimerText(tmpOverall));
-            timerOverall.setText("Przepracowałeś : " + timeDisplay.getText().toString());
-            timeModel.setTimeOverall(checkMethod(tmpOverall));
-            //timeModel.setTimeOverall(endingTime.getText().toString());
-            //timeModel.setTimeOverallInLong(tmpOverall*1000);
-            timeModel.setTimeOverallInLong(tmpOverall);
-        }*/
         timerOverall.setText("Przepracowałeś : " + timeDisplay.getText().toString());
-        //sy
 
-        if(!timerStarted)
-        {
-
-        }
-        // TODO Overhere
         endingTime.setText("Zakończono pracę o : " + getCurrentTime());
 
 
 
 
-        //timeModel.setTimeOverall(checkMethod(tmpOverall));
         timeModel.setTimeOverall(timeDisplay.getText().toString().contains("-")?"00:00:00":timeDisplay.getText().toString().replaceAll(" ",""));
-        //timeModel.setTimeOverallInLong(tmpOverall);
         timeModel.setTimeOverallInLong((new Date().getTime()-timeOfCreation)>0?new Date().getTime()-timeOfCreation:0);
         timeModel.setId(currentUserId);
         timeModel.setUserName(userName.getText().toString());
         timeModel.setTimeAdded(new Timestamp(new Date()));
 
-        arrayList.add(timeModel);
+        if(timeModel.getTimeOverallInLong()>0) {
+            arrayList.add(timeModel);
 
-        collectionReferenceTime.add(timeModel).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-            @Override
-            public void onSuccess(DocumentReference documentReference) {
-                //   Toast.makeText(UserMainActivity.this, "Data added sucesfully", Toast.LENGTH_SHORT).show();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                //  Toast.makeText(UserMainActivity.this, "Fail on adding data", Toast.LENGTH_SHORT).show();
-            }
-        });
-//                    timerTask.cancel();
-        tmpOverall=0;
+            collectionReferenceTime.add(timeModel).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                @Override
+                public void onSuccess(DocumentReference documentReference) {
+                    //   Toast.makeText(UserMainActivity.this, "Data added sucesfully", Toast.LENGTH_SHORT).show();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    //  Toast.makeText(UserMainActivity.this, "Fail on adding data", Toast.LENGTH_SHORT).show();
+                }
+            });
+            tmpOverall = 0;
+        }
     }
 
 
