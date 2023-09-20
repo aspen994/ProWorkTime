@@ -4,12 +4,17 @@
     xmlns:tools="http://schemas.android.com/tools">
     <item
         android:id="@+id/action_time"
-        android:title="Czas"
+        android:title="@string/time_menu"
         android:icon="@drawable/baseline_access_time_24"
         app:showAsAction="never"/>
+  <!--  <item
+        android:id="@+id/chose_language"
+        android:title="@string/select_language"
+        android:icon="@drawable/baseline_language_24"
+        app:showAsAction="never"/>-->
     <item
         android:id="@+id/action_logout"
-        android:title="Wyloguj"
+        android:title="@string/logout_menu"
         android:icon="@drawable/baseline_logout_24"
         app:showAsAction="never"/>
 

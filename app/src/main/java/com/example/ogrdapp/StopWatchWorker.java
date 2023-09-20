@@ -61,7 +61,7 @@ public class StopWatchWorker extends Worker {
 
     @Override
     public void onStopped() {
-        Toast.makeText(context, "Worker stopped", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(context, "Worker stopped", Toast.LENGTH_SHORT).show();
         super.onStopped();
     }
 

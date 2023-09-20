@@ -29,9 +29,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
-            android:text="Suma: "/>
+            android:text="@string/money_sum_name"/>
 
         <TextView
+            android:id="@+id/sum"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right"

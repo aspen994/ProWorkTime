@@ -22,7 +22,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         Log.i("ACTION",intent.getAction());
         Log.i("Start time Broadcast",getIsTimeStarted(context)+"");
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())&& (getIsTimeStarted(context) || getIsTimePaused(context) )) {
-            Toast.makeText(context, "MY APP", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(context, "MY APP", Toast.LENGTH_SHORT).show();
             Intent i = new Intent(context, ForegroundServices.class);
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startService(i);

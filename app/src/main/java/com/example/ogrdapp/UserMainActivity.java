@@ -13,6 +13,7 @@ import static com.example.ogrdapp.utility.SharedPreferencesConstants.TEXT;
 import static com.example.ogrdapp.utility.SharedPreferencesConstants.TMP_BEGIN_TIME;
 import static com.example.ogrdapp.utility.SharedPreferencesConstants.TMP_BEGIN_TIME_STRING;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +24,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -233,13 +235,13 @@ public class UserMainActivity extends AppCompatActivity {
                 isPaused = !isPaused;
 
                 //TODO Check if it's properly
-                Toast.makeText(UserMainActivity.this, "is Paused: "+ isPaused, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(UserMainActivity.this, "is Paused: "+ isPaused, Toast.LENGTH_SHORT).show();
 
                 saveCreationTimeToSharedPref(new Date().getTime());
                 startCountingTimeWithHandler(delayToAssign);
                 if(isPaused)
                 {
-                    Toast.makeText(UserMainActivity.this, "Paused", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(UserMainActivity.this, "Paused", Toast.LENGTH_SHORT).show();
                     stopWork.setVisibility(View.VISIBLE);
 
                     holdResumeWork.setVisibility(View.VISIBLE);
@@ -259,13 +261,13 @@ public class UserMainActivity extends AppCompatActivity {
 
                 }
                 else {
-                    Toast.makeText(UserMainActivity.this, "UnPaused", Toast.LENGTH_SHORT).show();
+                 //   Toast.makeText(UserMainActivity.this, "UnPaused", Toast.LENGTH_SHORT).show();
                     holdResumeWork.setBackgroundColor(Color.parseColor("#A214D5"));
                     startCountingTime();
                     startTimerWithoutStartingNewService();
                     qr.setVisibility(View.VISIBLE);
                     textMain.setVisibility(View.VISIBLE);
-                    holdResumeWork.setText("Wstrzymaj pracę");
+                    holdResumeWork.setText(getString(R.string.hold_work));
                 }
 
             }
@@ -314,7 +316,7 @@ public class UserMainActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 ScanOptions options = new ScanOptions();
-                options.setPrompt("Zeskanuj kod");
+                options.setPrompt(getString(R.string.scan_code));
                 options.setBeepEnabled(true);
                 options.setOrientationLocked(true);
                 options.setCaptureActivity(CustomScannerActivity.class);
@@ -345,7 +347,9 @@ public class UserMainActivity extends AppCompatActivity {
                 {
                     firebaseAuth.signOut();
                     startActivity(new Intent(UserMainActivity.this, MainActivity.class));
-                }
+                } /*else if (R.id.chose_language == item.getItemId()) {
+                    openDialog(UserMainActivity.this);
+                }*/
                 return true;
             }
         });
@@ -359,6 +363,10 @@ public class UserMainActivity extends AppCompatActivity {
 
     }
 
+    private void openDialog(Context context) {
+        DialogLanguage dialogLanguage = new DialogLanguage(context);
+        dialogLanguage.show(getSupportFragmentManager(),"example dialog");
+    }
 
 
     private void startTimerWithoutStartingNewService() {
@@ -577,7 +585,7 @@ public class UserMainActivity extends AppCompatActivity {
                     else if (isPaused) {
                         if(toPost<=8*HOUR_IN_SECONDS) {
 
-                            holdResumeWork.setText("Zakończ pauzę: \n"+getTimerText(toPost));
+                            holdResumeWork.setText(getString(R.string.end_pause)+getTimerText(toPost));
                             handler1.postDelayed(this,1000);
                         }
                         else{
@@ -650,21 +658,21 @@ public class UserMainActivity extends AppCompatActivity {
                 if(timerStarted == false)
                 {
                     timerOverall.setText("");
-                    Toast.makeText(UserMainActivity.this, "QR", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(UserMainActivity.this, "QR", Toast.LENGTH_SHORT).show();
                     timerStarted = true;
                     isPaused=false;
                     saveIsTimeStartedToSharedPreferences(timerStarted);
 
                     timeDisplay.setText("");
-                    textMain.setText("Zatrzymaj pracę: ");
+                    textMain.setText(getString(R.string.stop_work));
                     cleanDataForTimeModelToSharedPreferences();
                     currentTime = getCurrentTime();
 
                     saveTimeModelToSharedPreferences();
-                    begingTime.setText("Rozpoczęto pracę o: " + currentTime);
+                    begingTime.setText(getString(R.string.begin_work_at) + currentTime);
                     tmpBeginTime = getCurrentTimeInSimpleFormat();
                     startTimer(new Date().getTime());
-                    holdResumeWork.setText("Wstrzymaj pracę");
+                    holdResumeWork.setText(getString(R.string.hold_work));
                     startCountingTimeWithHandler(delayToAssign);
 
 
@@ -691,7 +699,7 @@ public class UserMainActivity extends AppCompatActivity {
                 if(timerStarted == false)
                 {
                     timerOverall.setText("");
-                    Toast.makeText(UserMainActivity.this, "QR", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(UserMainActivity.this, "QR", Toast.LENGTH_SHORT).show();
                     timerStarted = true;
                     saveIsTimeStartedToSharedPreferences(timerStarted);
                     isPaused=false;
@@ -704,8 +712,8 @@ public class UserMainActivity extends AppCompatActivity {
                     tmpBeginTime = getCurrentTimeInSimpleFormat();
                     delayToAssign= 5* MINUTE_IN_SECONDS;
                     startTimer((new Date().getTime()+ (delayToAssign*1000)));
-                    begingTime.setText("Rozpoczęto pracę o: " +getCurrentTimeWithDelay(delayToAssign*1000));
-                    holdResumeWork.setText("Wstrzymaj pracę");
+                    begingTime.setText(getString(R.string.begin_work_at) +getCurrentTimeWithDelay(delayToAssign*1000));
+                    holdResumeWork.setText(getString(R.string.hold_work));
                     startCountingTimeWithHandler(delayToAssign);
 
 
@@ -848,12 +856,12 @@ public class UserMainActivity extends AppCompatActivity {
     public void startCountingTime()
     {
         //startForegroundServiceToCountTime();
-        textMain.setText("Zatrzymaj pracę: ");
+        textMain.setText(getString(R.string.stop_work));
         cleanDataForTimeModelToSharedPreferences();
         currentTime = getCurrentTime();
         //  timeModel.setTimeBegin(getCurrentTime());
         saveTimeModelToSharedPreferences();
-        begingTime.setText("Rozpoczęto pracę o: " + getCurrentTime());
+        begingTime.setText(getString(R.string.begin_work_at) + getCurrentTime());
         tmpBeginTime = getCurrentTimeInSimpleFormat();
         //startTimer(0);
 
@@ -878,20 +886,18 @@ public class UserMainActivity extends AppCompatActivity {
 
         timeModel = new TimeModel();
         timerStarted = false;
-        textMain.setText("Rozpocznij pracę: ");
+        textMain.setText(getString(R.string.begin_work));
 
 
         timeModel.setTimeEnd(getCurrentTime());
         tmpEndTime = getCurrentTimeInSimpleFormat();
 
-        endingTime.setText("Zakończono pracę o : " + getCurrentTime());
+        endingTime.setText(getString(R.string.end_work_at) + getCurrentTime());
         timeModel.setTimeBegin(loadAndUpdatedTimeModelFromSharedPreferences());
 
-        tmpOverall = ForegroundServices.time.getValue()*1000;
+        timerOverall.setText(getString(R.string.overworked) + timeDisplay.getText().toString());
 
-        timerOverall.setText("Przepracowałeś : " + timeDisplay.getText().toString());
-
-        endingTime.setText("Zakończono pracę o : " + getCurrentTime());
+        endingTime.setText(getString(R.string.end_work_at) + getCurrentTime());
 
 
 
@@ -924,7 +930,7 @@ public class UserMainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         //startCountingTimeWithHandler();
-        Toast.makeText(this, "on Start", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "on Start", Toast.LENGTH_SHORT).show();
         loadDataFromSharedPreferences();
         updateData();
          startCountingTimeWithHandler(delayToAssign);
@@ -966,7 +972,7 @@ public class UserMainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
 
-        Toast.makeText(this, "on Stop", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "on Stop", Toast.LENGTH_SHORT).show();
         //startCountingTimeWithHandler();
        // Toast.makeText(this, "On stop", Toast.LENGTH_SHORT).show();
         // starting service when time on clock is more than 0 and it's not ending time
@@ -987,13 +993,13 @@ public class UserMainActivity extends AppCompatActivity {
         // saving data when only started time not ending time
         if(endingTime.getText().toString().equals("")) {
           //  Toast.makeText(this, "Invoked", Toast.LENGTH_SHORT).show();
-            Toast.makeText(this, "I am saving start time", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "I am saving start time", Toast.LENGTH_SHORT).show();
             saveDataToSharedPreferences();
         }
         // if end time was set, clearing data.
         else if (!endingTime.getText().toString().equals(""))
         {
-            Toast.makeText(this, "I am clearing start Time", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "I am clearing start Time", Toast.LENGTH_SHORT).show();
             clearDataToSharedPreferences();
         }
       //  Toast.makeText(this, "OnStop", Toast.LENGTH_SHORT).show();

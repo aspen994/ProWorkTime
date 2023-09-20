@@ -15,7 +15,7 @@
         android:layout_marginRight="16dp"
         android:background="@drawable/rounded_corner"
         android:gravity="center"
-        android:hint="Wprowadź hasło"
+        android:hint="@string/enter_password"
         android:inputType="textPassword"
         android:padding="7dp"
         android:textColorHint="#C8000000"
@@ -24,6 +24,30 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/autoCompleteTextView_email_main" />
 
+  <!--  <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/rounded_corner"
+        android:text="@string/select_language"
+        android:textSize="20dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Spinner
+        android:id="@+id/spinner_language"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:background="@drawable/rounded_corner"
+        android:spinnerMode="dialog"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.054"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+-->
     <TextView
         android:id="@+id/textView_login_title"
         android:layout_width="match_parent"
@@ -32,7 +56,7 @@
         android:layout_marginRight="16dp"
         android:background="@drawable/rounded_corner"
         android:gravity="center"
-        android:text="Login"
+        android:text="@string/login"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -48,7 +72,7 @@
         android:layout_marginTop="20dp"
         android:backgroundTint="#2F03F42B"
         android:gravity="center"
-        android:text="Zaloguj"
+        android:text="@string/login_in"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/autoCompleteTextView_password_main" />
@@ -61,7 +85,7 @@
         android:layout_marginEnd="4dp"
         android:background="#5B05DC5B"
         android:gravity="center"
-        android:text="Nie masz konta ? \n Zajerestruj się"
+        android:text="@string/lack_of_account"
         android:textColor="@color/black"
         android:textSize="16dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -75,7 +99,7 @@
         android:layout_marginRight="16dp"
         android:background="@drawable/rounded_corner"
         android:gravity="center"
-        android:hint="Wprowadź email"
+        android:hint="@string/enter_email"
         android:padding="7dp"
         android:textColorHint="#C8000000"
         android:textSize="20dp"
@@ -90,7 +114,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="20dp"
         android:background="#5B05DC5B"
-        android:text="Zapomniałeś hasła.\n Zresetuj"
+        android:text="@string/forget_password"
         android:textColor="@color/black"
         android:textSize="16dp"
         app:layout_constraintStart_toStartOf="parent"

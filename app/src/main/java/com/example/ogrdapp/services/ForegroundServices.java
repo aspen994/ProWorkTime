@@ -18,6 +18,8 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ServiceInfo;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
@@ -33,8 +35,10 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.ogrdapp.R;
 import com.example.ogrdapp.UserMainActivity;
+import com.example.ogrdapp.view.MainActivity;
 
 import java.util.Date;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -42,7 +46,7 @@ public class ForegroundServices extends Service {
 
     public static final int NOTIFICATION_ID = 0;
 
-    public static MutableLiveData<Long> time = new MutableLiveData<>(0L);
+
     public static MutableLiveData<Long> mutableLiveDataTimeForPause = new MutableLiveData<>(0L);
 
     public static long timeLongForClock = 0;
@@ -94,7 +98,7 @@ public class ForegroundServices extends Service {
         HandlerThread handlerThread = new HandlerThread("StopWatchThreadOgrodApp");
         handlerThread.start();
         handler = new android.os.Handler(handlerThread.getLooper());
-        Toast.makeText(this, "CountingTimeAndPaused", Toast.LENGTH_SHORT).show();
+       // Toast.makeText(this, "CountingTimeAndPaused", Toast.LENGTH_SHORT).show();
 
 
             handler.post(new Runnable() {
@@ -106,7 +110,7 @@ public class ForegroundServices extends Service {
                         long currentTimeMillis = new Date().getTime();
                         long toPost = (currentTimeMillis - timeOfCreation) / 1000;
 
-                        notificationUpdate(toPost, "Pracujesz już: ");
+                        notificationUpdate(toPost, getString(R.string.service_working_status));
 
                         handler.postDelayed(this, 1000);
                     }
@@ -118,7 +122,7 @@ public class ForegroundServices extends Service {
 
 
                         if(toPost<=8*HOUR_IN_SECONDS) {
-                            notificationUpdate(toPost, "Odpoczywasz już: ");
+                            notificationUpdate(toPost, getString(R.string.service_pause_status));
                             handler.postDelayed(this, 1000);
                         }
                         else{
@@ -180,7 +184,19 @@ public class ForegroundServices extends Service {
     //TODO make a layer for notification updated
     public void notificationUpdate(long time,String text)
     {
-        startPostStamp = loadAndUpdateTimeCreationFromSharedPreferences();
+        //! ! ! ! ! ! ! ! ! ! ! !-FOR NEXT IMPROVEMNET LEAV IT ! ! ! ! ! ! ! ! ! ! ! !
+       /* Locale locale;
+        if (MainActivity.LANG_CURRENT.equals("en"))
+            locale = new Locale("en");
+        else
+            locale = new Locale("iw");
+
+        Locale.setDefault(locale);
+        Resources resources = this.getResources();
+        Configuration config = resources.getConfiguration();
+        config.setLocale(locale);
+        resources.updateConfiguration(config, resources.getDisplayMetrics());
+        startPostStamp = loadAndUpdateTimeCreationFromSharedPreferences();*/
 
 
         try {
@@ -189,7 +205,7 @@ public class ForegroundServices extends Service {
 
             final Notification notification = new NotificationCompat.Builder(this, CHANNEl_ID)
                     .setOngoing(true)
-                    .setContentTitle(text.equals("Pracujesz już: ")?"Życzę miłej pracy, Szymon:) ":"Dobrze jest odpocząć :)")
+                    .setContentTitle(text.equals(getString(R.string.service_working_status)) ? getString(R.string.service_wishes):getString(R.string.service_rest_wishes))
                     .setContentText(text + getTimerText(time))
                     .setWhen(startPostStamp)
                     .setSmallIcon(R.drawable.time24_vector)

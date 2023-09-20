@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
@@ -26,6 +27,7 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
     private ArrayList<TimeModel> list = new ArrayList<>();
     long timeOverallInLong = 0;
 
+
     public TimeOverallAdapter(Context context, ArrayList<TimeModel> list) {
         this.context = context;
         this.list = list;
@@ -41,11 +43,14 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
         View inflate = layoutInflater.inflate(R.layout.adapter_user_time,parent,false);
 
 
+
         return new MyViewHolder(inflate);
     }
 
     @Override
     public void onBindViewHolder(@NonNull TimeOverallAdapter.MyViewHolder holder, int position) {
+
+
 
         //Hiding the LinearLayout for last record of the day
         holder.linearLayoutLastRecord.setVisibility(View.VISIBLE);
@@ -64,7 +69,7 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
         String dateFormatted = formattedDate(date);
         holder.dateLastRecord.setText(dateFormatted);
 
-        holder.hours_last_record.setText(" H");
+        holder.hours_last_record.setText(R.string.hours_shortcut);
 
         //Setting date
         holder.date.setText(formattedDate(date));
@@ -118,11 +123,12 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
             holder.dateSumming.setTextColor(Color.BLACK);
 
             holder.dateSumming.setText(formatDateWithMonth(list.get(holder.getAdapterPosition()).getTimeAdded().toDate()));
-            holder.hoursSumming.setText(" H");
+            holder.hoursSumming.setText(R.string.hours_shortcut);
             long suma = 0;
             for (int i = 0; i < list.size(); i++) {
                 suma += list.get(i).getTimeOverallInLong();
             }
+            //textView.setText((suma/3600000)*moneyMultiplier+" zł");
             holder.hoursInMonthSumming.setText(formattedTime(suma));
         }
 
@@ -142,14 +148,14 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
 
     private String formatDateWithMonth(Date date)
     {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("LLLL yyyy", Locale.getDefault());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("LLLL yyyy", context.getResources().getConfiguration().locale);
         return dateFormat.format(date);
     }
 
     private String formattedDate(Date date)
     {
 
-        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yy",Locale.getDefault());
+        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yy",context.getResources().getConfiguration().locale);
 
         return format.format(date);
     }
@@ -157,7 +163,7 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
     private String formattedDateWithNameDay(Date date)
     {
 
-        SimpleDateFormat format = new SimpleDateFormat("EEEE dd/MM/yy",Locale.getDefault());
+        SimpleDateFormat format = new SimpleDateFormat("EEEE dd/MM/yy",context.getResources().getConfiguration().locale);
 
         return format.format(date);
     }
@@ -173,6 +179,8 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
 
     public  MyViewHolder (@NonNull View itemView) {
         super(itemView);
+
+
 
         // for each time
         date = itemView.findViewById(R.id.date);

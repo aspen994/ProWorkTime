@@ -14,7 +14,7 @@
         android:layout_marginRight="16dp"
         android:background="@drawable/rounded_corner"
         android:gravity="center"
-        android:text="Zajerestruj"
+        android:text="@string/register"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -31,7 +31,7 @@
         android:layout_marginRight="16dp"
         android:background="@drawable/rounded_corner"
         android:gravity="center"
-        android:hint="Wprowadź email"
+        android:hint="@string/enter_email"
         android:padding="7dp"
         android:textColorHint="#C8000000"
         android:textSize="20dp"
@@ -55,7 +55,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/rounded_corner"
-            android:hint="Wpisz hasło"
+            android:hint="@string/enter_password"
             android:inputType="textPassword"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -70,7 +70,7 @@
         android:layout_marginTop="50dp"
         android:backgroundTint="#2F03F42B"
         android:padding="7dp"
-        android:text="Zajerestruj"
+        android:text="@string/register"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
@@ -84,7 +84,7 @@
         android:layout_marginRight="16dp"
         android:background="@drawable/rounded_corner"
         android:gravity="center"
-        android:hint="Wprowadź imię"
+        android:hint="@string/enter_name"
         android:padding="7dp"
         android:textColorHint="#C8000000"
         android:textSize="20dp"
@@ -100,7 +100,7 @@
         android:layout_marginEnd="16dp"
         android:background="@drawable/rounded_corner"
         android:gravity="center"
-        android:hint="Wprowadź nazwisko"
+        android:hint="@string/enter_surname"
         android:padding="7dp"
         android:textColorHint="#C8000000"
         android:textSize="20dp"
@@ -108,23 +108,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/username" />
 
-
-    <!-- <AutoCompleteTextView
-        android:id="@+id/autoCompleteTextView_password"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:background="@drawable/rounded_corner"
-        android:gravity="center"
-        android:hint="Wprowadź hasło"
-        android:inputType="textPassword"
-        android:padding="7dp"
-        android:textColorHint="#C8000000"
-        android:textSize="20dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/autoCompleteTextView_email" />-->
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

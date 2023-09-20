@@ -1,5 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">OgródApp</string>
     <string name="open">Open</string>
     <string name="close">Close</string>
     <string name="enter_password">Wprowadź hasło</string>
@@ -33,7 +33,6 @@
     <string name="service_pause_status">Odpoczywasz już: \u0020</string>
     <string name="service_wishes">Życzę miłej pracy, Szymon:)\u0020</string>
     <string name="service_rest_wishes">Dobrze jest odpocząć :)</string>
-
     <string-array name="language">
         <item>Wybierz język</item>
         <item>polski</item>
@@ -68,7 +67,6 @@
         <item>2031</item>
         <item>2032</item>
     </string-array>
-
     <string name="scan_barcode">Scan Barcode</string>
     <string name="scan_barcode_with_request_code">Scan Barcode with customized request code</string>
     <string name="any_orientation">1D Any Orientation</string>

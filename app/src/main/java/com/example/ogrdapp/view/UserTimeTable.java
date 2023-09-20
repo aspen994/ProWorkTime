@@ -1,15 +1,19 @@
 package com.example.ogrdapp.view;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.os.ConfigurationCompat;
+import androidx.core.os.LocaleListCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -44,6 +48,7 @@ public class UserTimeTable extends AppCompatActivity {
     private CollectionReference collectionReference = db.collection("Time");
     private Spinner spinnerMonth, spinnerYear;
     private RecyclerView recyclerView;
+    private TextView sumTextView;
     private ArrayList<TimeModel> timeModelArrayList = new ArrayList<>();
     // commented  16:24 12.07.2023
     boolean flag = true;
@@ -53,6 +58,7 @@ public class UserTimeTable extends AppCompatActivity {
 
     String selectedSpinnerOnYear="";
     private String selectedSpinnerOnMonth="";
+    private int moneyMultiplier = 16;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +67,7 @@ public class UserTimeTable extends AppCompatActivity {
         spinnerMonth = findViewById(R.id.spinner_month);
         spinnerYear = findViewById(R.id.spinner_year);
         recyclerView = findViewById(R.id.recyclerView);
+        sumTextView = findViewById(R.id.sum);
 
 
         //05.07.23 Firebase Auth
@@ -97,6 +104,7 @@ public class UserTimeTable extends AppCompatActivity {
 
                                 activateSpinner();
                                 activateSpinnerYear();
+
                             }
 
                         }
@@ -109,6 +117,8 @@ public class UserTimeTable extends AppCompatActivity {
                     //    Toast.makeText(UserTimeTable.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
+
+
 
         // It was used before adding the db
   /*      recyclerView.setHasFixedSize(true);
@@ -136,19 +146,19 @@ public class UserTimeTable extends AppCompatActivity {
                     ArrayList<TimeModel> arrayListTmp = new ArrayList<>();
 
                     for (TimeModel model : timeModelArrayList) {
-                        String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate());
+                        String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate()).toLowerCase();
                         //String s1 = text.toLowerCase();
                         String s1 = selectedSpinnerOnMonth.toLowerCase()+year.toLowerCase();
+                        Log.i("S_YEAR FROM DATABASE",s);
+                        Log.i("S_YEAR FROM APP",s1);
 
-                        Log.i("S1 year: ",s1);
-                        Log.i("s year", s);
                         if (s1.equals(s)) {
                             arrayListTmp.add(model);
                         }
 
                     }
 
-                    Log.i("Size of time Model Array List", timeModelArrayList.size() + "");
+                    //Log.i("Size of time Model Array List", timeModelArrayList.size() + "");
 
                     recyclerView.setHasFixedSize(true);
                     recyclerView.setLayoutManager(new LinearLayoutManager(UserTimeTable.this));
@@ -181,22 +191,24 @@ public class UserTimeTable extends AppCompatActivity {
                     ArrayList<TimeModel> arrayListTmp = new ArrayList<>();
 
                     for (TimeModel model : timeModelArrayList) {
-                        String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate());
+                        String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate()).toLowerCase();
                         //String s1 = text.toLowerCase();
                         String s1 = month.toLowerCase() + selectedSpinnerOnYear;
 
-                        Log.i("S1: ",s1);
-                        Log.i("s", s);
+                        Log.i("S_Month FROM DATABASE",s);
+                        Log.i("S_Month FROM APP",s1);
+
                         if (s1.equals(s)) {
                             arrayListTmp.add(model);
                         }
 
                     }
 
-                    Log.i("Size of time Model Array List", timeModelArrayList.size() + "");
+                    //Log.i("Size of time Model Array List", timeModelArrayList.size() + "");
 
                     recyclerView.setHasFixedSize(true);
                     recyclerView.setLayoutManager(new LinearLayoutManager(UserTimeTable.this));
+                    countingMoneyMethod(arrayListTmp);
                     timeOverallAdapter = new TimeOverallAdapter(UserTimeTable.this, arrayListTmp);
                     recyclerView.setAdapter(timeOverallAdapter);
                     timeOverallAdapter.notifyDataSetChanged();
@@ -240,8 +252,20 @@ public class UserTimeTable extends AppCompatActivity {
 
     private String formatDateWithMonthAndYear(Date date)
     {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("LLLLyyyy", Locale.getDefault());
+        LocaleListCompat locales = ConfigurationCompat.getLocales(Resources.getSystem().getConfiguration());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("LLLLyyyy", getResources().getConfiguration().locale);
+        //Locale.getDefault()
         return dateFormat.format(date);
+    }
+
+    private void countingMoneyMethod(ArrayList<TimeModel> arrayList)
+    {
+        long sum = 0;
+        for (int i = 0; i < arrayList.size(); i++) {
+            sum += arrayList.get(i).getTimeOverallInLong();
+        }
+        sumTextView.setText((sum/3600000)*moneyMultiplier+" zł");
+        Toast.makeText(UserTimeTable.this, "MADAFAKA", Toast.LENGTH_SHORT).show();
     }
 
 }

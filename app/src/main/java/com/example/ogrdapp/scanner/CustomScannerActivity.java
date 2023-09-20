@@ -115,9 +115,6 @@ public class CustomScannerActivity extends Activity implements
     }
 
     public void changeMaskColor(View view) {
-        /*Random rnd = new Random();
-        int color = Color.argb(100, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
-        viewfinderView.setMaskColor(color);*/
         int color = Color.argb(100, 255,255,255);
         viewfinderView.setMaskColor(color);
     }

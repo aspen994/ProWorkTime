@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+    <string name="enter_password">Введіть ваш пароль</string>
+    <string name="select_language">вибрати мову</string>
+    <string name="login">Логін</string>
+    <string name="login_in">авторизуватися</string>
+    <string name="lack_of_account">У вас немає \n облікового запису? \nЗареєструватися</string>
+    <string name="enter_email">Введіть адресу електронної пошти</string>
+    <string name="forget_password">Ви забули пароль.\n Скинути</string>
+    <string name="register">зареєструватися</string>
+    <string name="enter_name">Введіть ім\'я</string>
+    <string name="enter_surname">Введіть фамілія</string>
+    <string name="enter_email_to_reset">Введіть свою електронну адресу.\n Ми надішлемо вам електронну пошту,\n відновимо ваші паролі</string>
+    <string name="reset_password">Скинути пароль</string>
+    <string name="time">час: </string>
+    <string name="begin_work">Почати: \u0020</string>
+    <string name="user">Користувач:  \u0020</string>
+    <string name="date">дата:\u0020</string>
+    <string name="hold_work">Припинити роботу</string>
+    <string name="stop_work">Перестати \n працювати</string>
+    <string name="scan_code">Відскануйте код</string>
+    <string name="end_pause">Кінцева пауза: \n</string>
+    <string name="begin_work_at">Роботи розпочато о: \u0020</string>
+    <string name="end_work_at">Робота завершена о:\u0020 </string>
+    <string name="overworked">Ви працювали :\u0020 </string>
+    <string name="time_menu">час</string>
+    <string name="logout_menu">вийти</string>
+    <string name="hours_shortcut"> \u0020год</string>
+    <string name="money_sum_name">сума: \u0020</string>
+    <string name="service_working_status">Ви вже працюєте:\u0020</string>
+    <string name="service_pause_status">Ти вже відпочиваєш:\u0020</string>
+    <string name="service_wishes">Бажаю тобі гарної роботи, Szymon :)\u0020</string>
+    <string name="service_rest_wishes">Добре відпочити :)</string>
+    <string-array name="language">
+        <item>вибрати мову</item>
+        <item>polski</item>
+        <item>українська</item>
+        <item>english</item>
+    </string-array>
+    <string-array name="months">
+        <item>січень</item>
+        <item>лютий</item>
+        <item>березень</item>
+        <item>квітень</item>
+        <item>травень</item>
+        <item>червень</item>
+        <item>липень</item>
+        <item>серпень</item>
+        <item>вересень</item>
+        <item>жовтень</item>
+        <item>листопад</item>
+        <item>грудень</item>
+    </string-array>
+    <string-array name="year">
+        <item>2021</item>
+        <item>2022</item>
+        <item>2023</item>
+        <item>2024</item>
+        <item>2025</item>
+        <item>2026</item>
+        <item>2027</item>
+        <item>2028</item>
+        <item>2029</item>
+        <item>2030</item>
+        <item>2031</item>
+        <item>2032</item>
+    </string-array>
+    <string name="scan_barcode">Scan Barcode</string>
+    <string name="scan_barcode_with_request_code">Scan Barcode with customized request code</string>
+    <string name="any_orientation">1D Any Orientation</string>
+    <string name="scan_from_fragment">Scan from fragment</string>
+    <string name="front_camera">Front Camera</string>
+    <string name="custom_activity">Continuous Scan</string>
+    <string name="toolbar_activity">Activity with Toolbar</string>
+    <string name="custom_scanner">Custom Scanner Activity</string>
+    <string name="scanner_with_margin">Scanner with Margin</string>
+    <string name="scanner_with_timeout">Finish Scan in 8 Seconds</string>
+    <string name="turn_on_flashlight">Turn on Flashlight</string>
+    <string name="turn_off_flashlight">Turn off Flashlight</string>
+    <string name="title_activity_tabbed_scanning">Tabbed Scanning</string>
+    <string name="tabs">Tabs</string>
+    <string name="about">About</string>
+</resources>
