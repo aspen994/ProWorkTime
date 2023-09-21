@@ -29,6 +29,7 @@ import androidx.core.app.NotificationCompat;
 
 import com.example.ogrdapp.R;
 import com.example.ogrdapp.UserMainActivity;
+import com.example.ogrdapp.utility.SharedPreferencesDataSource;
 
 import java.util.Date;
 
@@ -43,6 +44,7 @@ public class ForegroundServices extends Service {
     private long timeOfCreation;
 
     private Handler handler;
+    private SharedPreferencesDataSource sharedPreferencesDataSource = SharedPreferencesDataSource.getInstance();
 
 
 
@@ -108,35 +110,42 @@ public class ForegroundServices extends Service {
 
     //Shared Preferences block
     // TODO Make a Layer for SharedPreferences https://www.youtube.com/watch?v=EWIlxY-_pDY&ab_channel=CodingReel
-    public void saveIsPausedToSharedPreferences(boolean isPaused)
-    {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(KEY_IS_PAUSED,isPaused);
-        editor.apply();
-    }
+
+
     private boolean getIsPausedFromSharedPreferences() {
-     SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-     return sharedPreferences.getBoolean(KEY_IS_PAUSED,false);
+        return sharedPreferencesDataSource.getIsPausedFromSharedPreferences();
     }
+
+    /*private boolean getIsPausedFromSharedPreferences() {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
+        return sharedPreferences.getBoolean(KEY_IS_PAUSED,false);
+    }*/
 
 
     private boolean getIsTimerStartedFromSharedPreferences() {
-        SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        return sharedPreferencesTimeModel.getBoolean(KEY_TIMER_STARTED, false);
+        /*SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
+        return sharedPreferencesTimeModel.getBoolean(KEY_TIMER_STARTED, false);*/
+        return sharedPreferencesDataSource.getIsTimerStartedFromSharedPreferences();
     }
 
 
     private boolean loadAndUpdateServiceStartedFromSharedPreferences() {
+        return sharedPreferencesDataSource.loadAndUpdateServiceStartedFromSharedPreferences();
+    }
+
+    /*private boolean loadAndUpdateServiceStartedFromSharedPreferences() {
         SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
         return sharedPreferencesTimeModel.getBoolean(KEY_PREFS_SERVICE_STARTED, false);
-    }
-
+    }*/
 
     private long loadAndUpdateTimeCreationFromSharedPreferences() {
-            SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-            return sharedPreferencesTimeModel.getLong(KEY_TIME_OF_CREATION, 0);
+            return sharedPreferencesDataSource.loadAndUpdateTimeCreationFromSharedPreferences();
     }
+
+    /*private long loadAndUpdateTimeCreationFromSharedPreferences() {
+        SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
+        return sharedPreferencesTimeModel.getLong(KEY_TIME_OF_CREATION, 0);
+    }*/
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {

@@ -18,10 +18,13 @@ import androidx.work.WorkerParameters;
 import androidx.work.Worker;
 
 import com.example.ogrdapp.services.ForegroundServices;
+import com.example.ogrdapp.utility.SharedPreferencesDataSource;
 
 public class StopWatchWorker extends Worker {
     Context context;
     Intent intent;
+
+    private SharedPreferencesDataSource sharedPreferencesDataSource=  SharedPreferencesDataSource.getInstance();
 
     public StopWatchWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -59,13 +62,16 @@ public class StopWatchWorker extends Worker {
     }
 
     private boolean getIsPausedFromSharedPreferences() {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFS_OGROD_APP,Context.MODE_PRIVATE);
-        return sharedPreferences.getBoolean(KEY_IS_PAUSED,false);
+        /*SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFS_OGROD_APP,Context.MODE_PRIVATE);
+        return sharedPreferences.getBoolean(KEY_IS_PAUSED,false);*/
+        return sharedPreferencesDataSource.getIsPausedFromSharedPreferences();
     }
 
     private boolean getIsTimerStartedFromSharedPreferences() {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFS_OGROD_APP,Context.MODE_PRIVATE);
-        return sharedPreferences.getBoolean(KEY_TIMER_STARTED,false);
+        /*SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFS_OGROD_APP,Context.MODE_PRIVATE);
+        return sharedPreferences.getBoolean(KEY_TIMER_STARTED,false);*/
+
+        return sharedPreferencesDataSource.getIsTimerStartedFromSharedPreferences();
     }
 
 }

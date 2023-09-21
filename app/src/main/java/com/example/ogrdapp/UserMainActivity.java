@@ -50,6 +50,7 @@ import androidx.work.WorkManager;
 import com.example.ogrdapp.model.TimeModel;
 import com.example.ogrdapp.scanner.CustomScannerActivity;
 import com.example.ogrdapp.services.ForegroundServices;
+import com.example.ogrdapp.utility.SharedPreferencesDataSource;
 import com.example.ogrdapp.view.MainActivity;
 import com.example.ogrdapp.view.UserTimeTable;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -128,6 +129,7 @@ public class UserMainActivity extends AppCompatActivity {
     Handler handler1 = new Handler(Looper.getMainLooper());
     private long timeOfCreation=0;
 
+    private SharedPreferencesDataSource sharedPreferencesDataSource=  SharedPreferencesDataSource.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -393,29 +395,55 @@ public class UserMainActivity extends AppCompatActivity {
 
     // Block for Shared Preferences -------------------
 
-    public void saveIsPausedToSharedPreferences(boolean isPaused)
+    /*public void saveIsPausedToSharedPreferences(boolean isPaused)
     {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(KEY_IS_PAUSED,isPaused);
         editor.apply();
+    }*/
+
+
+    public void saveIsPausedToSharedPreferences(boolean isPaused)
+    {
+        SharedPreferencesDataSource.getInstance().saveIsPausedToSharedPreferences(isPaused);
     }
 
     private void saveTimeModelToSharedPreferences()
+    {
+        sharedPreferencesDataSource.saveTimeModelToSharedPreferences(currentTime);
+    }
+
+    /*private void saveTimeModelToSharedPreferences()
     {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(TMP_BEGIN_TIME_STRING,currentTime);
         editor.apply();
-    }
+    }*/
 
     private String loadAndUpdatedTimeModelFromSharedPreferences()
     {
-        SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-            currentTime = sharedPreferencesTimeModel.getString(TMP_BEGIN_TIME_STRING, currentTime);
-            return currentTime;
+        currentTime= sharedPreferencesDataSource.loadAndUpdatedTimeModelFromSharedPreferences();
+        return currentTime;
     }
+
+    /*private String loadAndUpdatedTimeModelFromSharedPreferences()
+    {
+        SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
+        currentTime = sharedPreferencesTimeModel.getString(TMP_BEGIN_TIME_STRING, currentTime);
+        return currentTime;
+    }*/
+
     public void saveDataToSharedPreferences()
+    {
+        sharedPreferencesDataSource.saveDataToSharedPreferences(
+                begingTime.getText().toString()
+                ,timerStarted
+                ,tmpBeginTime);
+    }
+
+    /*public void saveDataToSharedPreferences()
     {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -425,34 +453,38 @@ public class UserMainActivity extends AppCompatActivity {
         editor.putLong(TMP_BEGIN_TIME,tmpBeginTime);
 
         editor.apply();
-    }
+    }*/
+
     public void savePausedTimeToSharedPreferences(long pausedTime)
+    {
+        sharedPreferencesDataSource.savePausedTimeToSharedPreferences(pausedTime,isPaused);
+
+    }
+
+    /*public void savePausedTimeToSharedPreferences(long pausedTime)
     {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putLong(PAUSED_TIME,pausedTime);
         editor.putBoolean(PAUSED_TIME_BOOLEAN,isPaused);
         editor.apply();
-    }
-
+    }*/
     public void uploadAndLoadPausedTimeFromSharedPreferences()
     {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
+        /*SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
         pausedTimeToSharedPref = sharedPreferences.getLong(PAUSED_TIME, pausedTimeToSharedPref);
-        isPaused = sharedPreferences.getBoolean(PAUSED_TIME_BOOLEAN,isPaused);
-        Toast.makeText(this, "Upload Paused", Toast.LENGTH_SHORT).show();
+        isPaused = sharedPreferences.getBoolean(PAUSED_TIME_BOOLEAN,isPaused);*/
+        pausedTimeToSharedPref = sharedPreferencesDataSource.getPausedTimeFromSharedPreferences();
+        isPaused = sharedPreferencesDataSource.getIsTimePausedFromSharedPreferences();
     }
 
-    public void clearDataForLoadPausedTimeToSharedPreferences()
-    {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putLong(PAUSED_TIME,0);
-
-        editor.apply();
-    }
 
     public void clearDataToSharedPreferences()
+    {
+        sharedPreferencesDataSource.clearDataToSharedPreferences();
+    }
+
+    /*public void clearDataToSharedPreferences()
     {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -462,55 +494,75 @@ public class UserMainActivity extends AppCompatActivity {
         editor.putLong(TMP_BEGIN_TIME,0);
 
         editor.apply();
-    }
+    }*/
     private void cleanDataForTimeModelToSharedPreferences() {
+        sharedPreferencesDataSource.cleanDataForTimeModelToSharedPreferences();
+    }
+
+    /*private void cleanDataForTimeModelToSharedPreferences() {
         SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferencesTimeModel.edit();
 
         editor.putString(TMP_BEGIN_TIME_STRING,"");
 
         editor.apply();
-    }
+    }*/
 
     public void loadDataFromSharedPreferences()
     {
-       SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
+//       SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
        if(endingTime.getText().toString().equals("")) {
-           beginingTime = sharedPreferences.getString(TEXT, begingTime.getText().toString());
+           beginingTime = sharedPreferencesDataSource.getTextFromSharedPreferences(begingTime.getText().toString());
        }
-        timerStarted = sharedPreferences.getBoolean(KEY_TIMER_STARTED,timerStarted);
-        tmpBeginTimeFromSharedPreferences = sharedPreferences.getLong(TMP_BEGIN_TIME,tmpBeginTime);
+        //timerStarted = sharedPreferences.getBoolean(KEY_TIMER_STARTED,timerStarted);
+        timerStarted =getIsTimerStartedFromSharedPreferences();
+        tmpBeginTimeFromSharedPreferences = sharedPreferencesDataSource.getTmpBeginTimeFromSharedPreferences(tmpBeginTime);
 
 
     }
     private long getTimeOfCreationFromSharedPreferences()
     {
+        //return SharedPreferencesDataSource.getInstance().getTimeOfCreationFromSharedPreferences();
+        return sharedPreferencesDataSource.getTimeOfCreationFromSharedPreferences();
+    }
+
+    /*private long getTimeOfCreationFromSharedPreferences()
+    {
         SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,Context.MODE_PRIVATE);
         return sharedPreferencesTimeModel.getLong(KEY_TIME_OF_CREATION,0);
-    }
+    }*/
 
 
 
     private void saveIsTimeStartedToSharedPreferences(boolean isStopWatchActive){
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(KEY_TIMER_STARTED,isStopWatchActive);
-        editor.apply();
+        sharedPreferencesDataSource.saveIsTimeStartedToSharedPreferences(isStopWatchActive);
     }
 
-    private void saveIsTimeStartedFORSPECIALCASEINFOREGROUNDTOREPARIToSharedPreferences(boolean isStopWatchActive){
+    /*private void saveIsTimeStartedToSharedPreferences(boolean isStopWatchActive){
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(KEY_TIMER_STARTED,isStopWatchActive);
         editor.apply();
+    }*/
+
+    private boolean getIsTimerStartedFromSharedPreferences() {
+        /*SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
+        return sharedPreferencesTimeModel.getBoolean(KEY_TIMER_STARTED, false);*/
+
+        return sharedPreferencesDataSource.getIsTimerStartedFromSharedPreferences();
     }
+
 
     private void saveCreationTimeToSharedPref(long time) {
+        sharedPreferencesDataSource.saveCreationTimeToSharedPref(time);
+    }
+
+    /*private void saveCreationTimeToSharedPref(long time) {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putLong(KEY_TIME_OF_CREATION,time);
         editor.apply();
-    }
+    }*/
 
     public void updateData()
     {

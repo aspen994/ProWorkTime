@@ -5,6 +5,8 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.os.Build;
 
+import com.example.ogrdapp.utility.SharedPreferencesDataSource;
+
 public class App extends Application {
     public static final String CHANNEl_ID = "countingTimeServiceChannelForOgrodApp";
 
@@ -12,6 +14,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
+        SharedPreferencesDataSource.getInstance().init(getApplicationContext());
     }
 
     private void createNotificationChannel() {
