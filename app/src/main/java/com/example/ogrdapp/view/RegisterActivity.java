@@ -91,17 +91,15 @@ public class RegisterActivity extends AppCompatActivity {
                                 userObj.put("username",userName_send);
                                 userObj.put("surName",surName_send);
 
-
-
                                 collectionReference.document(email_send).set(userObj).addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void unused) {
-                                        Toast.makeText(RegisterActivity.this, "Added to db", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(RegisterActivity.this, getString(R.string.registry_sucesfully), Toast.LENGTH_SHORT).show();
                                     }
                                 }).addOnFailureListener(new OnFailureListener() {
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(RegisterActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(RegisterActivity.this, getString(R.string.fail_registry), Toast.LENGTH_SHORT).show();
                                     }
                                 });
 
@@ -115,7 +113,7 @@ public class RegisterActivity extends AppCompatActivity {
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                       //     Toast.makeText(RegisterActivity.this, "Błąd", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(RegisterActivity.this, getString(R.string.fail_registry), Toast.LENGTH_SHORT).show();
                         }
                     });
                 }

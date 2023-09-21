@@ -33,6 +33,10 @@
     <string name="service_pause_status">You are already resting: \u0020</string>
     <string name="service_wishes">Wish you a nice working day, Szymon:)\u0020</string>
     <string name="service_rest_wishes">It\'s good to rest :)</string>
+    <string name="reset_meesage">We have sent you a link to change your password, please check your email</string>
+    <string name="wrong_email">Invalid email</string>
+    <string name="registry_sucesfully">Successfully registered</string>
+    <string name="fail_registry">Error during registration</string>
     <string-array name="language">
         <item>Chose language</item>
         <item>polski</item>

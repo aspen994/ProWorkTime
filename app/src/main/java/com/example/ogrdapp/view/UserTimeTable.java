@@ -74,7 +74,6 @@ public class UserTimeTable extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         user = firebaseAuth.getCurrentUser();
         String userId = user.getUid();
-        String email = user.getEmail();
 
         // Zakomentowałem to 06.07.2023 - For now app working without intent, don't delete it maybe be usefull in next stage of app
         /*Intent i = getIntent();
@@ -89,9 +88,7 @@ public class UserTimeTable extends AppCompatActivity {
                         {
                             for(QueryDocumentSnapshot timeModels: queryDocumentSnapshots)
                             {
-                                /*Journal journal = journals.toObject(Journal.class);
-                                journalList.add(journal);
-                                */
+
                                 TimeModel timeModel = timeModels.toObject(TimeModel.class);
                                 //TODO 06.07.2023 - Sorting the ArrayList to show time in proper order
                                 timeModelArrayList.add(timeModel);
@@ -110,30 +107,8 @@ public class UserTimeTable extends AppCompatActivity {
                         }
 
                     }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // Any Failuer
-                    //    Toast.makeText(UserTimeTable.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
                 });
 
-
-
-        // It was used before adding the db
-  /*      recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(timeOverallAdapter);
-        timeOverallAdapter.notifyDataSetChanged();*/
-
-        // getting current year
-        int year = LocalDate.now().getYear();
-
-        /*ArrayAdapter<CharSequence> adapterYear = ArrayAdapter.createFromResource(this,R.array.year, android.R.layout.simple_spinner_item);
-        adapterYear.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerYear.setAdapter(adapterYear);
-        // Setting the current year
-        spinnerYear.setSelection(adapterYear.getPosition(String.valueOf(year)));*/
         spinnerYear.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -147,7 +122,6 @@ public class UserTimeTable extends AppCompatActivity {
 
                     for (TimeModel model : timeModelArrayList) {
                         String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate()).toLowerCase();
-                        //String s1 = text.toLowerCase();
                         String s1 = selectedSpinnerOnMonth.toLowerCase()+year.toLowerCase();
                         Log.i("S_YEAR FROM DATABASE",s);
                         Log.i("S_YEAR FROM APP",s1);
@@ -158,14 +132,11 @@ public class UserTimeTable extends AppCompatActivity {
 
                     }
 
-                    //Log.i("Size of time Model Array List", timeModelArrayList.size() + "");
-
                     recyclerView.setHasFixedSize(true);
                     recyclerView.setLayoutManager(new LinearLayoutManager(UserTimeTable.this));
                     timeOverallAdapter = new TimeOverallAdapter(UserTimeTable.this, arrayListTmp);
                     recyclerView.setAdapter(timeOverallAdapter);
                     timeOverallAdapter.notifyDataSetChanged();
-                    Log.i("size arrayListTmp", arrayListTmp.size() + "");
 
                 }
 
@@ -192,7 +163,6 @@ public class UserTimeTable extends AppCompatActivity {
 
                     for (TimeModel model : timeModelArrayList) {
                         String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate()).toLowerCase();
-                        //String s1 = text.toLowerCase();
                         String s1 = month.toLowerCase() + selectedSpinnerOnYear;
 
                         Log.i("S_Month FROM DATABASE",s);
@@ -204,23 +174,18 @@ public class UserTimeTable extends AppCompatActivity {
 
                     }
 
-                    //Log.i("Size of time Model Array List", timeModelArrayList.size() + "");
-
+                    countingMoneyMethod(arrayListTmp);
                     recyclerView.setHasFixedSize(true);
                     recyclerView.setLayoutManager(new LinearLayoutManager(UserTimeTable.this));
-                    countingMoneyMethod(arrayListTmp);
                     timeOverallAdapter = new TimeOverallAdapter(UserTimeTable.this, arrayListTmp);
                     recyclerView.setAdapter(timeOverallAdapter);
                     timeOverallAdapter.notifyDataSetChanged();
                     Log.i("size arrayListTmp", arrayListTmp.size() + "");
-
                 }
 
             }
-            int size = 0;
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                //Toast.makeText(UserTimeTable.this, "Nothing selected", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -252,9 +217,7 @@ public class UserTimeTable extends AppCompatActivity {
 
     private String formatDateWithMonthAndYear(Date date)
     {
-        LocaleListCompat locales = ConfigurationCompat.getLocales(Resources.getSystem().getConfiguration());
         SimpleDateFormat dateFormat = new SimpleDateFormat("LLLLyyyy", getResources().getConfiguration().locale);
-        //Locale.getDefault()
         return dateFormat.format(date);
     }
 
@@ -265,7 +228,6 @@ public class UserTimeTable extends AppCompatActivity {
             sum += arrayList.get(i).getTimeOverallInLong();
         }
         sumTextView.setText((sum/3600000)*moneyMultiplier+" zł");
-        Toast.makeText(UserTimeTable.this, "MADAFAKA", Toast.LENGTH_SHORT).show();
     }
 
 }

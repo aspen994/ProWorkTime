@@ -38,20 +38,22 @@ public class ForgotPassword extends AppCompatActivity {
                     firebaseAuth.sendPasswordResetEmail(email.getText().toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void unused) {
-                            Toast.makeText(ForgotPassword.this, "Wysłaliśmy link do zmiany hasła, sprawdź maila", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ForgotPassword.this, getString(R.string.reset_meesage), Toast.LENGTH_SHORT).show();
                             startActivity(new Intent(ForgotPassword.this, MainActivity.class));
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(ForgotPassword.this, "Błędny email", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ForgotPassword.this, getString(R.string.wrong_email), Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
                 else {
-                    Toast.makeText(ForgotPassword.this, "Wprowadź hasło", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ForgotPassword.this, getString(R.string.enter_password), Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
+
+
 }

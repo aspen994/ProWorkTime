@@ -1,6 +1,6 @@
 package com.example.ogrdapp.utility;
 
-public class SharedPreferencesConstants {
+public class SharedPreferencesDataSource {
 
     public static final String SHARED_PREFS_OGROD_APP = "sharedPrefsOgrodAPPv2";
     public static final String SHARED_PREFS_FOR_TIME_CREATION_ONLY = "sharedPrefsOgrodAPPv2";

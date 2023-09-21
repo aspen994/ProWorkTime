@@ -3,17 +3,16 @@ package com.example.ogrdapp;
 
 import static com.example.ogrdapp.services.ForegroundServices.HOUR_IN_SECONDS;
 import static com.example.ogrdapp.services.ForegroundServices.isPaused;
-import static com.example.ogrdapp.utility.SharedPreferencesConstants.KEY_IS_PAUSED;
-import static com.example.ogrdapp.utility.SharedPreferencesConstants.KEY_TIMER_STARTED;
-import static com.example.ogrdapp.utility.SharedPreferencesConstants.KEY_TIME_OF_CREATION;
-import static com.example.ogrdapp.utility.SharedPreferencesConstants.PAUSED_TIME;
-import static com.example.ogrdapp.utility.SharedPreferencesConstants.PAUSED_TIME_BOOLEAN;
-import static com.example.ogrdapp.utility.SharedPreferencesConstants.SHARED_PREFS_OGROD_APP;
-import static com.example.ogrdapp.utility.SharedPreferencesConstants.TEXT;
-import static com.example.ogrdapp.utility.SharedPreferencesConstants.TMP_BEGIN_TIME;
-import static com.example.ogrdapp.utility.SharedPreferencesConstants.TMP_BEGIN_TIME_STRING;
+import static com.example.ogrdapp.utility.SharedPreferencesDataSource.KEY_IS_PAUSED;
+import static com.example.ogrdapp.utility.SharedPreferencesDataSource.KEY_TIMER_STARTED;
+import static com.example.ogrdapp.utility.SharedPreferencesDataSource.KEY_TIME_OF_CREATION;
+import static com.example.ogrdapp.utility.SharedPreferencesDataSource.PAUSED_TIME;
+import static com.example.ogrdapp.utility.SharedPreferencesDataSource.PAUSED_TIME_BOOLEAN;
+import static com.example.ogrdapp.utility.SharedPreferencesDataSource.SHARED_PREFS_OGROD_APP;
+import static com.example.ogrdapp.utility.SharedPreferencesDataSource.TEXT;
+import static com.example.ogrdapp.utility.SharedPreferencesDataSource.TMP_BEGIN_TIME;
+import static com.example.ogrdapp.utility.SharedPreferencesDataSource.TMP_BEGIN_TIME_STRING;
 
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
@@ -24,7 +23,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -107,7 +105,7 @@ public class UserMainActivity extends AppCompatActivity {
 
     // Variables
     public static boolean timerStarted = false;
-    private static final int REQUEST_CODE =22;
+
 
     private long tmpBeginTime,tmpEndTime,tmpOverall=0;
     public static long delayToAssign;
@@ -121,7 +119,6 @@ public class UserMainActivity extends AppCompatActivity {
     // To Foreground service-------------------------------------------------------------------------
     private boolean flag = true;
     public static boolean active = false;
-    //public static boolean isModeCountingActive = false;
     private String beginingTime = "";
     private long tmpBeginTimeFromSharedPreferences;
     private boolean isTimerStarted=false;
@@ -172,8 +169,6 @@ public class UserMainActivity extends AppCompatActivity {
         {
             stopWork.setVisibility(View.VISIBLE);
             holdResumeWork.setVisibility(View.VISIBLE);
-            //((currentTimeInLong - timeOfCreation)/1000);
-            // TODO Repair it 09.09.2023
             if(isPaused&&((new Date().getTime()-getTimeOfCreationFromSharedPreferences())/1000)<8*HOUR_IN_SECONDS)
             {
                 holdResumeWork.setBackgroundColor(Color.GREEN);
@@ -209,10 +204,8 @@ public class UserMainActivity extends AppCompatActivity {
                 if(!timerStarted) {
                     qr.setVisibility(View.VISIBLE);
                     textMain.setVisibility(View.VISIBLE);
-                    //timerStarted=false;
                 }
                 else{
-                    //TODO masz dwie podobne metody
                     stopCountingTime();
                     stopTime();
                     delayToAssign=0;
@@ -224,9 +217,6 @@ public class UserMainActivity extends AppCompatActivity {
         });
 
         // - - - - - - - - - - - HOLD_RESUME_WORK ON CLICKLISTNER - - - - - - - -//
-
-
-
         holdResumeWork.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -234,14 +224,12 @@ public class UserMainActivity extends AppCompatActivity {
 
                 isPaused = !isPaused;
 
-                //TODO Check if it's properly
-                //Toast.makeText(UserMainActivity.this, "is Paused: "+ isPaused, Toast.LENGTH_SHORT).show();
 
                 saveCreationTimeToSharedPref(new Date().getTime());
                 startCountingTimeWithHandler(delayToAssign);
                 if(isPaused)
                 {
-                    //Toast.makeText(UserMainActivity.this, "Paused", Toast.LENGTH_SHORT).show();
+
                     stopWork.setVisibility(View.VISIBLE);
 
                     holdResumeWork.setVisibility(View.VISIBLE);
@@ -261,7 +249,6 @@ public class UserMainActivity extends AppCompatActivity {
 
                 }
                 else {
-                 //   Toast.makeText(UserMainActivity.this, "UnPaused", Toast.LENGTH_SHORT).show();
                     holdResumeWork.setBackgroundColor(Color.parseColor("#A214D5"));
                     startCountingTime();
                     startTimerWithoutStartingNewService();
@@ -359,8 +346,6 @@ public class UserMainActivity extends AppCompatActivity {
         intentFilter = new IntentFilter();
         intentFilter.addAction("Counter");
 
-
-
     }
 
     private void openDialog(Context context) {
@@ -436,11 +421,8 @@ public class UserMainActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         editor.putString(TEXT,begingTime.getText().toString());
-        //editor.putString(TEXT_2,endingTime.getText().toString());
         editor.putBoolean(KEY_TIMER_STARTED,timerStarted);
         editor.putLong(TMP_BEGIN_TIME,tmpBeginTime);
-
-       // Toast.makeText(this, "Save" +ForegroundServices.time.getValue(), Toast.LENGTH_SHORT).show();
 
         editor.apply();
     }
@@ -629,17 +611,6 @@ public class UserMainActivity extends AppCompatActivity {
 
 // To Foreground service-------------------------------------------------------------------------
 
-    //TODO Zakomentowałem 07.09.2023 po co mi activityResult ?
-    /*@Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if(requestCode== REQUEST_CODE && resultCode == RESULT_OK)
-        {
-            Bitmap photo = (Bitmap) data.getExtras().get("data");
-        }
-
-    }*/
 
     ActivityResultLauncher<ScanOptions> barLauncher = registerForActivityResult(new ScanContract(), new ActivityResultCallback<ScanIntentResult>() {
 
@@ -658,7 +629,6 @@ public class UserMainActivity extends AppCompatActivity {
                 if(timerStarted == false)
                 {
                     timerOverall.setText("");
-                    //Toast.makeText(UserMainActivity.this, "QR", Toast.LENGTH_SHORT).show();
                     timerStarted = true;
                     isPaused=false;
                     saveIsTimeStartedToSharedPreferences(timerStarted);
@@ -699,7 +669,6 @@ public class UserMainActivity extends AppCompatActivity {
                 if(timerStarted == false)
                 {
                     timerOverall.setText("");
-                    //Toast.makeText(UserMainActivity.this, "QR", Toast.LENGTH_SHORT).show();
                     timerStarted = true;
                     saveIsTimeStartedToSharedPreferences(timerStarted);
                     isPaused=false;
@@ -715,7 +684,6 @@ public class UserMainActivity extends AppCompatActivity {
                     begingTime.setText(getString(R.string.begin_work_at) +getCurrentTimeWithDelay(delayToAssign*1000));
                     holdResumeWork.setText(getString(R.string.hold_work));
                     startCountingTimeWithHandler(delayToAssign);
-
 
 
                     endingTime.setText("");
@@ -780,40 +748,8 @@ public class UserMainActivity extends AppCompatActivity {
 
 
     private long getCurrentTimeInSimpleFormat() {
-        //"yyyy-MM-dd HH:mm:ss.SSS"
-        //return System.currentTimeMillis();
         return new Date().getTime();
     }
-
-
-
-  /*  private String getTimerText()
-    {
-        int rounded = (int) Math.round(time);
-
-        int seconds = ((rounded % 86400) % 3600) % 60;
-        int minutes = ((rounded % 86400) % 3600) / 60;
-        int hours = ((rounded % 86400) / 3600);
-
-        return formatTime(seconds, minutes, hours);
-    }
-
-    private String getTimerText(long timeLong)
-    {
-        int rounded = (int) Math.round(timeLong);
-
-        int seconds = ((rounded % 86400) % 3600) % 60;
-        int minutes = ((rounded % 86400) % 3600) / 60;
-        int hours = ((rounded % 86400) / 3600);
-
-        return formatTime(seconds, minutes, hours);
-    }
-
-
-    private String formatTime(int seconds, int minutes, int hours)
-    {
-        return String.format("%02d",hours) + " : " + String.format("%02d",minutes) + " : " + String.format("%02d",seconds);
-    }*/
 
     private String getTimerText(long totalSecs)
     {
@@ -855,18 +791,14 @@ public class UserMainActivity extends AppCompatActivity {
 
     public void startCountingTime()
     {
-        //startForegroundServiceToCountTime();
         textMain.setText(getString(R.string.stop_work));
         cleanDataForTimeModelToSharedPreferences();
         currentTime = getCurrentTime();
-        //  timeModel.setTimeBegin(getCurrentTime());
+
         saveTimeModelToSharedPreferences();
         begingTime.setText(getString(R.string.begin_work_at) + getCurrentTime());
         tmpBeginTime = getCurrentTimeInSimpleFormat();
-        //startTimer(0);
 
-        //timeDisplay.setText(userMainActivityViewModel.startTimer());
-        //flagForSignText =false;
         isPaused=false;
         saveIsPausedToSharedPreferences(isPaused);
         timerStarted = true;
@@ -929,41 +861,12 @@ public class UserMainActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
-        //startCountingTimeWithHandler();
-        //Toast.makeText(this, "on Start", Toast.LENGTH_SHORT).show();
         loadDataFromSharedPreferences();
         updateData();
          startCountingTimeWithHandler(delayToAssign);
-        // I commetend this 07.09.2023
         startForegroundServiceToCountTimeWithWorkManger();
         super.onStart();
-       /* IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("Counter");
-        //intentFilter.addAction(Intent.Action);
-        unregisterReceiver(broadcastReceiver);
-        flagService = true;
-        if(flagService) {
-            if (timerTask != null) {
-                timerTask.cancel();
-            }
-            broadcastReceiver = new BroadcastReceiver() {
-
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    timerTask.cancel();
-                    Long longTimeFromBroadcastReceiver = intent.getLongExtra("TimeRemaining", 0);
-                    timeLong = longTimeFromBroadcastReceiver;
-                    timeDisplay.setText(getTimerText(timeLong));
-                }
-            };
-
-            registerReceiver(broadcastReceiver, intentFilter);
-            flagService = false;
-        }*/
-
-
         active = true;
-       // Toast.makeText(this, "On start", Toast.LENGTH_SHORT).show();
     }
 
 
@@ -971,38 +874,18 @@ public class UserMainActivity extends AppCompatActivity {
 
     @Override
     protected void onStop() {
-
-        //Toast.makeText(this, "on Stop", Toast.LENGTH_SHORT).show();
-        //startCountingTimeWithHandler();
-       // Toast.makeText(this, "On stop", Toast.LENGTH_SHORT).show();
-        // starting service when time on clock is more than 0 and it's not ending time
-        //handler1.removeCallbacksAndMessages(null);
         active = false;
+        savePausedTimeToSharedPreferences(System.currentTimeMillis());
 
-            savePausedTimeToSharedPreferences(System.currentTimeMillis());
-
-
-        // TODO Before was if(!flag)
-        if(!flag) {
-            if (!isMyServiceRunning(ForegroundServices.class)) {
-                //timerTask.cancel();
-                //startForegroundServiceToCountTime();
-                // Toast.makeText(this, "Run ForeGround", Toast.LENGTH_SHORT).show();
-            }
-        }
         // saving data when only started time not ending time
         if(endingTime.getText().toString().equals("")) {
-          //  Toast.makeText(this, "Invoked", Toast.LENGTH_SHORT).show();
-            //Toast.makeText(this, "I am saving start time", Toast.LENGTH_SHORT).show();
             saveDataToSharedPreferences();
         }
         // if end time was set, clearing data.
         else if (!endingTime.getText().toString().equals(""))
         {
-            //Toast.makeText(this, "I am clearing start Time", Toast.LENGTH_SHORT).show();
             clearDataToSharedPreferences();
         }
-      //  Toast.makeText(this, "OnStop", Toast.LENGTH_SHORT).show();
         super.onStop();
     }
 

@@ -28,31 +28,6 @@ public class UserMainActivityViewModel extends ViewModel implements Serializable
     private TimerTask timerTask;
     private MutableLiveData<Long> timerLiveData = new MutableLiveData<>();
 
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-
-        }
-    };
-
-    //When user startTimer
-    public void startTimer()
-    {
-        startTimerTask();
-
-    }
-    public MutableLiveData<Long> initialValue()
-    {
-        timerLiveData.setValue(timeLong);
-        return timerLiveData;
-    }
-
-
 
     private long startTimerTask() {
 
@@ -65,10 +40,7 @@ public class UserMainActivityViewModel extends ViewModel implements Serializable
         timerTask = new TimerTask() {
             @Override
             public void run() {
-                //timeLong++;
                 timerLiveData.postValue(timeLong++);
-                //Log.i("Time units: ",timeLong+"");
-                //delay[0] =0;
             }
         };
         timer.scheduleAtFixedRate(timerTask,0, 1);
@@ -86,10 +58,7 @@ public class UserMainActivityViewModel extends ViewModel implements Serializable
                 e.printStackTrace();
             }
         }
-        Log.i("Cunter form startTimer Second method",++counter +"");
         startTimerTask();
-        Log.i("TROLOLOLO","");
-
         /*timer = new Timer();
 
         timerTask = new TimerTask() {

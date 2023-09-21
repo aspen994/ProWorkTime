@@ -33,8 +33,6 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
         this.list = list;
     }
 
-    public TimeOverallAdapter() {
-    }
 
     @NonNull
     @Override

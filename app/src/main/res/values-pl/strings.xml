@@ -33,6 +33,10 @@
     <string name="service_pause_status">Odpoczywasz już: \u0020</string>
     <string name="service_wishes">Życzę miłej pracy, Szymon:)\u0020</string>
     <string name="service_rest_wishes">Dobrze jest odpocząć :)</string>
+    <string name="reset_meesage">Wysłaliśmy link do zmiany hasła, sprawdź maila</string>
+    <string name="wrong_email">Błędny email</string>
+    <string name="registry_sucesfully">Pomyślne zarejstrowano</string>
+    <string name="fail_registry">Błąd przy rejestracji</string>
     <string-array name="language">
         <item>Wybierz język</item>
         <item>polski</item>
