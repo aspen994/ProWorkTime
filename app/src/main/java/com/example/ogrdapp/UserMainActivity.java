@@ -3,21 +3,11 @@ package com.example.ogrdapp;
 
 import static com.example.ogrdapp.services.ForegroundServices.HOUR_IN_SECONDS;
 import static com.example.ogrdapp.services.ForegroundServices.isPaused;
-import static com.example.ogrdapp.utility.SharedPreferencesDataSource.KEY_IS_PAUSED;
-import static com.example.ogrdapp.utility.SharedPreferencesDataSource.KEY_TIMER_STARTED;
-import static com.example.ogrdapp.utility.SharedPreferencesDataSource.KEY_TIME_OF_CREATION;
-import static com.example.ogrdapp.utility.SharedPreferencesDataSource.PAUSED_TIME;
-import static com.example.ogrdapp.utility.SharedPreferencesDataSource.PAUSED_TIME_BOOLEAN;
-import static com.example.ogrdapp.utility.SharedPreferencesDataSource.SHARED_PREFS_OGROD_APP;
-import static com.example.ogrdapp.utility.SharedPreferencesDataSource.TEXT;
-import static com.example.ogrdapp.utility.SharedPreferencesDataSource.TMP_BEGIN_TIME;
-import static com.example.ogrdapp.utility.SharedPreferencesDataSource.TMP_BEGIN_TIME_STRING;
 
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -34,13 +24,14 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
 import androidx.work.OneTimeWorkRequest;
@@ -53,19 +44,9 @@ import com.example.ogrdapp.services.ForegroundServices;
 import com.example.ogrdapp.utility.SharedPreferencesDataSource;
 import com.example.ogrdapp.view.MainActivity;
 import com.example.ogrdapp.view.UserTimeTable;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.example.ogrdapp.viewmodel.AuthViewModel;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.Timestamp;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanIntentResult;
 import com.journeyapps.barcodescanner.ScanOptions;
@@ -79,19 +60,9 @@ import java.util.concurrent.TimeUnit;
 
 public class UserMainActivity extends AppCompatActivity {
 
-    //Firebase Connection
-    private FirebaseAuth firebaseAuth=FirebaseAuth.getInstance();
-    private FirebaseUser fireBaseUser;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-    private CollectionReference collectionReference = db.collection("Users");
-    private CollectionReference collectionReferenceTime = db.collection("Time");
-
     public static final String QRCODE1="Tk6&zE8*odwq7G$u2#IVL1e!Q@JvXrFgS0^NbCn5mO9pDyA4(PcHhY3Za6lWsB)";
     public static final String QRCODE2delay5minutes="yJGZ*q7W#8n6Dv@B1F$%9X4hpYQeS^gU+sa0RwM3zNtVxOcZ2dL5fIHkA6i";
     public static final long MINUTE_IN_SECONDS =60;
-
-
 
     //Widgets
     private DrawerLayout drawerLayout;
@@ -100,25 +71,19 @@ public class UserMainActivity extends AppCompatActivity {
 
     private TextView userName,date,timeDisplay,textMain,begingTime,endingTime,timerOverall;
 
-
     private ImageButton qr;
     private Button holdResumeWork, stopWork;
 
     // Variables
     public static boolean timerStarted = false;
 
-
     private long tmpBeginTime,tmpEndTime,tmpOverall=0;
     public static long delayToAssign;
 
     private long pausedTimeToSharedPref;
     private TimeModel timeModel;
-    private ArrayList<TimeModel> arrayList = new ArrayList<>();
-
-
 
     // To Foreground service-------------------------------------------------------------------------
-    private boolean flag = true;
     public static boolean active = false;
     private String beginingTime = "";
     private long tmpBeginTimeFromSharedPreferences;
@@ -130,6 +95,7 @@ public class UserMainActivity extends AppCompatActivity {
     private long timeOfCreation=0;
 
     private SharedPreferencesDataSource sharedPreferencesDataSource=  SharedPreferencesDataSource.getInstance();
+    private AuthViewModel authViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,6 +114,7 @@ public class UserMainActivity extends AppCompatActivity {
         endingTime = findViewById(R.id.ending_time);
         timerOverall = findViewById(R.id.timeOverall);
 
+
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // Loading and updating data from SharedPreferences (timeStarted, flag for isStarted time  and so on)
@@ -156,6 +123,8 @@ public class UserMainActivity extends AppCompatActivity {
 
         //
         uploadAndLoadPausedTimeFromSharedPreferences();
+
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
 
 
@@ -187,11 +156,6 @@ public class UserMainActivity extends AppCompatActivity {
             stopWork.setVisibility(View.INVISIBLE);
             holdResumeWork.setVisibility(View.INVISIBLE);
         }
-
-
-        fireBaseUser = firebaseAuth.getCurrentUser();
-        assert  fireBaseUser !=null;
-        final String currentUserId = fireBaseUser.getUid();
 
 
         // - - - - - - - - - - - STOPWORK ON CLICKLISTNER - - - - - - - -//
@@ -276,29 +240,20 @@ public class UserMainActivity extends AppCompatActivity {
 
 
         // Assignment user name and surname to textView from collectionReferences
-        collectionReference.whereEqualTo("userId",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
+        authViewModel.getUsernameAndSurname();
+        authViewModel.getUsernameAndSurnameMB().observe(this, new Observer<TimeModel>() {
             @Override
-            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                if(!value.isEmpty())
-                {
-                    for(QueryDocumentSnapshot snapshot: value)
-                    {
-                        String username = snapshot.getString("username");
-                        String surName = snapshot.getString("surName");
-
-                        userName.setText(username+" " + surName);
-                    }
-                }
-                else {
-                    Toast.makeText(UserMainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
-                }
+            public void onChanged(TimeModel timeModel) {
+                String username = timeModel.getUserName();
+                String userSurname = timeModel.getUserSurname();
+                userName.setText(username+" " + userSurname);
             }
         });
 
 
         date.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
 
-        firebaseAuth = FirebaseAuth.getInstance();
+
 
         qr.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -334,12 +289,22 @@ public class UserMainActivity extends AppCompatActivity {
                 }
                 else if(R.id.action_logout==item.getItemId())
                 {
-                    firebaseAuth.signOut();
-                    startActivity(new Intent(UserMainActivity.this, MainActivity.class));
+                    authViewModel.signOut();
+                    //startActivity(new Intent(UserMainActivity.this, MainActivity.class));
                 } /*else if (R.id.chose_language == item.getItemId()) {
                     openDialog(UserMainActivity.this);
                 }*/
                 return true;
+            }
+        });
+
+        authViewModel.getLoggedStatus().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if(aBoolean==true)
+                {
+                    startActivity(new Intent(UserMainActivity.this, MainActivity.class));
+                }
             }
         });
 
@@ -358,7 +323,6 @@ public class UserMainActivity extends AppCompatActivity {
 
     private void startTimerWithoutStartingNewService() {
         timerStarted=true;
-        flag = false;
     }
 
 
@@ -393,17 +357,6 @@ public class UserMainActivity extends AppCompatActivity {
         return formattedTime;
     }
 
-    // Block for Shared Preferences -------------------
-
-    /*public void saveIsPausedToSharedPreferences(boolean isPaused)
-    {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(KEY_IS_PAUSED,isPaused);
-        editor.apply();
-    }*/
-
-
     public void saveIsPausedToSharedPreferences(boolean isPaused)
     {
         SharedPreferencesDataSource.getInstance().saveIsPausedToSharedPreferences(isPaused);
@@ -414,26 +367,11 @@ public class UserMainActivity extends AppCompatActivity {
         sharedPreferencesDataSource.saveTimeModelToSharedPreferences(currentTime);
     }
 
-    /*private void saveTimeModelToSharedPreferences()
-    {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(TMP_BEGIN_TIME_STRING,currentTime);
-        editor.apply();
-    }*/
-
     private String loadAndUpdatedTimeModelFromSharedPreferences()
     {
         currentTime= sharedPreferencesDataSource.loadAndUpdatedTimeModelFromSharedPreferences();
         return currentTime;
     }
-
-    /*private String loadAndUpdatedTimeModelFromSharedPreferences()
-    {
-        SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        currentTime = sharedPreferencesTimeModel.getString(TMP_BEGIN_TIME_STRING, currentTime);
-        return currentTime;
-    }*/
 
     public void saveDataToSharedPreferences()
     {
@@ -443,37 +381,14 @@ public class UserMainActivity extends AppCompatActivity {
                 ,tmpBeginTime);
     }
 
-    /*public void saveDataToSharedPreferences()
-    {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-
-        editor.putString(TEXT,begingTime.getText().toString());
-        editor.putBoolean(KEY_TIMER_STARTED,timerStarted);
-        editor.putLong(TMP_BEGIN_TIME,tmpBeginTime);
-
-        editor.apply();
-    }*/
-
     public void savePausedTimeToSharedPreferences(long pausedTime)
     {
         sharedPreferencesDataSource.savePausedTimeToSharedPreferences(pausedTime,isPaused);
 
     }
 
-    /*public void savePausedTimeToSharedPreferences(long pausedTime)
-    {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putLong(PAUSED_TIME,pausedTime);
-        editor.putBoolean(PAUSED_TIME_BOOLEAN,isPaused);
-        editor.apply();
-    }*/
     public void uploadAndLoadPausedTimeFromSharedPreferences()
     {
-        /*SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        pausedTimeToSharedPref = sharedPreferences.getLong(PAUSED_TIME, pausedTimeToSharedPref);
-        isPaused = sharedPreferences.getBoolean(PAUSED_TIME_BOOLEAN,isPaused);*/
         pausedTimeToSharedPref = sharedPreferencesDataSource.getPausedTimeFromSharedPreferences();
         isPaused = sharedPreferencesDataSource.getIsTimePausedFromSharedPreferences();
     }
@@ -484,37 +399,18 @@ public class UserMainActivity extends AppCompatActivity {
         sharedPreferencesDataSource.clearDataToSharedPreferences();
     }
 
-    /*public void clearDataToSharedPreferences()
-    {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-
-        editor.putString(TEXT,"");
-        editor.putBoolean(KEY_TIMER_STARTED,false);
-        editor.putLong(TMP_BEGIN_TIME,0);
-
-        editor.apply();
-    }*/
     private void cleanDataForTimeModelToSharedPreferences() {
         sharedPreferencesDataSource.cleanDataForTimeModelToSharedPreferences();
     }
 
-    /*private void cleanDataForTimeModelToSharedPreferences() {
-        SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferencesTimeModel.edit();
-
-        editor.putString(TMP_BEGIN_TIME_STRING,"");
-
-        editor.apply();
-    }*/
 
     public void loadDataFromSharedPreferences()
     {
-//       SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
+
        if(endingTime.getText().toString().equals("")) {
            beginingTime = sharedPreferencesDataSource.getTextFromSharedPreferences(begingTime.getText().toString());
        }
-        //timerStarted = sharedPreferences.getBoolean(KEY_TIMER_STARTED,timerStarted);
+
         timerStarted =getIsTimerStartedFromSharedPreferences();
         tmpBeginTimeFromSharedPreferences = sharedPreferencesDataSource.getTmpBeginTimeFromSharedPreferences(tmpBeginTime);
 
@@ -522,33 +418,16 @@ public class UserMainActivity extends AppCompatActivity {
     }
     private long getTimeOfCreationFromSharedPreferences()
     {
-        //return SharedPreferencesDataSource.getInstance().getTimeOfCreationFromSharedPreferences();
         return sharedPreferencesDataSource.getTimeOfCreationFromSharedPreferences();
     }
-
-    /*private long getTimeOfCreationFromSharedPreferences()
-    {
-        SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,Context.MODE_PRIVATE);
-        return sharedPreferencesTimeModel.getLong(KEY_TIME_OF_CREATION,0);
-    }*/
-
-
 
     private void saveIsTimeStartedToSharedPreferences(boolean isStopWatchActive){
         sharedPreferencesDataSource.saveIsTimeStartedToSharedPreferences(isStopWatchActive);
     }
 
-    /*private void saveIsTimeStartedToSharedPreferences(boolean isStopWatchActive){
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(KEY_TIMER_STARTED,isStopWatchActive);
-        editor.apply();
-    }*/
+
 
     private boolean getIsTimerStartedFromSharedPreferences() {
-        /*SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        return sharedPreferencesTimeModel.getBoolean(KEY_TIMER_STARTED, false);*/
-
         return sharedPreferencesDataSource.getIsTimerStartedFromSharedPreferences();
     }
 
@@ -557,12 +436,6 @@ public class UserMainActivity extends AppCompatActivity {
         sharedPreferencesDataSource.saveCreationTimeToSharedPref(time);
     }
 
-    /*private void saveCreationTimeToSharedPref(long time) {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putLong(KEY_TIME_OF_CREATION,time);
-        editor.apply();
-    }*/
 
     public void updateData()
     {
@@ -584,8 +457,6 @@ public class UserMainActivity extends AppCompatActivity {
         timerStarted=true;
         Intent i = new Intent(UserMainActivity.this,ForegroundServices.class);
         startService(i);
-
-        flag = false;
 
     }
 
@@ -651,13 +522,11 @@ public class UserMainActivity extends AppCompatActivity {
         WorkManager.getInstance(UserMainActivity.this).cancelAllWorkByTag("cleanup");
         timeDisplay.setText("00 : 00 : 00");
 
-        flag=true;
     }
 
     public void stopTimeWithoutStoppingService()
     {
         isPaused=true;
-        flag=true;
         saveIsPausedToSharedPreferences(isPaused);
     }
 
@@ -668,10 +537,6 @@ public class UserMainActivity extends AppCompatActivity {
 
         @Override
         public void onActivityResult(ScanIntentResult result) {
-
-            fireBaseUser = firebaseAuth.getCurrentUser();
-            assert  fireBaseUser !=null;
-            final String currentUserId = fireBaseUser.getUid();
 
             // For QRCODE 1
             //TODO Przerób tak żeby admin mógł dodawać czas delayu i qr code
@@ -863,15 +728,9 @@ public class UserMainActivity extends AppCompatActivity {
 
     public void stopCountingTime()
     {
-        // How to delete this
-        fireBaseUser = firebaseAuth.getCurrentUser();
-        assert  fireBaseUser !=null;
-        final String currentUserId = fireBaseUser.getUid();
-
         timeModel = new TimeModel();
         timerStarted = false;
         textMain.setText(getString(R.string.begin_work));
-
 
         timeModel.setTimeEnd(getCurrentTime());
         tmpEndTime = getCurrentTimeInSimpleFormat();
@@ -883,31 +742,18 @@ public class UserMainActivity extends AppCompatActivity {
 
         endingTime.setText(getString(R.string.end_work_at) + getCurrentTime());
 
-
-
-
         timeModel.setTimeOverall(timeDisplay.getText().toString().contains("-")?"00:00:00":timeDisplay.getText().toString().replaceAll(" ",""));
         timeModel.setTimeOverallInLong((new Date().getTime()-timeOfCreation)>0?new Date().getTime()-timeOfCreation:0);
-        timeModel.setId(currentUserId);
+        timeModel.setId(authViewModel.getUserId());
         timeModel.setUserName(userName.getText().toString());
         timeModel.setTimeAdded(new Timestamp(new Date()));
 
-        if(timeModel.getTimeOverallInLong()>0) {
-            arrayList.add(timeModel);
-
-            collectionReferenceTime.add(timeModel).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                @Override
-                public void onSuccess(DocumentReference documentReference) {
-                    //   Toast.makeText(UserMainActivity.this, "Data added sucesfully", Toast.LENGTH_SHORT).show();
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    //  Toast.makeText(UserMainActivity.this, "Fail on adding data", Toast.LENGTH_SHORT).show();
-                }
-            });
-            tmpOverall = 0;
+        // TODO Make with MVVM
+        if(timeModel.getTimeOverallInLong()>0)
+        {
+            authViewModel.saveTimeModelToFirebase(timeModel);
         }
+
     }
 
 

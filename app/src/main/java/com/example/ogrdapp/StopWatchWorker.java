@@ -62,15 +62,10 @@ public class StopWatchWorker extends Worker {
     }
 
     private boolean getIsPausedFromSharedPreferences() {
-        /*SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFS_OGROD_APP,Context.MODE_PRIVATE);
-        return sharedPreferences.getBoolean(KEY_IS_PAUSED,false);*/
         return sharedPreferencesDataSource.getIsPausedFromSharedPreferences();
     }
 
     private boolean getIsTimerStartedFromSharedPreferences() {
-        /*SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFS_OGROD_APP,Context.MODE_PRIVATE);
-        return sharedPreferences.getBoolean(KEY_TIMER_STARTED,false);*/
-
         return sharedPreferencesDataSource.getIsTimerStartedFromSharedPreferences();
     }
 

@@ -10,8 +10,13 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.ogrdapp.R;
+import com.example.ogrdapp.repository.DataRepository;
+import com.example.ogrdapp.viewmodel.AuthViewModel;
+import com.example.ogrdapp.viewmodel.DataViewModel;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -33,17 +38,8 @@ public class RegisterActivity extends AppCompatActivity {
     private AutoCompleteTextView email,userName,surName;
     private TextInputEditText password;
 
-
-
-    //Firebase Authentication
-    // To register we need only FirebaseAuth.
-    private FirebaseAuth firebaseAuth;
-    private FirebaseUser fireBaseUser;
-
-    //Firebase Connection
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-    private CollectionReference collectionReference = db.collection("Users");
+    // MVVM
+    private AuthViewModel authViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,68 +53,35 @@ public class RegisterActivity extends AppCompatActivity {
         buttonRegister = findViewById(R.id.button_rejestruj);
 
         //Intaliizng auth
-        firebaseAuth = FirebaseAuth.getInstance();
 
+
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+
+        authViewModel.getUserData().observe(this, new Observer<FirebaseUser>() {
+            @Override
+            public void onChanged(FirebaseUser firebaseUser) {
+                startActivity(new Intent(RegisterActivity.this, MainActivity.class));
+            }
+        });
 
         buttonRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String email_send = email.getText().toString();
+                String password_send = password.getText().toString();
+                String userName_send = userName.getText().toString();
+                String surName_send = surName.getText().toString();
 
                 if(!TextUtils.isEmpty(email.getText().toString())&&
-                   !TextUtils.isEmpty(password.getText().toString())&&
-                   !TextUtils.isEmpty(userName.getText().toString())&&
-                   !TextUtils.isEmpty(surName.getText().toString())
-                    ) // dodaj !Textuti dla nowego pola.
-                {
-                    String email_send = email.getText().toString();
-                    String password_send = password.getText().toString();
-                    String userName_send = userName.getText().toString();
-                    String surName_send = surName.getText().toString();
+                        !TextUtils.isEmpty(password.getText().toString())&&
+                        !TextUtils.isEmpty(userName.getText().toString())&&
+                        !TextUtils.isEmpty(surName.getText().toString())) {
 
-                    firebaseAuth.createUserWithEmailAndPassword(email_send,password_send).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if(task.isSuccessful())
-                            {
-                                fireBaseUser = firebaseAuth.getCurrentUser();
-                                assert  fireBaseUser!=null;
-                                final String currentUserId = fireBaseUser.getUid();
-
-                                // Create a userMap so we can create user in the User Collection in FireStore
-                                Map<String, String> userObj = new HashMap<>();
-                                userObj.put("userId",currentUserId);
-                                userObj.put("email",email_send);
-                                userObj.put("username",userName_send);
-                                userObj.put("surName",surName_send);
-
-                                collectionReference.document(email_send).set(userObj).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void unused) {
-                                        Toast.makeText(RegisterActivity.this, getString(R.string.registry_sucesfully), Toast.LENGTH_SHORT).show();
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(RegisterActivity.this, getString(R.string.fail_registry), Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-
-                            }
-                        }
-                    }).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                        @Override
-                        public void onSuccess(AuthResult authResult) {
-                            startActivity(new Intent(RegisterActivity.this, MainActivity.class));
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(RegisterActivity.this, getString(R.string.fail_registry), Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    authViewModel.registerUser(email_send,password_send,userName_send,surName_send);
                 }
 
             }
         });
+
     }
 }

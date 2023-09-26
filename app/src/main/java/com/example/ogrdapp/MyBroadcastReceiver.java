@@ -31,14 +31,10 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     }
 
     private boolean getIsTimePaused(Context context) {
-        /*SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        return sharedPreferences.getBoolean(KEY_IS_PAUSED,false);*/
         return sharedPreferencesDataSource.getIsPausedFromSharedPreferences();
     }
 
     private boolean getIsTimeStarted(Context context) {
-        /*SharedPreferences sharedPreferencesTimeModel = context.getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        return sharedPreferencesTimeModel.getBoolean(KEY_TIMER_STARTED, false);*/
         return sharedPreferencesDataSource.getIsTimerStartedFromSharedPreferences();
     }
 }

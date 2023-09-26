@@ -14,12 +14,15 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.os.ConfigurationCompat;
 import androidx.core.os.LocaleListCompat;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ogrdapp.R;
 import com.example.ogrdapp.TimeOverallAdapter;
 import com.example.ogrdapp.model.TimeModel;
+import com.example.ogrdapp.viewmodel.AuthViewModel;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -36,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class UserTimeTable extends AppCompatActivity {
@@ -50,7 +54,7 @@ public class UserTimeTable extends AppCompatActivity {
     private RecyclerView recyclerView;
     private TextView sumTextView;
     private ArrayList<TimeModel> timeModelArrayList = new ArrayList<>();
-    // commented  16:24 12.07.2023
+
     boolean flag = true;
 
     private TimeOverallAdapter timeOverallAdapter = new TimeOverallAdapter(this, timeModelArrayList);
@@ -59,6 +63,7 @@ public class UserTimeTable extends AppCompatActivity {
     String selectedSpinnerOnYear="";
     private String selectedSpinnerOnMonth="";
     private int moneyMultiplier = 16;
+    private AuthViewModel authViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +74,17 @@ public class UserTimeTable extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
         sumTextView = findViewById(R.id.sum);
 
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+
+        authViewModel.getData();
+        authViewModel.getTimeModelListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
+            @Override
+            public void onChanged(List<TimeModel> timeModels) {
+                timeModelArrayList.addAll(timeModels);
+                activateSpinner();
+                activateSpinnerYear();
+            }
+        });
 
         //05.07.23 Firebase Auth
         firebaseAuth = FirebaseAuth.getInstance();
@@ -78,36 +94,6 @@ public class UserTimeTable extends AppCompatActivity {
         // Zakomentowałem to 06.07.2023 - For now app working without intent, don't delete it maybe be usefull in next stage of app
         /*Intent i = getIntent();
         timeModelArrayList.addAll((ArrayList<TimeModel>) i.getSerializableExtra("timeModel"));*/
-
-        collectionReference.whereEqualTo("id", userId)
-                .get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        if(!queryDocumentSnapshots.isEmpty())
-                        {
-                            for(QueryDocumentSnapshot timeModels: queryDocumentSnapshots)
-                            {
-
-                                TimeModel timeModel = timeModels.toObject(TimeModel.class);
-                                //TODO 06.07.2023 - Sorting the ArrayList to show time in proper order
-                                timeModelArrayList.add(timeModel);
-                                Collections.sort(timeModelArrayList, new Comparator<TimeModel>() {
-                                    @Override
-                                    public int compare(TimeModel o1, TimeModel o2) {
-                                        return o1.getTimeAdded().compareTo(o2.getTimeAdded());
-                                    }
-                                });
-
-                                activateSpinner();
-                                activateSpinnerYear();
-
-                            }
-
-                        }
-
-                    }
-                });
 
         spinnerYear.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override

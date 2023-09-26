@@ -12,13 +12,17 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.ogrdapp.R;
 import com.example.ogrdapp.UserMainActivity;
+import com.example.ogrdapp.viewmodel.AuthViewModel;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -28,13 +32,8 @@ public class MainActivity extends AppCompatActivity {
     private Button loginBtn;
     private TextView textViewRegister,textViewZresetuj;
     private AutoCompleteTextView email, password;
-    private FirebaseAuth firebaseAuth;
 
-
-    //Firebase Connection
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-    private CollectionReference collectionReference = db.collection("Users");
+    private AuthViewModel authViewModel;
 
 
 
@@ -44,17 +43,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         setContentView(R.layout.activity_main);
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
-
-        //Intaliizng auth
-        firebaseAuth = FirebaseAuth.getInstance();
-
-        // TODO 31.05.2023
-        if(firebaseAuth.getCurrentUser()!=null)
-        {
-            startActivity(new Intent(MainActivity.this,UserMainActivity.class));
-            finish();
-        }
         //! ! ! ! ! ! ! ! ! ! ! !-FOR NEXT IMPROVEMNET LEAV IT ! ! ! ! ! ! ! ! ! ! ! !
         /*spinner = findViewById(R.id.spinner_language);
         textViewSelectLanguage= findViewById(R.id.textView);*/
@@ -128,6 +118,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        authViewModel.getUserData().observe(this, new Observer<FirebaseUser>() {
+            @Override
+            public void onChanged(FirebaseUser firebaseUser) {
+                startActivity(new Intent(MainActivity.this,UserMainActivity.class));
+            }
+        });
+
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -135,18 +132,7 @@ public class MainActivity extends AppCompatActivity {
                 String emailToLogin = email.getText().toString();
                 String passwordToLogin = password.getText().toString();
                 if(!TextUtils.isEmpty(email.getText().toString())&&!TextUtils.isEmpty(password.getText().toString())) {
-                    firebaseAuth.signInWithEmailAndPassword(emailToLogin,passwordToLogin).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                        @Override
-                        public void onSuccess(AuthResult authResult) {
-                            startActivity(new Intent(MainActivity.this,UserMainActivity.class));
-                            finish();
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(MainActivity.this, "nie ma takiego użytkownika", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    authViewModel.signIn(emailToLogin,passwordToLogin);
                 }
                 else {
                     Toast.makeText(MainActivity.this, "Wprowadź użytkownika i hasła", Toast.LENGTH_SHORT).show();

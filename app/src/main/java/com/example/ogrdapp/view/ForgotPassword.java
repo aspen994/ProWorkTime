@@ -2,6 +2,7 @@ package com.example.ogrdapp.view;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.ogrdapp.R;
+import com.example.ogrdapp.viewmodel.AuthViewModel;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -22,6 +24,7 @@ public class ForgotPassword extends AppCompatActivity {
     private Button button;
 
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+    private AuthViewModel authViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,23 +33,17 @@ public class ForgotPassword extends AppCompatActivity {
 
         email = findViewById(R.id.autoCompleteTextView3);
         button= findViewById(R.id.button2);
+        authViewModel= new ViewModelProvider(this).get(AuthViewModel.class);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(!TextUtils.isEmpty(email.getText().toString())) {
-                    firebaseAuth.sendPasswordResetEmail(email.getText().toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void unused) {
-                            Toast.makeText(ForgotPassword.this, getString(R.string.reset_meesage), Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(ForgotPassword.this, MainActivity.class));
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(ForgotPassword.this, getString(R.string.wrong_email), Toast.LENGTH_SHORT).show();
-                        }
-                    });
+
+                    String emailToSend = email.getText().toString();
+                    authViewModel.resetPassword(emailToSend);
+                    startActivity(new Intent(ForgotPassword.this, MainActivity.class));
+
                 }
                 else {
                     Toast.makeText(ForgotPassword.this, getString(R.string.enter_password), Toast.LENGTH_SHORT).show();

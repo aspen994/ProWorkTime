@@ -6,6 +6,12 @@ import android.app.NotificationManager;
 import android.os.Build;
 
 import com.example.ogrdapp.utility.SharedPreferencesDataSource;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class App extends Application {
     public static final String CHANNEl_ID = "countingTimeServiceChannelForOgrodApp";

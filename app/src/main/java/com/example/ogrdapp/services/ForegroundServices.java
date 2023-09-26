@@ -95,8 +95,6 @@ public class ForegroundServices extends Service {
                         }
                         else{
                             handler.removeCallbacksAndMessages(null);
-                            /*isPaused=false;
-                            saveIsPausedToSharedPreferences(isPaused);*/
                         }
                     }
                     else {
@@ -116,15 +114,7 @@ public class ForegroundServices extends Service {
         return sharedPreferencesDataSource.getIsPausedFromSharedPreferences();
     }
 
-    /*private boolean getIsPausedFromSharedPreferences() {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        return sharedPreferences.getBoolean(KEY_IS_PAUSED,false);
-    }*/
-
-
     private boolean getIsTimerStartedFromSharedPreferences() {
-        /*SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        return sharedPreferencesTimeModel.getBoolean(KEY_TIMER_STARTED, false);*/
         return sharedPreferencesDataSource.getIsTimerStartedFromSharedPreferences();
     }
 
@@ -133,19 +123,9 @@ public class ForegroundServices extends Service {
         return sharedPreferencesDataSource.loadAndUpdateServiceStartedFromSharedPreferences();
     }
 
-    /*private boolean loadAndUpdateServiceStartedFromSharedPreferences() {
-        SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        return sharedPreferencesTimeModel.getBoolean(KEY_PREFS_SERVICE_STARTED, false);
-    }*/
-
     private long loadAndUpdateTimeCreationFromSharedPreferences() {
             return sharedPreferencesDataSource.loadAndUpdateTimeCreationFromSharedPreferences();
     }
-
-    /*private long loadAndUpdateTimeCreationFromSharedPreferences() {
-        SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        return sharedPreferencesTimeModel.getLong(KEY_TIME_OF_CREATION, 0);
-    }*/
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {

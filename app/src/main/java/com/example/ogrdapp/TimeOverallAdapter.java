@@ -24,7 +24,7 @@ import java.util.Locale;
 public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.MyViewHolder> {
 
     private Context context;
-    private ArrayList<TimeModel> list = new ArrayList<>();
+    private ArrayList<TimeModel> list;
     long timeOverallInLong = 0;
 
 
