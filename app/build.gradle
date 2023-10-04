@@ -7,6 +7,10 @@ android {
     namespace 'com.example.ogrdapp'
     compileSdk 33
 
+    buildFeatures {
+        viewBinding true
+    }
+
     defaultConfig {
         applicationId "com.example.ogrdapp"
         minSdk 21

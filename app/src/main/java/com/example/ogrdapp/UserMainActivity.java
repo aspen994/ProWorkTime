@@ -13,6 +13,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -42,6 +43,7 @@ import com.example.ogrdapp.model.TimeModel;
 import com.example.ogrdapp.scanner.CustomScannerActivity;
 import com.example.ogrdapp.services.ForegroundServices;
 import com.example.ogrdapp.utility.SharedPreferencesDataSource;
+import com.example.ogrdapp.view.AdminView;
 import com.example.ogrdapp.view.MainActivity;
 import com.example.ogrdapp.view.UserTimeTable;
 import com.example.ogrdapp.viewmodel.AuthViewModel;
@@ -275,8 +277,27 @@ public class UserMainActivity extends AppCompatActivity {
         toogle.syncState();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        hideItem();
+        authViewModel.getIfAdminMutableLiveData().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                    if(aBoolean==true)
+                    {
+                        showItem();
+                        Toast.makeText(UserMainActivity.this, "WITAM ADMINA, USZANOWANKO, KRÓLU ZŁOTY", Toast.LENGTH_SHORT).show();
+                    }
+
+            }
+        });
+
+
+
+        //Jeśli userId jest równy foreignkey- wtedy pokaż panel admina
+
+
 
         // For menu on the left swipe
+
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -291,7 +312,14 @@ public class UserMainActivity extends AppCompatActivity {
                 {
                     authViewModel.signOut();
                     //startActivity(new Intent(UserMainActivity.this, MainActivity.class));
-                } /*else if (R.id.chose_language == item.getItemId()) {
+                }
+                else if(R.id.action_admin_panel==item.getItemId())
+                {
+                    Intent i = new Intent(UserMainActivity.this, AdminView.class);
+                    startActivity(i);
+                    Toast.makeText(UserMainActivity.this, "Przechodzisz do panelu admina", Toast.LENGTH_SHORT).show();
+                }
+                /*else if (R.id.chose_language == item.getItemId()) {
                     openDialog(UserMainActivity.this);
                 }*/
                 return true;
@@ -304,6 +332,7 @@ public class UserMainActivity extends AppCompatActivity {
                 if(aBoolean==true)
                 {
                     startActivity(new Intent(UserMainActivity.this, MainActivity.class));
+                    finish();
                 }
             }
         });
@@ -313,6 +342,16 @@ public class UserMainActivity extends AppCompatActivity {
         intentFilter = new IntentFilter();
         intentFilter.addAction("Counter");
 
+    }
+
+    private void showItem() {
+        Menu menu = navigationView.getMenu();
+        menu.findItem(R.id.action_admin_panel).setVisible(true);
+    }
+
+    private void hideItem() {
+        Menu menu = navigationView.getMenu();
+        menu.findItem(R.id.action_admin_panel).setVisible(false);
     }
 
     private void openDialog(Context context) {

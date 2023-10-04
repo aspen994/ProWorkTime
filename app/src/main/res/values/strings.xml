@@ -37,6 +37,12 @@
     <string name="wrong_email">Błędny email</string>
     <string name="registry_sucesfully">Pomyślne zarejstrowano</string>
     <string name="fail_registry">Błąd przy rejestracji</string>
+    <string name="admin">Administrator</string>
+    <string name="enter_email_of_employer">Wprowadź e-mail pracodawcy</string>
+    <string name="choose_a_role">Wybierz rolę</string>
+    <string name="complete_the_fields">Uzupełnij poprawnie pola</string>
+    <string name="no_user">Nie ma takiego użytkownika</string>
+    <string name="admin_panel">Zarządzaj pracownikami</string>
     <string-array name="language">
         <item>Wybierz język</item>
         <item>polski</item>

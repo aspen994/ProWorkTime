@@ -37,6 +37,12 @@
     <string name="wrong_email">Недійсна електронна адреса</string>
     <string name="registry_sucesfully">Успішно зареєстровано</string>
     <string name="fail_registry">Помилка під час реєстрації</string>
+    <string name="admin">адміністратор</string>
+    <string name="enter_email_of_employer">Введіть адресу електронної пошти роботодавця</string>
+    <string name="choose_a_role">Виберіть роль</string>
+    <string name="complete_the_fields">Заповніть поля правильно</string>
+    <string name="no_user">Такого користувача немає</string>
+    <string name="admin_panel">Керуйте співробітниками</string>
     <string-array name="language">
         <item>вибрати мову</item>
         <item>polski</item>

@@ -37,6 +37,12 @@
     <string name="wrong_email">Invalid email</string>
     <string name="registry_sucesfully">Successfully registered</string>
     <string name="fail_registry">Error during registration</string>
+    <string name="admin">Administrator</string>
+    <string name="enter_email_of_employer">Enter your employer\'s e-mail address</string>
+    <string name="choose_a_role">Choose a role</string>
+    <string name="complete_the_fields">Complete the fields correctly</string>
+    <string name="no_user">There is no such user</string>
+    <string name="admin_panel">Manage employees</string>
     <string-array name="language">
         <item>Chose language</item>
         <item>polski</item>

@@ -12,35 +12,12 @@ import com.google.firebase.firestore.CollectionReference;
 
 public class DataViewModel extends AndroidViewModel {
 
-    private DataRepository dataRepository;
-    private MutableLiveData<CollectionReference> firebaseUserDataMutableLiveData;
-    private String collectionPath="Users";
-    private FirebaseAuth firebaseAuth;
+    public int rate_money=0;
+    public MutableLiveData<Integer> rateMoneyMutableLiveData;
 
     public DataViewModel(@NonNull Application application) {
         super(application);
-        dataRepository = new DataRepository(application);
-        firebaseUserDataMutableLiveData = dataRepository.getFirebaseUserDataMutableLiveData();
-        firebaseAuth = dataRepository.getFirebaseAuth();
+        rateMoneyMutableLiveData = new MutableLiveData<>();
     }
-
-    public MutableLiveData<CollectionReference> getFirebaseUserDataMutableLiveData() {
-        return firebaseUserDataMutableLiveData;
-    }
-
-    public FirebaseAuth getFirebaseAuth() {
-        return firebaseAuth;
-    }
-
-    public void setCollectionPath(String collectionPath)
-    {
-        dataRepository.setCollectionPath(collectionPath);
-    }
-
-    public void saveUserData(String email, String username, String userSurname)
-    {
-        dataRepository.addUserToDB(email,username,userSurname);
-    }
-
 
 }
