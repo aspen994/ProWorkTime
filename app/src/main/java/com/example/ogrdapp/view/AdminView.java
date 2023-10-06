@@ -88,11 +88,10 @@ public class AdminView extends AppCompatActivity {
             public void onChanged(List<TimeModel> timeModels) {
                 timeModelArrayList.addAll(summingTime((ArrayList<TimeModel>) timeModels));
 
-                binding.recyclerViewAdmin.setHasFixedSize(true);
+                binding.recyclerViewCardy.setHasFixedSize(true);
                 LinearLayoutManager linearLayoutManager = new LinearLayoutManager(AdminView.this);
-                binding.recyclerViewAdmin.setLayoutManager(linearLayoutManager);
+                binding.recyclerViewCardy.setLayoutManager(linearLayoutManager);
                 adapterUserForAdmin = new AdapterUserForAdmin(AdminView.this, timeModelArrayList);
-                binding.recyclerViewAdmin.addItemDecoration(new DividerItemDecoration(AdminView.this, LinearLayout.VERTICAL));
 
                 Log.i("getTimeForUser","INVOKED");
                 for (User user: userModelArrayList) {
@@ -101,7 +100,7 @@ public class AdminView extends AppCompatActivity {
                 Log.i("Time model size: ",timeModels.size()+" ");
 
 
-                    binding.recyclerViewAdmin.setAdapter(adapterUserForAdmin);
+                    binding.recyclerViewCardy.setAdapter(adapterUserForAdmin);
                     adapterUserForAdmin.notifyDataSetChanged();
             }
         });

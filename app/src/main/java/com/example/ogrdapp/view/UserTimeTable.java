@@ -76,15 +76,37 @@ public class UserTimeTable extends AppCompatActivity {
 
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
-        authViewModel.getData();
-        authViewModel.getTimeModelListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
-            @Override
-            public void onChanged(List<TimeModel> timeModels) {
-                timeModelArrayList.addAll(timeModels);
-                activateSpinner();
-                activateSpinnerYear();
-            }
-        });
+        String id = getIntent().getStringExtra("Id");
+        if(id!=null) {
+            authViewModel.getTimeForUser(id);
+
+            authViewModel.getTimeForUserListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
+                @Override
+                public void onChanged(List<TimeModel> timeModels) {
+                    timeModelArrayList.clear();
+                    timeModelArrayList.addAll(timeModels);
+                    activateSpinner();
+                    activateSpinnerYear();
+                }
+            });
+        }
+        else{
+            authViewModel.getData();
+
+            authViewModel.getTimeModelListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
+                @Override
+                public void onChanged(List<TimeModel> timeModels) {
+                    timeModelArrayList.clear();
+                    timeModelArrayList.addAll(timeModels);
+                    activateSpinner();
+                    activateSpinnerYear();
+                }
+            });
+        }
+
+        // Zamiast authViewModel.getData();
+        // Daj   authViewModel.getTimeForUser(userId);
+
 
         //05.07.23 Firebase Auth
         firebaseAuth = FirebaseAuth.getInstance();

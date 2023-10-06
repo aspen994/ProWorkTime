@@ -3,11 +3,13 @@ package com.example.ogrdapp.view;
 import static com.example.ogrdapp.view.AdminView.i;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -25,6 +27,7 @@ import java.util.Set;
 public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmin.MyViewHolder>{
     private Context context;
     private ArrayList<TimeModel> list;
+    private View.OnClickListener onClickListener;
 
     public AdapterUserForAdmin(Context context, ArrayList<TimeModel> list) {
         this.context = context;
@@ -43,7 +46,7 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
     @Override
     public void onBindViewHolder(@NonNull AdapterUserForAdmin.MyViewHolder holder, int position) {
 
-        Log.i("LIST SIZE ADAPTER: ", list.size()+"");
+        TimeModel timeModel = list.get(position);
 
 
         if(holder.getAdapterPosition()%2==0)
@@ -53,10 +56,19 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
             holder.linearLayoutAdmin.setBackgroundColor(ContextCompat.getColor(context,R.color.blue_grey_500));
         }
 
-        holder.workerToAdapter.setText(list.get(position).getUserName());
-        holder.workerTimeToAdapter.setText(FormattedTime.formattedTime(list.get(position).getTimeOverallInLong()));
-        holder.workerMoneyEarnOverallToAdapter.setText(countingMoney(FormattedTime.formattedTimeInInt(list.get(position).getTimeOverallInLong())));
-        holder.workerMoneyToWithdrawnToAdapter.setText(countingMoney(FormattedTime.formattedTimeInInt(list.get(position).getTimeOverallInLong())));
+        holder.workerToAdapter.setText("Pracownik: "+list.get(position).getUserName());
+        holder.workerTimeToAdapter.setText("Przepracowane godziny: " + FormattedTime.formattedTime(list.get(position).getTimeOverallInLong()));
+        holder.workerMoneyEarnOverallToAdapter.setText("Zarobione pieniądze: "+countingMoney(FormattedTime.formattedTimeInInt(list.get(position).getTimeOverallInLong())));
+        holder.workerMoneyToWithdrawnToAdapter.setText("Wydane pieniądze: "+countingMoney(FormattedTime.formattedTimeInInt(list.get(position).getTimeOverallInLong())));
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(context, timeModel.getUserName(), Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(context, UserTimeTable.class);
+                intent.putExtra("Id",timeModel.getId());
+                context.startActivity(intent);
+            }
+        });
 
     }
 
@@ -64,6 +76,7 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
         int i1 = i * timeOverallInLong;
         return i1+" zł";
     }
+
 
     public Set<String> getUniqueElements()
     {
@@ -92,6 +105,13 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
     public int getItemCount() {
         return list.size();
     }
+    public void setOnClickListener(View.OnClickListener onClickListener) {
+        this.onClickListener = onClickListener;
+    }
+    public interface onClickListener {
+        void onClick(int position, TimeModel timeModel);
+    }
+
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
 
