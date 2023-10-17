@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:padding="10dp">
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+    <TextView
+        android:id="@+id/text_view_hint_begin_Time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:hint="Wprowadź czas rozpoczęcia: " />
+    <TextView
+        android:id="@+id/text_view_hint_end_Time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Wprowadź czas zakończenie: "
+        android:padding="10dp"/>
+    <TextView
+        android:id="@+id/text_view_hint_overall_Time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Podaj ogólny czas pracy: "
+        android:padding="10dp"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/editText_beginTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:hint="Wprowadź " />
+        <TextView
+            android:id="@+id/editText_endTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Wprowadź "
+            android:padding="10dp"/>
+        <TextView
+            android:id="@+id/editText_timeOverall"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Podaj "
+            android:padding="10dp"/>
+    </LinearLayout>
+
+</androidx.appcompat.widget.LinearLayoutCompat>

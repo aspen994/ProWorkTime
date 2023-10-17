@@ -13,10 +13,11 @@ public class TimeModel  {
     private long timeOverallInLong;
     private Timestamp timeAdded;
     private int withdrawnMoney;
+    private String documentId;
 
 
     public TimeModel(String userName, String userSurname, String timeBegin, String timeEnd, String timeOverall,
-                     String moneyOverall, String id, long timeOverallInLong, Timestamp timeAdded,int withdrawnMoney) {
+                     String moneyOverall, String id, long timeOverallInLong, Timestamp timeAdded,int withdrawnMoney,String documentId) {
         this.userName = userName;
         this.userSurname = userSurname;
         this.timeBegin = timeBegin;
@@ -27,6 +28,7 @@ public class TimeModel  {
         this.timeOverallInLong = timeOverallInLong;
         this.timeAdded = timeAdded;
         this.withdrawnMoney = withdrawnMoney;
+        this.documentId = documentId;
     }
 
 
@@ -111,5 +113,13 @@ public class TimeModel  {
 
     public void setWithdrawnMoney(int withdrawnMoney) {
         this.withdrawnMoney = withdrawnMoney;
+    }
+
+    public String getDocumentId() {
+        return documentId;
+    }
+
+    public void setDocumentId(String documentId) {
+        this.documentId = documentId;
     }
 }

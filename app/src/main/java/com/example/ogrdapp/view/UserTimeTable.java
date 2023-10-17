@@ -1,43 +1,45 @@
 package com.example.ogrdapp.view;
 
-import android.content.res.Resources;
+import android.app.AlertDialog;
+import android.app.TimePickerDialog;
+import android.content.DialogInterface;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.os.ConfigurationCompat;
-import androidx.core.os.LocaleListCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ogrdapp.R;
 import com.example.ogrdapp.TimeOverallAdapter;
 import com.example.ogrdapp.model.TimeModel;
+import com.example.ogrdapp.utility.SwipeController;
+import com.example.ogrdapp.utility.SwipeControllerActions;
 import com.example.ogrdapp.viewmodel.AuthViewModel;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
+
+import org.w3c.dom.Text;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -64,6 +66,15 @@ public class UserTimeTable extends AppCompatActivity {
     private String selectedSpinnerOnMonth="";
     private int moneyMultiplier = 16;
     private AuthViewModel authViewModel;
+    public String idUserSelectedByAdmin;
+    SwipeController swipeController = null;
+    ArrayList<TimeModel> arrayListTmp;
+    public TextView editTextBeginTime;
+    public TextView editTextEndTime;
+    public TextView editTextTimeOverall;
+    public int hour,minute;
+    long overall;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,11 +85,20 @@ public class UserTimeTable extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
         sumTextView = findViewById(R.id.sum);
 
+
+
+        arrayListTmp = new ArrayList<>();
+
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
-        String id = getIntent().getStringExtra("Id");
-        if(id!=null) {
-            authViewModel.getTimeForUser(id);
+        // FOR ADMIN
+
+
+        // FOR USER
+
+        idUserSelectedByAdmin = getIntent().getStringExtra("Id");
+        if(idUserSelectedByAdmin!=null) {
+            authViewModel.getTimeForUser(idUserSelectedByAdmin);
 
             authViewModel.getTimeForUserListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
                 @Override
@@ -87,6 +107,7 @@ public class UserTimeTable extends AppCompatActivity {
                     timeModelArrayList.addAll(timeModels);
                     activateSpinner();
                     activateSpinnerYear();
+                    timeOverallAdapter.notifyDataSetChanged();
                 }
             });
         }
@@ -100,13 +121,12 @@ public class UserTimeTable extends AppCompatActivity {
                     timeModelArrayList.addAll(timeModels);
                     activateSpinner();
                     activateSpinnerYear();
+                    timeOverallAdapter.notifyDataSetChanged();
                 }
             });
         }
 
-        // Zamiast authViewModel.getData();
-        // Daj   authViewModel.getTimeForUser(userId);
-
+        swipeControllerToRecyclerView();
 
         //05.07.23 Firebase Auth
         firebaseAuth = FirebaseAuth.getInstance();
@@ -126,8 +146,8 @@ public class UserTimeTable extends AppCompatActivity {
                 String year = parent.getItemAtPosition(position).toString();
 
                 if(!timeModelArrayList.isEmpty()) {
-                    ArrayList<TimeModel> arrayListTmp = new ArrayList<>();
-
+                    //ArrayList<TimeModel> arrayListTmp = new ArrayList<>();
+                    arrayListTmp.clear();
                     for (TimeModel model : timeModelArrayList) {
                         String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate()).toLowerCase();
                         String s1 = selectedSpinnerOnMonth.toLowerCase()+year.toLowerCase();
@@ -139,12 +159,11 @@ public class UserTimeTable extends AppCompatActivity {
                         }
 
                     }
-
-                    recyclerView.setHasFixedSize(true);
-                    recyclerView.setLayoutManager(new LinearLayoutManager(UserTimeTable.this));
+                    recyclerView = findViewById(R.id.recyclerView);
                     timeOverallAdapter = new TimeOverallAdapter(UserTimeTable.this, arrayListTmp);
+                    recyclerView.setLayoutManager(new LinearLayoutManager(UserTimeTable.this,LinearLayoutManager.VERTICAL,false));
                     recyclerView.setAdapter(timeOverallAdapter);
-                    timeOverallAdapter.notifyDataSetChanged();
+
 
                 }
 
@@ -167,8 +186,8 @@ public class UserTimeTable extends AppCompatActivity {
                 selectedSpinnerOnMonth = parent.getItemAtPosition(position).toString();
 
                 if(!timeModelArrayList.isEmpty()) {
-                    ArrayList<TimeModel> arrayListTmp = new ArrayList<>();
-
+                    //ArrayList<TimeModel> arrayListTmp = new ArrayList<>();
+                    arrayListTmp.clear();
                     for (TimeModel model : timeModelArrayList) {
                         String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate()).toLowerCase();
                         String s1 = month.toLowerCase() + selectedSpinnerOnYear;
@@ -182,13 +201,10 @@ public class UserTimeTable extends AppCompatActivity {
 
                     }
 
-                    countingMoneyMethod(arrayListTmp);
-                    recyclerView.setHasFixedSize(true);
-                    recyclerView.setLayoutManager(new LinearLayoutManager(UserTimeTable.this));
+                    recyclerView = findViewById(R.id.recyclerView);
                     timeOverallAdapter = new TimeOverallAdapter(UserTimeTable.this, arrayListTmp);
+                    recyclerView.setLayoutManager(new LinearLayoutManager(UserTimeTable.this,LinearLayoutManager.VERTICAL,false));
                     recyclerView.setAdapter(timeOverallAdapter);
-                    timeOverallAdapter.notifyDataSetChanged();
-                    Log.i("size arrayListTmp", arrayListTmp.size() + "");
                 }
 
             }
@@ -198,6 +214,149 @@ public class UserTimeTable extends AppCompatActivity {
         });
 
 
+
+    }
+
+    public void swipeControllerToRecyclerView() {
+
+        if (idUserSelectedByAdmin != null) {
+            swipeController = new SwipeController(new SwipeControllerActions() {
+                @Override
+                public void onRightClicked(int position) {
+                    Toast.makeText(UserTimeTable.this, "beginTime: "+ arrayListTmp.get(position).getTimeBegin(), Toast.LENGTH_SHORT).show();
+
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(UserTimeTable.this);
+                    builder.setTitle("Jesteś pewien że chcesz usunąć ten wpis ?");
+                    builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Toast.makeText(UserTimeTable.this, "Usunięto", Toast.LENGTH_SHORT).show();
+                            authViewModel.deleteDateFromFireBase(arrayListTmp.get(position).getDocumentId());
+                            arrayListTmp.remove(position);
+                            timeOverallAdapter.notifyDataSetChanged();
+                        }
+                    });
+                    builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
+
+
+                }
+
+                @Override
+                public void onLeftClicked(int position) {
+                    AlertDialog.Builder builder2 = new AlertDialog.Builder(UserTimeTable.this);
+                    LayoutInflater layoutInflater = LayoutInflater.from(UserTimeTable.this);
+                    View inflate = layoutInflater.inflate(R.layout.edit_user_time_table, null);
+                    builder2.setView(inflate);
+                    builder2.setTitle("Edycja danych");
+
+                    editTextBeginTime = inflate.findViewById(R.id.editText_beginTime);
+                    editTextEndTime = inflate.findViewById(R.id.editText_endTime);
+                    editTextTimeOverall = inflate.findViewById(R.id.editText_timeOverall);
+
+                    editTextBeginTime.setText(arrayListTmp.get(position).getTimeBegin());
+                    editTextEndTime.setText(arrayListTmp.get(position).getTimeEnd());
+                    editTextTimeOverall.setText(arrayListTmp.get(position).getTimeOverall());
+
+                    editTextBeginTime.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            timePickerDialog("Ustaw godzinę rozpoczęcia",editTextBeginTime);
+                        }
+                    });
+
+                    editTextEndTime.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            timePickerDialog("Ustaw godzinę zakończenia",editTextEndTime);
+                        }
+                    });
+
+                    editTextTimeOverall.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                             overall= timePickerDialog("Ustaw ogólny czas", editTextTimeOverall);
+                        }
+                    });
+
+
+                    builder2.setPositiveButton("Potwierdź", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                                authViewModel.updateDataToFirebase(
+                                        arrayListTmp.get(position).getDocumentId(),
+                                        editTextBeginTime.getText().toString(),
+                                        editTextEndTime.getText().toString(),
+                                        editTextTimeOverall.getText().toString(),
+                                        overall==0?arrayListTmp.get(position).getTimeOverallInLong():overall);
+
+                                arrayListTmp.get(position).setTimeBegin(editTextBeginTime.getText().toString());
+                                arrayListTmp.get(position).setTimeEnd(editTextEndTime.getText().toString());
+                                arrayListTmp.get(position).setTimeOverall(editTextTimeOverall.getText().toString());
+                                arrayListTmp.get(position).setTimeOverallInLong(overall==0?arrayListTmp.get(position).getTimeOverallInLong():overall);
+                                Toast.makeText(UserTimeTable.this, "ZAKTUALIZOWANE", Toast.LENGTH_SHORT).show();
+                                Log.i("OVERALL LONG TO SEND", overall+"");
+                                overall=0;
+                                timeOverallAdapter.notifyDataSetChanged();
+
+                        }
+                    });
+                    builder2.setNegativeButton("Anuluj", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+
+                    AlertDialog alertDialog = builder2.create();
+                    alertDialog.show();
+                    super.onLeftClicked(position);
+                }
+            });
+
+            ItemTouchHelper itemTouchhelper = new ItemTouchHelper(swipeController);
+            itemTouchhelper.attachToRecyclerView(recyclerView);
+
+            recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+                @Override
+                public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
+                    swipeController.onDraw(c);
+                }
+            });
+        }
+
+    }
+
+    private long timePickerDialog(String titleName, TextView textView) {
+
+        overall=0;
+        TimePickerDialog.OnTimeSetListener onTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minuteOfDay) {
+                hour=hourOfDay;
+                minute = minuteOfDay;
+                overall +=minuteOfDay*60000;
+                overall +=hourOfDay * 3600000;
+                textView.setText(String.format(Locale.getDefault(),"%02d:%02d",hour,minute));
+            }
+        };
+
+        TimePickerDialog timePickerDialog = new TimePickerDialog(this,onTimeSetListener,hour,minute,true);
+        timePickerDialog.setTitle(titleName);
+        timePickerDialog.show();
+        timePickerDialog.getButton(TimePickerDialog.BUTTON_POSITIVE).setBackgroundColor(getResources().getColor(R.color.teal_200));
+        timePickerDialog.getButton(TimePickerDialog.BUTTON_NEGATIVE).setBackgroundColor(getResources().getColor(R.color.teal_200));
+
+        return overall;
 
     }
 

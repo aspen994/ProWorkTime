@@ -42,45 +42,13 @@
             android:text="Data"
             android:padding="10dp"/>
     </LinearLayout>
-        <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <TextView
-            android:id="@+id/worker"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Pracownik"
-            android:gravity="center"
-            android:padding="10dp"/>
-        <TextView
-            android:id="@+id/worker_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Czas"
-            android:padding="10dp"/>
-        <TextView
-            android:id="@+id/worker_money_toWithdrawn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ile zł do \nwypłacenia"
-            android:padding="10dp"/>
-        <TextView
-            android:id="@+id/worker_money_withdrawn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ile \nwypłacono"/>
-        <TextView
-            android:id="@+id/worker_money_earn_overall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ogólnie zarobiono"
-            android:padding="10dp"/>
-        </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewCardy"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

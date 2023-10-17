@@ -4,7 +4,6 @@ import static com.example.ogrdapp.view.AdminView.i;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,11 +24,12 @@ import java.util.List;
 import java.util.Set;
 
 public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmin.MyViewHolder>{
+
     private Context context;
-    private ArrayList<TimeModel> list;
+    private List<TimeModel> list;
     private View.OnClickListener onClickListener;
 
-    public AdapterUserForAdmin(Context context, ArrayList<TimeModel> list) {
+    public AdapterUserForAdmin(Context context, List<TimeModel> list) {
         this.context = context;
         this.list = list;
     }
@@ -60,6 +60,7 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
         holder.workerTimeToAdapter.setText("Przepracowane godziny: " + FormattedTime.formattedTime(list.get(position).getTimeOverallInLong()));
         holder.workerMoneyEarnOverallToAdapter.setText("Zarobione pieniądze: "+countingMoney(FormattedTime.formattedTimeInInt(list.get(position).getTimeOverallInLong())));
         holder.workerMoneyToWithdrawnToAdapter.setText("Wydane pieniądze: "+countingMoney(FormattedTime.formattedTimeInInt(list.get(position).getTimeOverallInLong())));
+
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -69,7 +70,6 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
                 context.startActivity(intent);
             }
         });
-
     }
 
     private String countingMoney(int timeOverallInLong) {

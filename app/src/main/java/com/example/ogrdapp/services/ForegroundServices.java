@@ -39,7 +39,7 @@ public class ForegroundServices extends Service {
     public static boolean isServiceStarted =false;
     public static final int HOUR_IN_SECONDS = 3600;
     public static final int MINUTE_IN_SECONDS = 60;
-    public static boolean isPaused;
+    public static boolean isPaused =false;
     private long startPostStamp;
     private long timeOfCreation;
 

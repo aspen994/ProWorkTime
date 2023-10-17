@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.ogrdapp.model.TimeModel;
 import com.example.ogrdapp.model.User;
 import com.example.ogrdapp.repository.AuthRepository;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
@@ -87,6 +88,14 @@ public class AuthViewModel extends AndroidViewModel {
     public void registerUser(String email, String password,String userName_send,String surName_send,String foreign_email)
     {
         authRepository.register(email, password,userName_send,surName_send,foreign_email);
+    }
+    public void deleteDateFromFireBase(String documentId)
+    {
+        authRepository.deleteDateFromFireBase(documentId);
+    }
+    public void updateDataToFirebase(String documentID,String beginTime,String endTime,String overall,long timeInLong)
+    {
+        authRepository.updateDataToFirebase(documentID,beginTime,endTime,overall,timeInLong);
     }
 
 

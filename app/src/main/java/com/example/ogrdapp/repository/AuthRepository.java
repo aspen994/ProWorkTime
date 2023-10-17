@@ -15,10 +15,13 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -50,6 +53,11 @@ public class AuthRepository {
 
     private List<String> arrayListForAssigningEmail;
     private List<String> arrayListIfAdmin;
+    boolean ifAdmin = false;
+    private final String KEY_TIME_BEGIN = "timeBegin";
+    private final String KEY_TIME_END = "timeEnd";
+    private final String KEY_TIME_OVERALL = "timeOverall";
+    private final String KEY_TIME_OVERALL_IN_LONG = "timeOverallInLong";
 
     public AuthRepository(Application application) {
 
@@ -67,6 +75,7 @@ public class AuthRepository {
         db = FirebaseFirestore.getInstance();
         collectionReference = db.collection("Users");
         collectionReferenceTime = db.collection("Time");
+
 
         /*fireBaseUser = firebaseAuth.getCurrentUser();
         assert  fireBaseUser!=null;
@@ -127,6 +136,7 @@ public class AuthRepository {
     public void getTimeForUser(String userId)
     {
 
+
         collectionReferenceTime.whereEqualTo("id", userId)
                 .get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
@@ -141,6 +151,7 @@ public class AuthRepository {
 
                                 TimeModel timeModel = timeModels.toObject(TimeModel.class);
                                 //TODO 06.07.2023 - Sorting the ArrayList to show time in proper order
+
 
                                 timeModelArrayList.add(timeModel);
                                 Collections.sort(timeModelArrayList, new Comparator<TimeModel>() {
@@ -161,6 +172,7 @@ public class AuthRepository {
     }
     public void getData()
     {
+
         collectionReferenceTime.whereEqualTo("id", currentUserId)
                 .get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
@@ -194,7 +206,10 @@ public class AuthRepository {
     }
     public void saveDataToFireBase(TimeModel timeModel)
     {
-        collectionReferenceTime.add(timeModel).addOnFailureListener(new OnFailureListener() {
+        String idDocument = collectionReferenceTime.document().getId();
+        Log.i("idDocument to Save", idDocument);
+        timeModel.setDocumentId(idDocument);
+        collectionReferenceTime.document(idDocument).set(timeModel).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                   Toast.makeText(application, "Fail on adding data", Toast.LENGTH_SHORT).show();
@@ -203,8 +218,42 @@ public class AuthRepository {
 
 
     }
+    public void deleteDateFromFireBase(String documentID)
+    {
+        collectionReferenceTime.document(documentID).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                Log.i("Succes","succes");
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.i("ON FAIL", e.getMessage());
+            }
+        });
+    }
 
-    boolean ifAdmin = false;
+    public void updateDataToFirebase(String documentID,String beginTime,String endTime,String overall,long timeInLong)
+    {
+        Map<String,Object> result = new HashMap<>();
+        result.put(KEY_TIME_BEGIN,beginTime);
+        result.put(KEY_TIME_END,endTime);
+        result.put(KEY_TIME_OVERALL,overall);
+        result.put(KEY_TIME_OVERALL_IN_LONG,timeInLong);
+
+
+
+        collectionReferenceTime.document(documentID).update(result).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+            Log.i("FAIl on updated",e.getMessage());
+            }
+        });
+    }
+
+
+
+
     //Jeśli userId jest równy foreignkey- wtedy pokaż panel admina
 
 

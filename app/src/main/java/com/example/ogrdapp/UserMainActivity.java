@@ -190,7 +190,9 @@ public class UserMainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 ServiceHelper.isCountingTimeActive = true;
 
+
                 isPaused = !isPaused;
+
 
 
                 saveCreationTimeToSharedPref(new Date().getTime());

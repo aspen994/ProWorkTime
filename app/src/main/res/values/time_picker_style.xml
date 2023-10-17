@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="MaterialCalendarTheme" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
+
+        <!-- Buttons -->
+        <item name="buttonBarPositiveButtonStyle">@style/TextButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/TextButton</item>
+    </style>
+    <style name="TextButton" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/teal_200</item>
+        <item name="backgroundTint">@color/teal_200</item>
+    </style>
+</resources>
