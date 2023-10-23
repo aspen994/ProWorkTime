@@ -134,9 +134,7 @@ public class MainActivity extends AppCompatActivity {
                 if(!TextUtils.isEmpty(email.getText().toString())&&!TextUtils.isEmpty(password.getText().toString())) {
                     authViewModel.signIn(emailToLogin,passwordToLogin);
                 }
-                else {
-                    Toast.makeText(MainActivity.this, "Wprowadź użytkownika i hasła", Toast.LENGTH_SHORT).show();
-                }
+
             }
         });
 

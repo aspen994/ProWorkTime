@@ -64,14 +64,14 @@ public class SwipeController extends ItemTouchHelper.Callback {
     public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
         if (actionState == ACTION_STATE_SWIPE) {
             if (buttonShowedState != ButtonsState.GONE) {
-                Log.i("I am swiping","Swiping");
+
                 if (buttonShowedState == ButtonsState.LEFT_VISIBLE) {
-                    Log.i("LEFT", "LEFT");
+
                     dX = Math.max(dX, buttonWidth);
                 }
                 if (buttonShowedState == ButtonsState.RIGHT_VISIBLE)
                 {
-                    Log.i("RiGHT","Right");
+
                     dX = Math.min(dX, -buttonWidth);
                 }
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);

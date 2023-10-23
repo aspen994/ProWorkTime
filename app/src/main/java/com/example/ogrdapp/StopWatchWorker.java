@@ -42,14 +42,12 @@ public class StopWatchWorker extends Worker {
         if(timerStarted || isPaused)
         {
             context.startService(intent);
-            Log.i("START SERVICE","START SERVICE");
 
             return ListenableWorker.Result.retry();
         }
 
         else if (!timerStarted && !isPaused) {
             context.stopService(intent);
-            Log.i("STOP SERVICE","STOP SERVICE");
             return ListenableWorker.Result.success();
         }
 

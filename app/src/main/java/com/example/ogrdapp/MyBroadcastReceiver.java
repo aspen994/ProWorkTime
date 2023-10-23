@@ -21,8 +21,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        Log.i("ACTION",intent.getAction());
-        Log.i("Start time Broadcast",getIsTimeStarted(context)+"");
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())&& (getIsTimeStarted(context) || getIsTimePaused(context) )) {
             Intent i = new Intent(context, ForegroundServices.class);
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

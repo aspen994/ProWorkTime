@@ -84,7 +84,6 @@ public class AuthRepository {
         {
             fireBaseUser = firebaseAuth.getCurrentUser();
             firebaseUserMutableLiveData.postValue(firebaseAuth.getCurrentUser());
-            Log.i("NOT NULL","NOT NULL");
             currentUserId = fireBaseUser.getUid();
         }
 
@@ -162,7 +161,6 @@ public class AuthRepository {
                                 });
 
                             }
-                            Log.i("THREE TIMES","not importent");
                             timeForUserListMutableLiveData.setValue(timeModelArrayList);
 
                         }
@@ -207,12 +205,11 @@ public class AuthRepository {
     public void saveDataToFireBase(TimeModel timeModel)
     {
         String idDocument = collectionReferenceTime.document().getId();
-        Log.i("idDocument to Save", idDocument);
         timeModel.setDocumentId(idDocument);
         collectionReferenceTime.document(idDocument).set(timeModel).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                  Toast.makeText(application, "Fail on adding data", Toast.LENGTH_SHORT).show();
+
             }
         });
 
@@ -223,12 +220,12 @@ public class AuthRepository {
         collectionReferenceTime.document(documentID).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-                Log.i("Succes","succes");
+
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Log.i("ON FAIL", e.getMessage());
+
             }
         });
     }
@@ -241,28 +238,18 @@ public class AuthRepository {
         result.put(KEY_TIME_OVERALL,overall);
         result.put(KEY_TIME_OVERALL_IN_LONG,timeInLong);
 
-
-
         collectionReferenceTime.document(documentID).update(result).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-            Log.i("FAIl on updated",e.getMessage());
             }
         });
     }
-
-
-
-
-    //Jeśli userId jest równy foreignkey- wtedy pokaż panel admina
-
 
     public void getUsersDataAssignedToAdmin()
     {
         collectionReference.whereEqualTo("foreign_key",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                Log.i("CURRENT USER ID: ",currentUserId+"");
                 if(!value.isEmpty())
                 {
                     List<User> userArrayList = new ArrayList<>();
@@ -276,7 +263,7 @@ public class AuthRepository {
                             User user = snapshot.toObject(User.class);
 
                             userArrayList.add(user);
-                            Log.i("Inside: ","getUsersDataAssignedToAdmin");
+
 
                             userArrayListOfUserMutableLiveData.postValue(userArrayList);
                         }
@@ -295,7 +282,7 @@ public class AuthRepository {
         collectionReference.whereEqualTo("foreign_key",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                Log.i("CURRENT USER ID: ",currentUserId+"");
+
                     if(!value.isEmpty())
                     {
                         for(QueryDocumentSnapshot snapshot:value)
@@ -306,7 +293,7 @@ public class AuthRepository {
 
                               }
                               else{
-                                  Log.i("JESTEŚ UŻYTKOWNIKIEM ","JESTEŚ UŻYTKOWNIKIEM");
+
                                   ifAdminMutableLiveData.postValue(false);
                               }
                         }
@@ -357,13 +344,13 @@ public class AuthRepository {
                     collectionReference.document(email).set(userObj).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void unused) {
-                            Toast.makeText(application.getApplicationContext(), application.getString(R.string.registry_sucesfully), Toast.LENGTH_SHORT).show();
+
                             arrayListForAssigningEmail.clear();
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(application.getApplicationContext(), application.getString(R.string.fail_registry), Toast.LENGTH_SHORT).show();
+
                         }
                     });
 

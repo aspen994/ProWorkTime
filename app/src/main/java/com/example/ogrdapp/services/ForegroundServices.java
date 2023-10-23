@@ -51,7 +51,7 @@ public class ForegroundServices extends Service {
 
     @Override
     public void onCreate() {
-        Toast.makeText(this, "On create service", Toast.LENGTH_SHORT).show();
+
         isServiceStarted = loadAndUpdateServiceStartedFromSharedPreferences();
         timeOfCreation = loadAndUpdateTimeCreationFromSharedPreferences();
         timerStarted = getIsTimerStartedFromSharedPreferences();
@@ -215,7 +215,6 @@ public class ForegroundServices extends Service {
     // When stop is called on destroy
     @Override
     public void onDestroy() {
-        Toast.makeText(this, "On destroy service", Toast.LENGTH_SHORT).show();
         super.onDestroy();
     }
 

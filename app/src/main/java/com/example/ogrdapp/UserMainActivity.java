@@ -5,7 +5,9 @@ import static com.example.ogrdapp.services.ForegroundServices.HOUR_IN_SECONDS;
 import static com.example.ogrdapp.services.ForegroundServices.isPaused;
 
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -20,7 +22,6 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -56,7 +57,6 @@ import com.journeyapps.barcodescanner.ScanOptions;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -286,7 +286,6 @@ public class UserMainActivity extends AppCompatActivity {
                     if(aBoolean==true)
                     {
                         showItem();
-                        Toast.makeText(UserMainActivity.this, "WITAM ADMINA, USZANOWANKO, KRÓLU ZŁOTY", Toast.LENGTH_SHORT).show();
                     }
 
             }
@@ -307,23 +306,20 @@ public class UserMainActivity extends AppCompatActivity {
                 if(R.id.action_time==item.getItemId())
                 {
                     Intent i = new Intent(UserMainActivity.this, UserTimeTable.class);
-                    //Log.i("SIZE ARRAY LIST FROM MAIN",arrayList.size()+"");
                     startActivity(i);
-                }
-                else if(R.id.action_logout==item.getItemId())
-                {
-                    authViewModel.signOut();
-                    //startActivity(new Intent(UserMainActivity.this, MainActivity.class));
                 }
                 else if(R.id.action_admin_panel==item.getItemId())
                 {
                     Intent i = new Intent(UserMainActivity.this, AdminView.class);
                     startActivity(i);
-                    Toast.makeText(UserMainActivity.this, "Przechodzisz do panelu admina", Toast.LENGTH_SHORT).show();
+
                 }
-                /*else if (R.id.chose_language == item.getItemId()) {
-                    openDialog(UserMainActivity.this);
-                }*/
+                else if(R.id.action_logout==item.getItemId())
+                {
+                    alertDialogLConfirmation();
+                    //authViewModel.signOut();
+                }
+
                 return true;
             }
         });
@@ -343,6 +339,28 @@ public class UserMainActivity extends AppCompatActivity {
 
         intentFilter = new IntentFilter();
         intentFilter.addAction("Counter");
+
+    }
+
+    private void alertDialogLConfirmation() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(UserMainActivity.this);
+        builder.setTitle("Czy na pewno chcesz się wylogować");
+        builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                authViewModel.signOut();
+            }
+        });
+        builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
 
     }
 
@@ -615,7 +633,8 @@ public class UserMainActivity extends AppCompatActivity {
                     stopTime();
                     delayToAssign=0;
                     qr.setVisibility(View.VISIBLE);
-
+                    stopWork.setVisibility(View.INVISIBLE);
+                    holdResumeWork.setVisibility(View.INVISIBLE);
                 }
 
             }
@@ -642,7 +661,6 @@ public class UserMainActivity extends AppCompatActivity {
                     begingTime.setText(getString(R.string.begin_work_at) +getCurrentTimeWithDelay(delayToAssign*1000));
                     holdResumeWork.setText(getString(R.string.hold_work));
                     startCountingTimeWithHandler(delayToAssign);
-
 
                     endingTime.setText("");
 
@@ -680,7 +698,7 @@ public class UserMainActivity extends AppCompatActivity {
     private void startForegroundServiceToCountTimeWithWorkManger() {
     if(!isMyServiceRunning(ForegroundServices.class)&&(isPaused||isTimerStarted)) {
         startWorker();
-        Toast.makeText(this, "running Worker", Toast.LENGTH_SHORT).show();
+
     }
     }
 

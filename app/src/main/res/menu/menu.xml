@@ -13,13 +13,14 @@
         android:icon="@drawable/baseline_language_24"
         app:showAsAction="never"/>-->
     <item
-        android:id="@+id/action_logout"
-        android:title="@string/logout_menu"
-        android:icon="@drawable/baseline_logout_24"
-        app:showAsAction="never"/>
-    <item
         android:id="@+id/action_admin_panel"
         android:title="@string/admin_panel"
         android:icon="@drawable/baseline_manage_accounts_24"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_logout"
+        android:title="@string/logout_menu"
+        android:icon="@drawable/baseline_logout_24"
+        app:showAsAction="never"/>
+
 </menu>

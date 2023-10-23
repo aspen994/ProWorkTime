@@ -6,13 +6,33 @@ public class User {
     private String surName;
     private String userId;
     private String username;
+    private int hoursOverall;
+    private int hoursToSettle;
 
-    public User(String email, String foreign_key, String surName, String userId, String userName) {
+    public User(String email, String foreign_key, String surName, String userId, String userName,int hoursOverall,int hoursToSettle) {
         this.email = email;
         this.foreign_key = foreign_key;
         this.surName = surName;
         this.userId = userId;
         this.username = userName;
+        this.hoursOverall=  hoursOverall;
+        this.hoursToSettle = hoursToSettle;
+    }
+
+    public int getHoursOverall() {
+        return hoursOverall;
+    }
+
+    public void setHoursOverall(int hoursOverall) {
+        this.hoursOverall = hoursOverall;
+    }
+
+    public int getHoursToSettle() {
+        return hoursToSettle;
+    }
+
+    public void setHoursToSettle(int hoursToSettle) {
+        this.hoursToSettle = hoursToSettle;
     }
 
     public User() {

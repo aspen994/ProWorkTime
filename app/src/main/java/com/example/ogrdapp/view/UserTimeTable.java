@@ -98,6 +98,7 @@ public class UserTimeTable extends AppCompatActivity {
 
         idUserSelectedByAdmin = getIntent().getStringExtra("Id");
         if(idUserSelectedByAdmin!=null) {
+
             authViewModel.getTimeForUser(idUserSelectedByAdmin);
 
             authViewModel.getTimeForUserListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
@@ -151,8 +152,7 @@ public class UserTimeTable extends AppCompatActivity {
                     for (TimeModel model : timeModelArrayList) {
                         String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate()).toLowerCase();
                         String s1 = selectedSpinnerOnMonth.toLowerCase()+year.toLowerCase();
-                        Log.i("S_YEAR FROM DATABASE",s);
-                        Log.i("S_YEAR FROM APP",s1);
+
 
                         if (s1.equals(s)) {
                             arrayListTmp.add(model);
@@ -192,8 +192,7 @@ public class UserTimeTable extends AppCompatActivity {
                         String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate()).toLowerCase();
                         String s1 = month.toLowerCase() + selectedSpinnerOnYear;
 
-                        Log.i("S_Month FROM DATABASE",s);
-                        Log.i("S_Month FROM APP",s1);
+
 
                         if (s1.equals(s)) {
                             arrayListTmp.add(model);
@@ -223,15 +222,13 @@ public class UserTimeTable extends AppCompatActivity {
             swipeController = new SwipeController(new SwipeControllerActions() {
                 @Override
                 public void onRightClicked(int position) {
-                    Toast.makeText(UserTimeTable.this, "beginTime: "+ arrayListTmp.get(position).getTimeBegin(), Toast.LENGTH_SHORT).show();
-
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(UserTimeTable.this);
                     builder.setTitle("Jesteś pewien że chcesz usunąć ten wpis ?");
                     builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Toast.makeText(UserTimeTable.this, "Usunięto", Toast.LENGTH_SHORT).show();
+
                             authViewModel.deleteDateFromFireBase(arrayListTmp.get(position).getDocumentId());
                             arrayListTmp.remove(position);
                             timeOverallAdapter.notifyDataSetChanged();
@@ -304,7 +301,7 @@ public class UserTimeTable extends AppCompatActivity {
                                 arrayListTmp.get(position).setTimeOverall(editTextTimeOverall.getText().toString());
                                 arrayListTmp.get(position).setTimeOverallInLong(overall==0?arrayListTmp.get(position).getTimeOverallInLong():overall);
                                 Toast.makeText(UserTimeTable.this, "ZAKTUALIZOWANE", Toast.LENGTH_SHORT).show();
-                                Log.i("OVERALL LONG TO SEND", overall+"");
+
                                 overall=0;
                                 timeOverallAdapter.notifyDataSetChanged();
 
