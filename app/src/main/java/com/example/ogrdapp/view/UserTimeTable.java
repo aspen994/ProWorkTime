@@ -230,7 +230,15 @@ public class UserTimeTable extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int which) {
 
                             authViewModel.deleteDateFromFireBase(arrayListTmp.get(position).getDocumentId());
+                            TimeModel timeModel = arrayListTmp.get(position);
                             arrayListTmp.remove(position);
+
+                            // Delete for the user
+
+                            timeModel.setTimeOverallInLong(-timeModel.getTimeOverallInLong());
+                            authViewModel.updatedDataHoursToFirebaseUser(timeModel);
+
+
                             timeOverallAdapter.notifyDataSetChanged();
                         }
                     });
@@ -254,6 +262,7 @@ public class UserTimeTable extends AppCompatActivity {
                     View inflate = layoutInflater.inflate(R.layout.edit_user_time_table, null);
                     builder2.setView(inflate);
                     builder2.setTitle("Edycja danych");
+
 
                     editTextBeginTime = inflate.findViewById(R.id.editText_beginTime);
                     editTextEndTime = inflate.findViewById(R.id.editText_endTime);
@@ -289,7 +298,31 @@ public class UserTimeTable extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
-                                authViewModel.updateDataToFirebase(
+                            TimeModel timeModel = arrayListTmp.get(position);
+
+                            Log.i("Time from TimeModel:",-timeModel.getTimeOverallInLong()+"");
+                            Log.i("Time from editText",overall+"");
+
+                            TimeModel timeModel1 = new TimeModel();
+                            timeModel1.setId(timeModel.getId());
+                            timeModel1.setTimeOverallInLong(timeModel.getTimeOverallInLong());
+
+                            timeModel.setTimeOverallInLong(-timeModel.getTimeOverallInLong());
+                            authViewModel.updatedDataHoursToFirebaseUser(timeModel);
+
+                            timeModel1.setTimeOverallInLong(overall);
+                            authViewModel.updatedDataHoursToFirebaseUser(timeModel1);
+
+                            // Nowa metoda.
+
+
+
+                            Toast.makeText(UserTimeTable.this, arrayListTmp.get(position).getTimeBegin(), Toast.LENGTH_SHORT).show();
+
+
+                            //OverHere
+
+                            authViewModel.updateDataToFirebase(
                                         arrayListTmp.get(position).getDocumentId(),
                                         editTextBeginTime.getText().toString(),
                                         editTextEndTime.getText().toString(),

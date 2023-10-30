@@ -6,7 +6,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import com.example.ogrdapp.R;
 import com.example.ogrdapp.model.TimeModel;
@@ -15,13 +17,10 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.Timestamp;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -44,6 +43,7 @@ public class AuthRepository {
     private MutableLiveData<Boolean> ifAdminMutableLiveData;
     private MutableLiveData<List<User>> userArrayListOfUserMutableLiveData;
     private MutableLiveData<List<TimeModel>> timeForUserListMutableLiveData;
+
     private FirebaseAuth firebaseAuth;
     private FirebaseFirestore db;
     private CollectionReference collectionReference;
@@ -96,6 +96,7 @@ public class AuthRepository {
         return  fireBaseUser.getUid();
     }
 
+
     public MutableLiveData<List<TimeModel>> getTimeForUserListMutableLiveData() {
         return timeForUserListMutableLiveData;
     }
@@ -124,6 +125,8 @@ public class AuthRepository {
         return firebaseTimeModel;
     }
 
+
+
     public FirebaseAuth getFirebaseAuth()
     {
         return firebaseAuth;
@@ -134,7 +137,6 @@ public class AuthRepository {
 
     public void getTimeForUser(String userId)
     {
-
 
         collectionReferenceTime.whereEqualTo("id", userId)
                 .get()
@@ -150,7 +152,6 @@ public class AuthRepository {
 
                                 TimeModel timeModel = timeModels.toObject(TimeModel.class);
                                 //TODO 06.07.2023 - Sorting the ArrayList to show time in proper order
-
 
                                 timeModelArrayList.add(timeModel);
                                 Collections.sort(timeModelArrayList, new Comparator<TimeModel>() {
@@ -202,18 +203,48 @@ public class AuthRepository {
                     }
                 });
     }
+
+    // I tutaj
+    public void updatedDataHoursToFirebaseUser(TimeModel timeModel)
+    {
+        collectionReference.whereEqualTo("userId",timeModel.getId()).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                if(!queryDocumentSnapshots.isEmpty())
+                {
+                    for(QueryDocumentSnapshot user: queryDocumentSnapshots)
+                    {
+                        User user1 = user.toObject(User.class);
+
+                        Map<String, Object> result = null;
+
+                        result = new HashMap<>();
+
+                        result.put("userEmail", user1.getEmail());
+                        result.put("timeOverallFromTimeModel", timeModel.getTimeOverallInLong());
+                        result.put("hoursOverall",user1.getHoursOverall());
+
+                        updateUserTime(result);
+                    }
+                }
+            }
+        });
+    }
     public void saveDataToFireBase(TimeModel timeModel)
     {
         String idDocument = collectionReferenceTime.document().getId();
         timeModel.setDocumentId(idDocument);
+        String id = timeModel.getId();
+
+        timeModel.getTimeOverallInLong();
+
+        Log.i("INVOKED","SHOULD ONCE");
         collectionReferenceTime.document(idDocument).set(timeModel).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-
+                Toast.makeText(application, "Fail on adding data", Toast.LENGTH_SHORT).show();
             }
         });
-
-
     }
     public void deleteDateFromFireBase(String documentID)
     {
@@ -225,6 +256,28 @@ public class AuthRepository {
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
+
+            }
+        });
+    }
+
+    //TUTAJ
+    private void updateUserTime(Map<String, Object>result)
+    {
+        String userEmail =(String)result.get("userEmail");
+        long hoursOverall = (long)result.get("hoursOverall");
+        long hoursFromTimeModel = (long)result.get("timeOverallFromTimeModel");
+        long l = hoursOverall + hoursFromTimeModel;
+        Map<String,Object> resultToSend = new HashMap<>();
+
+        resultToSend.put("hoursToSettle",l);
+        resultToSend.put("hoursOverall",l);
+        collectionReference.document(userEmail).update(resultToSend).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                Log.i("hoursOverall value: ",hoursOverall+"");
+                Log.i("hoursFromTimeModel value: ",hoursFromTimeModel+"");
+                Log.i("L value",l+"");
 
             }
         });
@@ -334,12 +387,14 @@ public class AuthRepository {
                     final String currentUserId = fireBaseUser.getUid();
 
                     // Create a userMap so we can create user in the User Collection in FireStore
-                    Map<String, String> userObj = new HashMap<>();
+                    Map<String, Object> userObj = new HashMap<>();
                     userObj.put("userId",currentUserId);
                     userObj.put("email",email);
                     userObj.put("username",userName_send);
                     userObj.put("surName",surName_send);
                     userObj.put("foreign_key", arrayListForAssigningEmail.get(0));
+                    userObj.put("hoursOverall",0);
+                    userObj.put("hoursToSettle",0);
 
                     collectionReference.document(email).set(userObj).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override

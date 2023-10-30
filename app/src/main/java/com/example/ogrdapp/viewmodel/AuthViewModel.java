@@ -5,15 +5,14 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ogrdapp.model.TimeModel;
 import com.example.ogrdapp.model.User;
 import com.example.ogrdapp.repository.AuthRepository;
-import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
+import java.util.Map;
 
 public class AuthViewModel extends AndroidViewModel {
 
@@ -25,6 +24,7 @@ public class AuthViewModel extends AndroidViewModel {
     private MutableLiveData<Boolean> ifAdminMutableLiveData;
     private MutableLiveData<List<User>> timeModelArrayListOfUserMutableLiveData;
     private MutableLiveData<List<TimeModel>> timeForUserListMutableLiveData;
+
 
 
     public AuthViewModel(@NonNull Application application) {
@@ -42,6 +42,7 @@ public class AuthViewModel extends AndroidViewModel {
     public MutableLiveData<List<TimeModel>> getTimeForUserListMutableLiveData() {
         return timeForUserListMutableLiveData;
     }
+
 
     public MutableLiveData<List<User>> getTimeModelArrayListOfUserMutableLiveData() {
         return timeModelArrayListOfUserMutableLiveData;
@@ -77,6 +78,10 @@ public class AuthViewModel extends AndroidViewModel {
         authRepository.getUsersDataAssignedToAdmin();
     }
 
+    public void updatedDataHoursToFirebaseUser(TimeModel timeModel)
+    {
+        authRepository.updatedDataHoursToFirebaseUser(timeModel);
+    }
     public void saveTimeModelToFirebase(TimeModel timeModel)
     {
         authRepository.saveDataToFireBase(timeModel);
@@ -97,6 +102,7 @@ public class AuthViewModel extends AndroidViewModel {
     {
         authRepository.updateDataToFirebase(documentID,beginTime,endTime,overall,timeInLong);
     }
+
 
 
     public void signIn(String email, String password)

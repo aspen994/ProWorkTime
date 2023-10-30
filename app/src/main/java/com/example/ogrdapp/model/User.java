@@ -6,10 +6,10 @@ public class User {
     private String surName;
     private String userId;
     private String username;
-    private int hoursOverall;
-    private int hoursToSettle;
+    private long hoursOverall;
+    private long  hoursToSettle;
 
-    public User(String email, String foreign_key, String surName, String userId, String userName,int hoursOverall,int hoursToSettle) {
+    public User(String email, String foreign_key, String surName, String userId, String userName,long hoursOverall,long hoursToSettle) {
         this.email = email;
         this.foreign_key = foreign_key;
         this.surName = surName;
@@ -19,19 +19,19 @@ public class User {
         this.hoursToSettle = hoursToSettle;
     }
 
-    public int getHoursOverall() {
+    public long getHoursOverall() {
         return hoursOverall;
     }
 
-    public void setHoursOverall(int hoursOverall) {
+    public void setHoursOverall(long hoursOverall) {
         this.hoursOverall = hoursOverall;
     }
 
-    public int getHoursToSettle() {
+    public long getHoursToSettle() {
         return hoursToSettle;
     }
 
-    public void setHoursToSettle(int hoursToSettle) {
+    public void setHoursToSettle(long hoursToSettle) {
         this.hoursToSettle = hoursToSettle;
     }
 

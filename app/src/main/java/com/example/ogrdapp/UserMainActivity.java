@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +23,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -58,6 +60,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class UserMainActivity extends AppCompatActivity {
@@ -172,6 +175,8 @@ public class UserMainActivity extends AppCompatActivity {
                 if(!timerStarted) {
                     qr.setVisibility(View.VISIBLE);
                     textMain.setVisibility(View.VISIBLE);
+                    Intent serviceIntent = new Intent(UserMainActivity.this,ForegroundServices.class);
+                    stopService(serviceIntent);
                 }
                 else{
                     stopCountingTime();
@@ -339,6 +344,7 @@ public class UserMainActivity extends AppCompatActivity {
 
         intentFilter = new IntentFilter();
         intentFilter.addAction("Counter");
+
 
     }
 
@@ -811,7 +817,10 @@ public class UserMainActivity extends AppCompatActivity {
         if(timeModel.getTimeOverallInLong()>0)
         {
             authViewModel.saveTimeModelToFirebase(timeModel);
+            Log.i("How many times","How many");
+            authViewModel.updatedDataHoursToFirebaseUser(timeModel);
         }
+
 
     }
 
