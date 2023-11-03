@@ -315,7 +315,7 @@ public class UserTimeTable extends AppCompatActivity {
 
                             // Nowa metoda.
 
-
+                            // anythings
 
                             Toast.makeText(UserTimeTable.this, arrayListTmp.get(position).getTimeBegin(), Toast.LENGTH_SHORT).show();
 
