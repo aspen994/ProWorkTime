@@ -221,8 +221,13 @@ public class AuthRepository {
                         result = new HashMap<>();
 
                         result.put("userEmail", user1.getEmail());
+                        //to z danych
                         result.put("timeOverallFromTimeModel", timeModel.getTimeOverallInLong());
+                        //to z usera
                         result.put("hoursOverall",user1.getHoursOverall());
+                        Log.i("User time overall",user1.getHoursOverall()+"");
+
+                        Log.i("Inside repository",timeModel.getTimeOverallInLong()+"");
 
                         updateUserTime(result);
                     }
@@ -265,7 +270,9 @@ public class AuthRepository {
     private void updateUserTime(Map<String, Object>result)
     {
         String userEmail =(String)result.get("userEmail");
+        //to z usera
         long hoursOverall = (long)result.get("hoursOverall");
+        //to z modelu
         long hoursFromTimeModel = (long)result.get("timeOverallFromTimeModel");
         long l = hoursOverall + hoursFromTimeModel;
         Map<String,Object> resultToSend = new HashMap<>();
@@ -279,6 +286,11 @@ public class AuthRepository {
                 Log.i("hoursFromTimeModel value: ",hoursFromTimeModel+"");
                 Log.i("L value",l+"");
 
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.i("L value fail", e.getMessage());
             }
         });
     }

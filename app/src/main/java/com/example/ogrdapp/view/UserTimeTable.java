@@ -300,28 +300,14 @@ public class UserTimeTable extends AppCompatActivity {
 
                             TimeModel timeModel = arrayListTmp.get(position);
 
-                            Log.i("Time from TimeModel:",-timeModel.getTimeOverallInLong()+"");
-                            Log.i("Time from editText",overall+"");
+                            long timeInLongToDelete = -timeModel.getTimeOverallInLong();
 
                             TimeModel timeModel1 = new TimeModel();
                             timeModel1.setId(timeModel.getId());
-                            timeModel1.setTimeOverallInLong(timeModel.getTimeOverallInLong());
-
-                            timeModel.setTimeOverallInLong(-timeModel.getTimeOverallInLong());
-                            authViewModel.updatedDataHoursToFirebaseUser(timeModel);
-
-                            timeModel1.setTimeOverallInLong(overall);
+                            timeModel1.setTimeOverallInLong((timeInLongToDelete +overall));
                             authViewModel.updatedDataHoursToFirebaseUser(timeModel1);
 
-                            // Nowa metoda.
-
-                            // anythings
-
-                            Toast.makeText(UserTimeTable.this, arrayListTmp.get(position).getTimeBegin(), Toast.LENGTH_SHORT).show();
-
-
                             //OverHere
-
                             authViewModel.updateDataToFirebase(
                                         arrayListTmp.get(position).getDocumentId(),
                                         editTextBeginTime.getText().toString(),
