@@ -48,6 +48,9 @@ public class AdminView extends AppCompatActivity {
     private ActivityAdminViewBinding binding;
     public static int i=0;
     SwipeController swipeController;
+    public static final String TAG_ADMIN_VIEW ="ADMIN VIEW";
+
+    public List<TimeModel> listaDlaSettleWork;
 
 
     @Override
@@ -65,6 +68,7 @@ public class AdminView extends AppCompatActivity {
         timeModelArrayListForAdmin = new ArrayList<>();
         brandNewArrayList= new ArrayList<>();
         arrayListFromInsideSelectDateMethod =new ArrayList<>();
+        listaDlaSettleWork = new ArrayList<>();
 
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
@@ -95,16 +99,37 @@ public class AdminView extends AppCompatActivity {
         authViewModel.getTimeForUserListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
             @Override
             public void onChanged(List<TimeModel> timeModels) {
+
                 timeModelArrayListForAdmin.addAll(timeModels);
+                listaDlaSettleWork.addAll(timeModels);
+
+                Log.i("HOW MANY","HELLO");
+                for(TimeModel x: timeModelArrayListForAdmin)
+                {
+                    Log.i(TAG_ADMIN_VIEW,x.getUserName());
+                    Log.i(TAG_ADMIN_VIEW,x.getId());
+                    Log.i(TAG_ADMIN_VIEW,x.getTimeOverallInLong()+" ");
+                    x.setMoneyOverall("HELLO");
+                    Log.i(TAG_ADMIN_VIEW,x.getMoneyOverall());
+                    Log.i(TAG_ADMIN_VIEW,x.getTimeAdded().toDate().toString());
+                    Log.i("-----","-----");
+
+                }
+
                 //2
                 timeModelArrayList.addAll(summingTime((ArrayList<TimeModel>) timeModels));
+
+        /*        for(TimeModel x: timeModelArrayList)
+                {
+                    Log.i(TAG_ADMIN_VIEW,x.getUserName());
+                    Log.i(TAG_ADMIN_VIEW,x.getTimeOverallInLong()+" ");
+                }*/
+
+
+
                 setupRecyclerView();
             }
         });
-
-
-
-
 
         /*MaterialDatePicker.Builder builder = MaterialDatePicker.Builder.datePicker();
         builder.setSelection(Pair.create(MaterialDatePicker.thisMonthInUtcMilliseconds(),MaterialDatePicker.todayInUtcMilliseconds()));
@@ -124,6 +149,7 @@ public class AdminView extends AppCompatActivity {
                 SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy");
                 String formattedDate = format.format(calendar1.getTime());
                 stringBuilder.append(formattedDate+"-");
+
 
                 calendar1.setTimeInMillis(selection.second);
                 formattedDate = format.format(calendar1.getTime());
@@ -201,7 +227,8 @@ public class AdminView extends AppCompatActivity {
             arrayListFromInsideSelectDateMethod.clear();
 
 
-            adapterUserForAdmin = new AdapterUserForAdmin(AdminView.this, brandNewArrayList);
+
+            adapterUserForAdmin = new AdapterUserForAdmin(AdminView.this, brandNewArrayList,this,authViewModel,listaDlaSettleWork);
             binding.recyclerViewCardy.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
             binding.recyclerViewCardy.setAdapter(adapterUserForAdmin);
 
@@ -267,7 +294,7 @@ public class AdminView extends AppCompatActivity {
 
     private void setupRecyclerView() {
 
-        adapterUserForAdmin = new AdapterUserForAdmin(AdminView.this, timeModelArrayList);
+        adapterUserForAdmin = new AdapterUserForAdmin(AdminView.this, timeModelArrayList,this,authViewModel,listaDlaSettleWork);
         binding.recyclerViewCardy.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         binding.recyclerViewCardy.setAdapter(adapterUserForAdmin);
 
@@ -318,6 +345,8 @@ public class AdminView extends AppCompatActivity {
         timeModel.setTimeOverallInLong(sumTime);
 
         timeModels.add(timeModel);
+
+
 
         return timeModels;
     }

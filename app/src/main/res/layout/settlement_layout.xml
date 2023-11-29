@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+    <TextView
+        android:id="@+id/date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Rozlicz za" />
+        <Space
+            android:layout_width="12dp"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/date_display"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="69.420.2023" />
+        <Space
+            android:layout_width="12dp"
+            android:layout_height="wrap_content" />
+        <Button
+            android:id="@+id/btn_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select date"/>
+
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+           android:id="@+id/time_worked"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:text="Przepracowany czas: "/>
+        <Space
+            android:layout_width="12dp"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/time_worked_display"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="60H"/>
+       </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/bid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Przepracowany czas: "/>
+        <Space
+            android:layout_width="12dp"
+            android:layout_height="wrap_content" />
+        <EditText
+            android:id="@+id/bid_enter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12dp"
+            android:hint="Podaj stawkę za h"/>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/moneyToPaid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Możliwe do wypłacenia"/>
+        <Space
+            android:layout_width="12dp"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/moneyToPaid_display"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1200 zł"/>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</androidx.appcompat.widget.LinearLayoutCompat>

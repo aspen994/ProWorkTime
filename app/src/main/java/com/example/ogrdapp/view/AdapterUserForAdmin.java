@@ -2,36 +2,62 @@ package com.example.ogrdapp.view;
 
 import static com.example.ogrdapp.view.AdminView.i;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.core.util.Pair;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ogrdapp.R;
+import com.example.ogrdapp.SelectPath;
+import com.example.ogrdapp.SettleForWork;
 import com.example.ogrdapp.model.TimeModel;
 import com.example.ogrdapp.utility.FormattedTime;
+import com.example.ogrdapp.viewmodel.AuthViewModel;
+import com.google.android.material.datepicker.CalendarConstraints;
+import com.google.android.material.datepicker.CompositeDateValidator;
+import com.google.android.material.datepicker.DateValidatorPointBackward;
+import com.google.android.material.datepicker.DateValidatorPointForward;
+import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
+import com.google.firebase.Timestamp;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 
 public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmin.MyViewHolder>{
 
     private Context context;
+    private FragmentActivity fragmentActivity;
     private List<TimeModel> list;
     private View.OnClickListener onClickListener;
+    private AuthViewModel authViewModel;
+    List<TimeModel> listOfAllRecordsForUser;
 
-    public AdapterUserForAdmin(Context context, List<TimeModel> list) {
+    public AdapterUserForAdmin(Context context, List<TimeModel> list,FragmentActivity fragmentActivity, AuthViewModel authViewModel,List<TimeModel> listOfAllRecordsForUser) {
         this.context = context;
         this.list = list;
+        this.fragmentActivity = fragmentActivity;
+        this.authViewModel = authViewModel;
+        this.listOfAllRecordsForUser = listOfAllRecordsForUser;
     }
 
     @NonNull
@@ -61,13 +87,32 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
         holder.workerMoneyEarnOverallToAdapter.setText("Zarobione pieniądze: "+countingMoney(FormattedTime.formattedTimeInInt(list.get(position).getTimeOverallInLong())));
         holder.workerMoneyToWithdrawnToAdapter.setText("Wydane pieniądze: "+countingMoney(FormattedTime.formattedTimeInInt(list.get(position).getTimeOverallInLong())));
 
+
+
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Toast.makeText(context, timeModel.getUserName(), Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(context, UserTimeTable.class);
-                intent.putExtra("Id",timeModel.getId());
-                context.startActivity(intent);
+                SelectPath selectPath = new SelectPath(context);
+                SettleForWork settleForWork  = new SettleForWork(context,fragmentActivity,timeModel.getUserName(),timeModel.getId(),authViewModel,listOfAllRecordsForUser);
+
+                selectPath.buildAlertDialog();
+
+                selectPath.viewById.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent intent = new Intent(context, UserTimeTable.class);
+                        intent.putExtra("Id",timeModel.getId());
+                        context.startActivity(intent);
+                    }
+                });
+
+                selectPath.settleForWork.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        settleForWork.buildAlertDialog();
+                    }
+                });
             }
         });
     }
