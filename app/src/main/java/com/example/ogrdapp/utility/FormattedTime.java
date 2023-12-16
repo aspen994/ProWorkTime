@@ -19,7 +19,6 @@ public class FormattedTime {
         long minutes = seconds / 60;
         long hours = minutes / 60;
 
-        ;
 
         return (int)hours;
     }

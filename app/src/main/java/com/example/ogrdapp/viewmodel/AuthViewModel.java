@@ -22,8 +22,10 @@ public class AuthViewModel extends AndroidViewModel {
     private MutableLiveData<TimeModel> timeModelMutableLiveData;
     private MutableLiveData<List<TimeModel>> timeModelListMutableLiveData;
     private MutableLiveData<Boolean> ifAdminMutableLiveData;
-    private MutableLiveData<List<User>> timeModelArrayListOfUserMutableLiveData;
+    private MutableLiveData<List<User>> userArrayListOfUserMutableLiveData;
     private MutableLiveData<List<TimeModel>> timeForUserListMutableLiveData;
+    private MutableLiveData<Map<String, Object>> paycheckHoursToSettleMutableLiveData;
+    private MutableLiveData<String> emailMutableLiveData;
 
 
 
@@ -35,8 +37,18 @@ public class AuthViewModel extends AndroidViewModel {
         timeModelListMutableLiveData=authRepository.getTimeModelArrayListMutableLiveData();
         loggedStatus = authRepository.getUserLoggedMutableLiveData();
         ifAdminMutableLiveData = authRepository.getIfAdminMutableLiveData();
-        timeModelArrayListOfUserMutableLiveData = authRepository.getUserArrayListOfUserMutableLiveData();
+        userArrayListOfUserMutableLiveData = authRepository.getUserArrayListOfUserMutableLiveData();
         timeForUserListMutableLiveData = authRepository.getTimeForUserListMutableLiveData();
+        paycheckHoursToSettleMutableLiveData = authRepository.getPaycheckHoursToSettleMutableLiveData();
+        emailMutableLiveData = authRepository.getEmailMutableLiveData();
+    }
+
+    public MutableLiveData<String> getEmailMutableLiveData() {
+        return emailMutableLiveData;
+    }
+
+    public MutableLiveData<Map<String, Object>> getPaycheckHoursToSettleMutableLiveData() {
+        return paycheckHoursToSettleMutableLiveData;
     }
 
     public MutableLiveData<List<TimeModel>> getTimeForUserListMutableLiveData() {
@@ -44,8 +56,8 @@ public class AuthViewModel extends AndroidViewModel {
     }
 
 
-    public MutableLiveData<List<User>> getTimeModelArrayListOfUserMutableLiveData() {
-        return timeModelArrayListOfUserMutableLiveData;
+    public MutableLiveData<List<User>> getUserArrayListOfUserMutableLiveData() {
+        return userArrayListOfUserMutableLiveData;
     }
 
     public MutableLiveData<FirebaseUser> getUserData() {
@@ -94,6 +106,13 @@ public class AuthViewModel extends AndroidViewModel {
     {
         authRepository.register(email, password,userName_send,surName_send,foreign_email);
     }
+
+    public void getSelectedTimeForUser(String userId, String dateRange)
+    {
+        authRepository.getSelectedTimeForUser(userId,dateRange);
+    }
+
+
     public void deleteDateFromFireBase(String documentId)
     {
         authRepository.deleteDateFromFireBase(documentId);
@@ -103,8 +122,31 @@ public class AuthViewModel extends AndroidViewModel {
         authRepository.updateDataToFirebase(documentID,beginTime,endTime,overall,timeInLong);
     }
 
+    public void updateStatusOfSettled(String documentID, boolean isSettled,int withDrawnMoney )
+    {
+        authRepository.updateStatusOfPayment(documentID,isSettled,withDrawnMoney);
+    }
 
+    public void updateStatusOfTimeForUser(String userId,long settletedTimeInMillis, long payCheck )
+    {
+        authRepository.updateStatusOfTimeForUser(userId,settletedTimeInMillis,payCheck);
+    }
 
+    public void getPaycheckAndHoursToSettleLong(String userId)
+    {
+        authRepository.getPaycheckAndHoursToSettleLong(userId);
+    }
+
+    public void getDataToUpdatePayCheck(String userId)
+    {
+        authRepository.getDataToUpdatePayCheck(userId);
+    }
+
+  /*  public void getAllIdDocumentFromTimeModel()
+    {
+        authRepository.getAllIdDocumentFromTimeModel();
+    }
+*/
     public void signIn(String email, String password)
     {
         authRepository.signIn(email,password);

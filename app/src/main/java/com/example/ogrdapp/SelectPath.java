@@ -10,6 +10,7 @@ public class SelectPath {
     private Context context;
     public Button viewById;
     public Button settleForWork;
+    private AlertDialog.Builder builder;
 
     public SelectPath(Context context) {
         this.context = context;
@@ -17,14 +18,24 @@ public class SelectPath {
 
     public void buildAlertDialog()
     {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder = new AlertDialog.Builder(context);
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         View inflate = layoutInflater.inflate(R.layout.chose_pathway, null);
         viewById = inflate.findViewById(R.id.button_edit);
         settleForWork = inflate.findViewById(R.id.button_settling);
         builder.setView(inflate);
         builder.setTitle("Co chcesz zrobić ?");
-        builder.show();
+        builderShow();
+    }
+
+    private AlertDialog builderShow()
+    {
+        return  builder.show();
+    }
+
+    public void dismissBuildAlertDialog()
+    {
+     builderShow().cancel();
     }
 
 

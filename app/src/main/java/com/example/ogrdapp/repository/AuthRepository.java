@@ -6,9 +6,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 
 import com.example.ogrdapp.R;
 import com.example.ogrdapp.model.TimeModel;
@@ -43,6 +41,9 @@ public class AuthRepository {
     private MutableLiveData<Boolean> ifAdminMutableLiveData;
     private MutableLiveData<List<User>> userArrayListOfUserMutableLiveData;
     private MutableLiveData<List<TimeModel>> timeForUserListMutableLiveData;
+    private MutableLiveData<List<TimeModel>> timeSelectedForUserListMutableLiveData;
+    private MutableLiveData<Map<String, Object>> paycheckHoursToSettleMutableLiveData;
+    private MutableLiveData<String> emailMutableLiveData;
 
     private FirebaseAuth firebaseAuth;
     private FirebaseFirestore db;
@@ -58,6 +59,9 @@ public class AuthRepository {
     private final String KEY_TIME_END = "timeEnd";
     private final String KEY_TIME_OVERALL = "timeOverall";
     private final String KEY_TIME_OVERALL_IN_LONG = "timeOverallInLong";
+    private final String KEY_PAYCHECK = "paycheck";
+    private final String KEY_MONEYOVERALL = "moneyOverall";
+    private final String WITH_DRAWN_MONEY = "withdrawnMoney";
 
     public AuthRepository(Application application) {
 
@@ -71,15 +75,14 @@ public class AuthRepository {
         this.ifAdminMutableLiveData = new MutableLiveData<>();
         this.userArrayListOfUserMutableLiveData = new MutableLiveData<>();
         this.timeForUserListMutableLiveData = new MutableLiveData<>();
+        this.timeSelectedForUserListMutableLiveData = new MutableLiveData<>();
+        this.paycheckHoursToSettleMutableLiveData = new MutableLiveData<>();
+        this.emailMutableLiveData = new MutableLiveData<>();
         firebaseAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
         collectionReference = db.collection("Users");
         collectionReferenceTime = db.collection("Time");
 
-
-        /*fireBaseUser = firebaseAuth.getCurrentUser();
-        assert  fireBaseUser!=null;
-        currentUserId = fireBaseUser.getUid();*/
         if(firebaseAuth.getCurrentUser()!=null)
         {
             fireBaseUser = firebaseAuth.getCurrentUser();
@@ -125,7 +128,9 @@ public class AuthRepository {
         return firebaseTimeModel;
     }
 
-
+    public MutableLiveData<Map<String, Object>> getPaycheckHoursToSettleMutableLiveData() {
+        return paycheckHoursToSettleMutableLiveData;
+    }
 
     public FirebaseAuth getFirebaseAuth()
     {
@@ -134,6 +139,53 @@ public class AuthRepository {
     public FirebaseUser getCurrentUser() {
         return firebaseAuth.getCurrentUser();
     }
+
+    public MutableLiveData<List<TimeModel>> getTimeSelectedForUserListMutableLiveData() {
+        return timeSelectedForUserListMutableLiveData;
+    }
+
+    public MutableLiveData<String> getEmailMutableLiveData() {
+        return emailMutableLiveData;
+    }
+
+    //getTimeSelectedForUserListMutableLiveData - mutable live data for this below.
+    public void getSelectedTimeForUser(String userId, String dateRange)
+    {
+
+        //decoderForDate(dateRange);
+
+        collectionReferenceTime.whereEqualTo("id",userId)
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if(!queryDocumentSnapshots.isEmpty())
+                        {
+                            List<TimeModel> timeModelArrayList = new ArrayList<>();
+                            for(QueryDocumentSnapshot timeModels: queryDocumentSnapshots)
+                            {
+
+                                TimeModel timeModel = timeModels.toObject(TimeModel.class);
+
+
+                                timeModelArrayList.add(timeModel);
+                                Collections.sort(timeModelArrayList, new Comparator<TimeModel>() {
+                                    @Override
+                                    public int compare(TimeModel o1, TimeModel o2) {
+                                        return o1.getTimeAdded().compareTo(o2.getTimeAdded());
+                                    }
+                                });
+
+                            }
+                            timeSelectedForUserListMutableLiveData.setValue(timeModelArrayList);
+
+                            Log.i("Firebase","getSelectedTimeForUser");
+                        }
+                    }
+                });
+    }
+
+
 
     public void getTimeForUser(String userId)
     {
@@ -151,7 +203,7 @@ public class AuthRepository {
                             {
 
                                 TimeModel timeModel = timeModels.toObject(TimeModel.class);
-                                //TODO 06.07.2023 - Sorting the ArrayList to show time in proper order
+
 
                                 timeModelArrayList.add(timeModel);
                                 Collections.sort(timeModelArrayList, new Comparator<TimeModel>() {
@@ -163,8 +215,9 @@ public class AuthRepository {
 
                             }
                             timeForUserListMutableLiveData.setValue(timeModelArrayList);
-
                         }
+
+                        Log.i("Firebase","getTimeForUser");
 
                     }
                 });
@@ -186,7 +239,7 @@ public class AuthRepository {
                             {
 
                                 TimeModel timeModel = timeModels.toObject(TimeModel.class);
-                                //TODO 06.07.2023 - Sorting the ArrayList to show time in proper order
+
 
                                 timeModelArrayList.add(timeModel);
                                 Collections.sort(timeModelArrayList, new Comparator<TimeModel>() {
@@ -199,7 +252,7 @@ public class AuthRepository {
                             }
                             timeModelArrayListMutableLiveData.postValue(timeModelArrayList);
                         }
-
+                        Log.i("Firebase","getData");
                     }
                 });
     }
@@ -225,12 +278,73 @@ public class AuthRepository {
                         result.put("timeOverallFromTimeModel", timeModel.getTimeOverallInLong());
                         //to z usera
                         result.put("hoursOverall",user1.getHoursOverall());
-                        Log.i("User time overall",user1.getHoursOverall()+"");
 
-                        Log.i("Inside repository",timeModel.getTimeOverallInLong()+"");
+                        result.put("hoursToSettle",user1.getHoursToSettle());
+
+                        Log.i("Firebase","updatedDataHoursToFirebaseUser");
 
                         updateUserTime(result);
                     }
+                }
+            }
+        });
+    }
+
+    // TODO Nie jest to używane można usunąć.
+    public void getPaycheckAndHoursToSettleLong(String userId)
+    {
+        collectionReference.whereEqualTo("userId",userId).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                if(!value.isEmpty())
+                {
+                    for(QueryDocumentSnapshot snapshot:value)
+                    {
+                        Long hoursToSettle = snapshot.getLong("hoursToSettle");
+                        long paycheck = (long)snapshot.get("paycheck");
+
+
+                        Map<String, Object> result = new HashMap<>();
+
+                        result.put("paycheck",paycheck);
+                        result.put("hoursToSettle", hoursToSettle);
+
+                        Log.i("Firebase","getPaycheckAndHoursToSettleLong");
+
+                        paycheckHoursToSettleMutableLiveData.postValue(result);
+
+                    }
+
+                }
+            }
+        });
+    }
+    public void getDataToUpdatePayCheck(String currentUserId)
+    {
+
+        collectionReference.whereEqualTo("userId",currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                if(!queryDocumentSnapshots.isEmpty())
+                {
+                    for(QueryDocumentSnapshot snapshot:queryDocumentSnapshots)
+                    {
+                        Long hoursToSettle = snapshot.getLong("hoursToSettle");
+                        long paycheck = (long)snapshot.get("paycheck");
+                        String email = snapshot.getString("email");
+
+                        Map<String, Object> result = new HashMap<>();
+
+                        result.put("paycheck",paycheck);
+                        result.put("hoursToSettle", hoursToSettle);
+                        result.put("email",email);
+
+                        Log.i("Firebase","getDataToUpdatePayCheck");
+
+                        paycheckHoursToSettleMutableLiveData.postValue(result);
+
+                    }
+
                 }
             }
         });
@@ -243,11 +357,12 @@ public class AuthRepository {
 
         timeModel.getTimeOverallInLong();
 
-        Log.i("INVOKED","SHOULD ONCE");
+
         collectionReferenceTime.document(idDocument).set(timeModel).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(application, "Fail on adding data", Toast.LENGTH_SHORT).show();
+                Log.i("Firebase","saveDataToFireBase");
             }
         });
     }
@@ -256,7 +371,7 @@ public class AuthRepository {
         collectionReferenceTime.document(documentID).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-
+                Log.i("Firebase","deleteDateFromFireBase");
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -272,25 +387,26 @@ public class AuthRepository {
         String userEmail =(String)result.get("userEmail");
         //to z usera
         long hoursOverall = (long)result.get("hoursOverall");
-        //to z modelu
+        long hoursToSettle = (long)result.get("hoursToSettle");
         long hoursFromTimeModel = (long)result.get("timeOverallFromTimeModel");
-        long l = hoursOverall + hoursFromTimeModel;
+        //to z modelu
+        long hoursOverallToSend = hoursOverall + hoursFromTimeModel;
+        long hoursToSettleToSend = hoursToSettle + hoursFromTimeModel;
         Map<String,Object> resultToSend = new HashMap<>();
 
-        resultToSend.put("hoursToSettle",l);
-        resultToSend.put("hoursOverall",l);
+        resultToSend.put("hoursOverall",hoursOverallToSend);
+        resultToSend.put("hoursToSettle",hoursToSettleToSend);
+        Log.i("Firebase","updateUserTime");
         collectionReference.document(userEmail).update(resultToSend).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-                Log.i("hoursOverall value: ",hoursOverall+"");
-                Log.i("hoursFromTimeModel value: ",hoursFromTimeModel+"");
-                Log.i("L value",l+"");
+
 
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Log.i("L value fail", e.getMessage());
+
             }
         });
     }
@@ -303,16 +419,77 @@ public class AuthRepository {
         result.put(KEY_TIME_OVERALL,overall);
         result.put(KEY_TIME_OVERALL_IN_LONG,timeInLong);
 
+        Log.i("Firebase","updateDataToFirebase");
+
         collectionReferenceTime.document(documentID).update(result).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
             }
         });
+
     }
 
+    public void updateStatusOfPayment(String documentID,boolean isSettled,int withDrawnMoney)
+    {
+        Map<String,Object> result = new HashMap<>();
+        result.put(KEY_MONEYOVERALL,isSettled);
+        result.put(WITH_DRAWN_MONEY,withDrawnMoney);
+
+        Log.i("Firebase","updateStatusOfPayment");
+
+        collectionReferenceTime.document(documentID).update(result);
+    }
+
+
+    public void updateStatusOfTimeForUser(String email, long settledTimeInMillis, long payCheck)
+    {
+                            Map<String, Object> result = new HashMap<>();
+
+                            result.put("paycheck",payCheck);
+                            result.put("hoursToSettle", settledTimeInMillis);
+                            Log.i("Firebase","updateStatusOfTimeForUser");
+                        collectionReference.document(email).update(result).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+
+                            }
+                        });
+    }
+
+
+
+
+    // TODO Było add snapshotListener zmieniam na add on SuccesListenr
     public void getUsersDataAssignedToAdmin()
     {
-        collectionReference.whereEqualTo("foreign_key",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
+        Log.i("Firebase","getUsersDataAssignedToAdmin");
+        collectionReference.whereEqualTo("foreign_key",currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                if(!queryDocumentSnapshots.isEmpty())
+                {
+                    List<User> userArrayList = new ArrayList<>();
+
+                    for(QueryDocumentSnapshot snapshot:queryDocumentSnapshots)
+                    {
+                        if(currentUserId.equals(snapshot.getString("foreign_key")))
+                        {
+                            ifAdminMutableLiveData.postValue(true);
+
+                            User user = snapshot.toObject(User.class);
+
+                            userArrayList.add(user);
+
+
+                            userArrayListOfUserMutableLiveData.postValue(userArrayList);
+                        }
+
+                    }
+
+                }
+            }
+        });
+      /*  collectionReference.whereEqualTo("foreign_key",currentUserId).addOnSuccessListener(new OnSuccessListener<>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 if(!value.isEmpty())
@@ -338,12 +515,43 @@ public class AuthRepository {
                 }
 
             }
-        });
+        });*/
+       /* collectionReference.whereEqualTo("foreign_key",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                if(!value.isEmpty())
+                {
+                    List<User> userArrayList = new ArrayList<>();
+
+                    for(QueryDocumentSnapshot snapshot:value)
+                    {
+                        if(currentUserId.equals(snapshot.getString("foreign_key")))
+                        {
+                            ifAdminMutableLiveData.postValue(true);
+
+                            User user = snapshot.toObject(User.class);
+
+                            userArrayList.add(user);
+
+
+                            userArrayListOfUserMutableLiveData.postValue(userArrayList);
+                        }
+
+                    }
+
+                }
+
+            }
+        });*/
+
 
 
     }
     public boolean checkIfAdmin ()
     {
+
+        Log.i("Firebase","checkIfAdmin");
+
         collectionReference.whereEqualTo("foreign_key",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -373,6 +581,8 @@ public class AuthRepository {
 
     public void register (String email, String password,String userName_send,String surName_send,String foreign_email)
     {
+
+        Log.i("Firebase","register");
 
         collectionReference.whereEqualTo("email",foreign_email).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -407,6 +617,9 @@ public class AuthRepository {
                     userObj.put("foreign_key", arrayListForAssigningEmail.get(0));
                     userObj.put("hoursOverall",0);
                     userObj.put("hoursToSettle",0);
+                    userObj.put("paycheck",0);
+
+                    Log.i("Hello five","five");
 
                     collectionReference.document(email).set(userObj).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
@@ -432,6 +645,8 @@ public class AuthRepository {
     public void signIn(String email, String password)
     {
 
+        Log.i("Firebase","signIn");
+
         firebaseAuth.signInWithEmailAndPassword(email,password).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
             @Override
             public void onSuccess(AuthResult authResult) {
@@ -448,6 +663,8 @@ public class AuthRepository {
 
     public void resetPassword(String email)
     {
+        Log.i("Firebase","resetPassword");
+
         firebaseAuth.sendPasswordResetEmail(email).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
@@ -464,6 +681,8 @@ public class AuthRepository {
 
     public TimeModel getUsernameAndSurname()
     {
+        Log.i("Firebase","getUsernameAndSurname");
+
         checkIfAdmin();
         TimeModel timeModel = new TimeModel();
         collectionReference.whereEqualTo("userId",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -495,6 +714,7 @@ public class AuthRepository {
     public void singOut(){
         firebaseAuth.signOut();
         userLoggedMutableLiveData.postValue(true);
+        Log.i("Firebase","singOut");
     }
 
 }

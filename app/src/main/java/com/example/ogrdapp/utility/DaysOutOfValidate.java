@@ -11,16 +11,15 @@ import com.google.android.material.datepicker.CalendarConstraints;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 public class DaysOutOfValidate implements CalendarConstraints.DateValidator{
 
     int mYear, mMonth, mDayOfWeek;
-    List<Date> dates;
+    List<Calendar> blockedDatesFromDatabase;
 
-    public DaysOutOfValidate(List<Date> dates) {
-        this.dates = dates;
+    public DaysOutOfValidate(List<Calendar> blockedDatesFromDatabase) {
+        this.blockedDatesFromDatabase = blockedDatesFromDatabase;
     }
     DaysOutOfValidate(Parcel parcel) {
         mYear = parcel.readInt();
@@ -32,7 +31,7 @@ public class DaysOutOfValidate implements CalendarConstraints.DateValidator{
         Calendar calendarInput = Calendar.getInstance();
         calendarInput.setTimeInMillis(date);
 
-        for (Calendar blockedDate : getBlockedDates()) {
+        for (Calendar blockedDate : blockedDatesFromDatabase) {
             if (areSameDay(calendarInput, blockedDate)) {
                 return false; // If it matches one of the blocked dates, return false.
             }
@@ -41,29 +40,11 @@ public class DaysOutOfValidate implements CalendarConstraints.DateValidator{
         return true; // If there is no match, the date is valid.
     }
 
-    private List<Calendar> getBlockedDates() {
 
-        List<Calendar> blockedDates = new ArrayList<>();
-
-        Calendar nov10 = Calendar.getInstance();
-        nov10.set(2023, Calendar.NOVEMBER, 10);
-        blockedDates.add(nov10);
-
-        Calendar nov16 = Calendar.getInstance();
-        nov16.set(2023, Calendar.NOVEMBER, 16);
-        blockedDates.add(nov16);
-
-        Calendar nov7 = Calendar.getInstance();
-        nov7.set(2023, Calendar.NOVEMBER, 7);
-        blockedDates.add(nov7);
-
-        return blockedDates;
-    }
 
     private boolean areSameDay(Calendar cal1, Calendar cal2) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        Log.i("SDF inputDate", sdf.format(cal1.getTime()));
-        Log.i("SDF blockedDate",sdf.format(cal2.getTime()));
+
 
         return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
                 cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR);

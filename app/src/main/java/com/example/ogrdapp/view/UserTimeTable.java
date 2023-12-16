@@ -5,6 +5,7 @@ import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -86,6 +87,9 @@ public class UserTimeTable extends AppCompatActivity {
         arrayListTmp = new ArrayList<>();
 
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+
+  //      Toast.makeText(this, "To Tu powinno", Toast.LENGTH_SHORT).show();
+//        authViewModel.getAllIdDocumentFromTimeModel();
 
         // FOR ADMIN
 
@@ -251,6 +255,7 @@ public class UserTimeTable extends AppCompatActivity {
 
                 }
 
+                // Edycja danych
                 @Override
                 public void onLeftClicked(int position) {
                     AlertDialog.Builder builder2 = new AlertDialog.Builder(UserTimeTable.this);
@@ -285,7 +290,8 @@ public class UserTimeTable extends AppCompatActivity {
                     editTextTimeOverall.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                             overall= timePickerDialog("Ustaw ogólny czas", editTextTimeOverall);
+                             timePickerDialog("Ustaw ogólny czas", editTextTimeOverall);
+                             Log.i("Overall", overall+"");
                         }
                     });
 
@@ -303,13 +309,15 @@ public class UserTimeTable extends AppCompatActivity {
                             timeModel1.setTimeOverallInLong((timeInLongToDelete +overall));
                             authViewModel.updatedDataHoursToFirebaseUser(timeModel1);
 
-                            //OverHere
+
                             authViewModel.updateDataToFirebase(
                                         arrayListTmp.get(position).getDocumentId(),
                                         editTextBeginTime.getText().toString(),
                                         editTextEndTime.getText().toString(),
                                         editTextTimeOverall.getText().toString(),
                                         overall==0?arrayListTmp.get(position).getTimeOverallInLong():overall);
+
+                            Log.i("onLeftClicked",overall+"");
 
                                 arrayListTmp.get(position).setTimeBegin(editTextBeginTime.getText().toString());
                                 arrayListTmp.get(position).setTimeEnd(editTextEndTime.getText().toString());
@@ -348,16 +356,26 @@ public class UserTimeTable extends AppCompatActivity {
 
     }
 
-    private long timePickerDialog(String titleName, TextView textView) {
+    private void timePickerDialog(String titleName, TextView textView) {
+
 
         overall=0;
+
         TimePickerDialog.OnTimeSetListener onTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker view, int hourOfDay, int minuteOfDay) {
                 hour=hourOfDay;
                 minute = minuteOfDay;
-                overall +=minuteOfDay*60000;
-                overall +=hourOfDay * 3600000;
+                Log.i("HourOfDay",hourOfDay+"");
+                Log.i("minuteOfDay",minuteOfDay+"");
+
+                if(titleName.equals("Ustaw ogólny czas"))
+                {
+                    overall += minuteOfDay * 60000;
+                    overall += hourOfDay * 3600000;
+                }
+
+                Log.i("timePickerDialog", overall +"");
                 textView.setText(String.format(Locale.getDefault(),"%02d:%02d",hour,minute));
             }
         };
@@ -368,7 +386,6 @@ public class UserTimeTable extends AppCompatActivity {
         timePickerDialog.getButton(TimePickerDialog.BUTTON_POSITIVE).setBackgroundColor(getResources().getColor(R.color.teal_200));
         timePickerDialog.getButton(TimePickerDialog.BUTTON_NEGATIVE).setBackgroundColor(getResources().getColor(R.color.teal_200));
 
-        return overall;
 
     }
 

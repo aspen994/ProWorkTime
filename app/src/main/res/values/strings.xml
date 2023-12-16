@@ -43,6 +43,7 @@
     <string name="complete_the_fields">Uzupełnij poprawnie pola</string>
     <string name="no_user">Nie ma takiego użytkownika</string>
     <string name="admin_panel">Zarządzaj pracownikami</string>
+    <string name="money_paid">Wypłacone pieniądze :\u0020 </string>
     <string-array name="language">
         <item>Wybierz język</item>
         <item>polski</item>

@@ -8,8 +8,9 @@ public class User {
     private String username;
     private long hoursOverall;
     private long  hoursToSettle;
+    private int paycheck;
 
-    public User(String email, String foreign_key, String surName, String userId, String userName,long hoursOverall,long hoursToSettle) {
+    public User(String email, String foreign_key, String surName, String userId, String userName,long hoursOverall,long hoursToSettle, int paycheck) {
         this.email = email;
         this.foreign_key = foreign_key;
         this.surName = surName;
@@ -17,6 +18,7 @@ public class User {
         this.username = userName;
         this.hoursOverall=  hoursOverall;
         this.hoursToSettle = hoursToSettle;
+        this.paycheck = paycheck;
     }
 
     public long getHoursOverall() {
@@ -78,14 +80,25 @@ public class User {
         this.username = username;
     }
 
+    public int getPaycheck() {
+        return paycheck;
+    }
+
+    public void setPaycheck(int paycheck) {
+        this.paycheck = paycheck;
+    }
+
     @Override
     public String toString() {
         return "User{" +
                 "email='" + email + '\'' +
-                ", foreignKey='" + foreign_key + '\'' +
+                ", foreign_key='" + foreign_key + '\'' +
                 ", surName='" + surName + '\'' +
                 ", userId='" + userId + '\'' +
-                ", userName='" + username + '\'' +
+                ", username='" + username + '\'' +
+                ", hoursOverall=" + hoursOverall +
+                ", hoursToSettle=" + hoursToSettle +
+                ", paycheck=" + paycheck +
                 '}';
     }
 }

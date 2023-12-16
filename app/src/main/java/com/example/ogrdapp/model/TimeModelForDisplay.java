@@ -1,14 +1,8 @@
 package com.example.ogrdapp.model;
 
-import android.os.Build;
-import android.os.Parcel;
-import android.os.Parcelable;
-
-import androidx.annotation.NonNull;
-
 import com.google.firebase.Timestamp;
 
-public class TimeModel  implements Parcelable {
+public class TimeModelForDisplay {
     private String userName;
     private String userSurname;
     private String timeBegin;
@@ -20,10 +14,11 @@ public class TimeModel  implements Parcelable {
     private Timestamp timeAdded;
     private int withdrawnMoney;
     private String documentId;
+    private long timeOverallInLongLefToSettle;
 
-
-    public TimeModel(String userName, String userSurname, String timeBegin, String timeEnd, String timeOverall,
-                     boolean moneyOverall, String id, long timeOverallInLong, Timestamp timeAdded,int withdrawnMoney,String documentId) {
+    public TimeModelForDisplay(String userName, String userSurname, String timeBegin, String timeEnd, String timeOverall,
+                     boolean moneyOverall, String id, long timeOverallInLong, Timestamp timeAdded,int withdrawnMoney,String documentId,
+                               long timeOverallInLongLefToSettle) {
         this.userName = userName;
         this.userSurname = userSurname;
         this.timeBegin = timeBegin;
@@ -35,27 +30,11 @@ public class TimeModel  implements Parcelable {
         this.timeAdded = timeAdded;
         this.withdrawnMoney = withdrawnMoney;
         this.documentId = documentId;
+        this.timeOverallInLongLefToSettle = timeOverallInLongLefToSettle;
     }
 
 
-
-    public TimeModel(Parcel in) {
-        this.userName= in.readString();
-        this.userSurname = in.readString();
-        this.timeBegin = in.readString();
-        this.timeEnd = in.readString();
-        this.timeOverall = in.readString();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            this.moneyOverall = in.readBoolean();
-        }
-        this.id= in.readString();
-        this.timeOverallInLong = in.readLong();
-        this.timeAdded = in.readParcelable(Timestamp.class.getClassLoader());
-        this.withdrawnMoney = in.readInt();
-        this.documentId = in.readString();
-    }
-
-    public TimeModel() {
+    public TimeModelForDisplay() {
     }
 
     public Timestamp getTimeAdded() {
@@ -146,37 +125,15 @@ public class TimeModel  implements Parcelable {
         this.documentId = documentId;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
+    public boolean isMoneyOverall() {
+        return moneyOverall;
     }
 
-
-    @Override
-    public void writeToParcel(@NonNull Parcel parcel, int i) {
-
-        parcel.writeString(userName);
-        parcel.writeString(userSurname);
-        parcel.writeString(timeBegin);
-        parcel.writeString(timeEnd);
-        parcel.writeString(timeOverall);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            parcel.writeBoolean(moneyOverall);
-        }
-        parcel.writeString(id);
-        parcel.writeLong(timeOverallInLong);
-        parcel.writeParcelable(timeAdded,i);
-        parcel.writeInt(withdrawnMoney);
-        parcel.writeString(documentId);
+    public long getTimeOverallInLongLefToSettle() {
+        return timeOverallInLongLefToSettle;
     }
 
-    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
-        public TimeModel createFromParcel(Parcel in) {
-            return new TimeModel(in);
-        }
-
-        public TimeModel[] newArray(int size) {
-            return new TimeModel[size];
-        }
-    };
+    public void setTimeOverallInLongLefToSettle(long timeOverallInLongLefToSettle) {
+        this.timeOverallInLongLefToSettle = timeOverallInLongLefToSettle;
+    }
 }

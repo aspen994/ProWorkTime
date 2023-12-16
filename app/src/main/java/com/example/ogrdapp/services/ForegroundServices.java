@@ -107,7 +107,7 @@ public class ForegroundServices extends Service {
     }
 
     //Shared Preferences block
-    // TODO Make a Layer for SharedPreferences https://www.youtube.com/watch?v=EWIlxY-_pDY&ab_channel=CodingReel
+
 
 
     private boolean getIsPausedFromSharedPreferences() {
@@ -180,7 +180,7 @@ public class ForegroundServices extends Service {
                 notificationManager.createNotificationChannel(notificationChannel);
             }
 
-            // TODO I've changed it.
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION);
             }
@@ -195,7 +195,7 @@ public class ForegroundServices extends Service {
     }
 
     // Block for timerText
-    // Todo Make a layer for timerText
+
     private String getTimerText(long totalSecs)
     {
 

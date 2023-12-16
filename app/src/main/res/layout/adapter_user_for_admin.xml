@@ -8,7 +8,6 @@
  <LinearLayout
         android:id="@+id/linearLayout_admin_to_adapter"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -27,42 +26,33 @@
             android:id="@+id/worker_time_to_adapter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Czas"
+            android:text="Przepracowane godziny: "
             android:padding="10dp"
             android:gravity="left" />
+        <TextView
+            android:id="@+id/hours_to_settle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Godziny do rozliczenia"
+            android:padding="10dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:gravity="left"
+            android:inputType="textMultiLine"
+            android:maxLines="2"/>
         <TextView
             android:id="@+id/worker_money_toWithdrawn_to_adapter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ile zł do wypłacenia"
+            android:text="Wypłacone pieniądze"
             android:padding="10dp"
             android:layout_weight="1"
             android:ellipsize="end"
             android:gravity="left"
             android:inputType="textMultiLine"
             android:maxLines="2"/>
-        <TextView
-            android:id="@+id/worker_money_withdrawn_to_adapter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ile wypłacono"
-            android:padding="10dp"
-            android:layout_weight="1"
-            android:ellipsize="end"
-            android:gravity="left"
-            android:inputType="textMultiLine"
-            android:maxLines="2"/>
-        <TextView
-            android:id="@+id/worker_money_earn_overall_to_adapter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ogólnie zarobiono"
-            android:padding="10dp"
-            android:layout_weight="1"
-            android:ellipsize="end"
-            android:gravity="left"
-            android:inputType="textMultiLine"
-            android:maxLines="2" />
+
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>
 

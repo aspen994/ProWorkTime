@@ -2,22 +2,17 @@ package com.example.ogrdapp.view;
 
 import static com.example.ogrdapp.view.AdminView.i;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
-import androidx.core.util.Pair;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,38 +20,33 @@ import com.example.ogrdapp.R;
 import com.example.ogrdapp.SelectPath;
 import com.example.ogrdapp.SettleForWork;
 import com.example.ogrdapp.model.TimeModel;
+import com.example.ogrdapp.model.TimeModelForDisplay;
+import com.example.ogrdapp.model.User;
 import com.example.ogrdapp.utility.FormattedTime;
 import com.example.ogrdapp.viewmodel.AuthViewModel;
-import com.google.android.material.datepicker.CalendarConstraints;
-import com.google.android.material.datepicker.CompositeDateValidator;
-import com.google.android.material.datepicker.DateValidatorPointBackward;
-import com.google.android.material.datepicker.DateValidatorPointForward;
-import com.google.android.material.datepicker.MaterialDatePicker;
-import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
-import com.google.firebase.Timestamp;
 
-import java.text.SimpleDateFormat;
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TimeZone;
 
 public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmin.MyViewHolder>{
 
     private Context context;
     private FragmentActivity fragmentActivity;
-    private List<TimeModel> list;
+    private List<TimeModelForDisplay> list;
     private View.OnClickListener onClickListener;
     private AuthViewModel authViewModel;
     List<TimeModel> listOfAllRecordsForUser;
+//    List<User> userModelArrayList;
 
-    public AdapterUserForAdmin(Context context, List<TimeModel> list,FragmentActivity fragmentActivity, AuthViewModel authViewModel,List<TimeModel> listOfAllRecordsForUser) {
+
+    public AdapterUserForAdmin(Context context, List<TimeModelForDisplay> list,
+                               FragmentActivity fragmentActivity,List<TimeModel> listOfAllRecordsForUser) {
         this.context = context;
         this.list = list;
         this.fragmentActivity = fragmentActivity;
-        this.authViewModel = authViewModel;
         this.listOfAllRecordsForUser = listOfAllRecordsForUser;
     }
 
@@ -72,7 +62,7 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
     @Override
     public void onBindViewHolder(@NonNull AdapterUserForAdmin.MyViewHolder holder, int position) {
 
-        TimeModel timeModel = list.get(position);
+        TimeModelForDisplay timeModel = list.get(position);
 
 
         if(holder.getAdapterPosition()%2==0)
@@ -84,9 +74,8 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
 
         holder.workerToAdapter.setText("Pracownik: "+list.get(position).getUserName());
         holder.workerTimeToAdapter.setText("Przepracowane godziny: " + FormattedTime.formattedTime(list.get(position).getTimeOverallInLong()));
-        holder.workerMoneyEarnOverallToAdapter.setText("Zarobione pieniądze: "+countingMoney(FormattedTime.formattedTimeInInt(list.get(position).getTimeOverallInLong())));
-        holder.workerMoneyToWithdrawnToAdapter.setText("Wydane pieniądze: "+countingMoney(FormattedTime.formattedTimeInInt(list.get(position).getTimeOverallInLong())));
-
+        holder.hoursToSettleToAdapter.setText("Godziny do rozliczenia: " + FormattedTime.formattedTime(list.get(position).getTimeOverallInLongLefToSettle()));
+        holder.workerMoneyToWithdrawnToAdapter.setText(context.getString(R.string.money_paid) + list.get(position).getWithdrawnMoney() + " zł");
 
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -94,7 +83,8 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
             public void onClick(View view) {
                 Toast.makeText(context, timeModel.getUserName(), Toast.LENGTH_SHORT).show();
                 SelectPath selectPath = new SelectPath(context);
-                SettleForWork settleForWork  = new SettleForWork(context,fragmentActivity,timeModel.getUserName(),timeModel.getId(),authViewModel,listOfAllRecordsForUser);
+                //startUserOverallActivity(context,fragmentActivity,timeModel.getUserName(),timeModel.getId(),authViewModel,listOfAllRecordsForUser);
+                //SettleForWork settleForWork  = new SettleForWork(context,fragmentActivity,timeModel.getUserName(),timeModel.getId(),authViewModel,listOfAllRecordsForUser);
 
                 selectPath.buildAlertDialog();
 
@@ -110,11 +100,37 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
                 selectPath.settleForWork.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        settleForWork.buildAlertDialog();
+                      //  settleForWork.buildAlertDialog();
+                        startUserOverallActivity( timeModel.getUserName(), timeModel.getId(), listOfAllRecordsForUser);
+                        //selectPath.dismissBuildAlertDialog();
                     }
                 });
             }
         });
+    }
+
+    private void startUserOverallActivity(String userName, String id, List<TimeModel> listOfAllRecordsForUser) {
+
+
+        Intent i = new Intent(context, UserOverall.class);
+        i.putExtra("List",(Serializable) listOfAllRecordsForUser);
+        i.putExtra("UserName",userName);
+        i.putExtra("Id",id);
+        context.startActivity(i);
+    }
+
+    private int giveTheUserPaycheck(String id, List<User> userModelArrayList) {
+        int paycheck =0;
+        for(User user: userModelArrayList)
+        {
+            if(id.equals(user.getUserId()))
+            {
+                paycheck = user.getPaycheck();
+                Log.i("PayCheck", user.getPaycheck()+"");
+            }
+        }
+
+        return paycheck;
     }
 
     private String countingMoney(int timeOverallInLong) {
@@ -160,7 +176,7 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
 
-        TextView workerToAdapter,workerTimeToAdapter,workerMoneyToWithdrawnToAdapter,workerMoneyWithdrawnToAdapter,workerMoneyEarnOverallToAdapter;
+        TextView workerToAdapter,workerTimeToAdapter,workerMoneyToWithdrawnToAdapter, hoursToSettleToAdapter;
         ViewGroup  linearLayoutAdmin;
 
         public  MyViewHolder (@NonNull View itemView) {
@@ -169,9 +185,7 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
             workerToAdapter = itemView.findViewById(R.id.worker_to_adapter);
             workerTimeToAdapter = itemView.findViewById(R.id.worker_time_to_adapter);
             workerMoneyToWithdrawnToAdapter= itemView.findViewById(R.id.worker_money_toWithdrawn_to_adapter);
-            workerMoneyWithdrawnToAdapter = itemView.findViewById(R.id.worker_money_withdrawn_to_adapter);
-            workerMoneyEarnOverallToAdapter = itemView.findViewById(R.id.worker_money_earn_overall_to_adapter);
-
+            hoursToSettleToAdapter = itemView.findViewById(R.id.hours_to_settle);
         }
     }
 }

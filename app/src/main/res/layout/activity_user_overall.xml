@@ -7,27 +7,50 @@
     android:orientation="vertical"
     tools:context=".view.UserOverall">
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:orientation="horizontal">
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Statystyki: "
+        android:text="Rozlicz Pracownika: "
         android:textSize="20dp"
         android:textStyle="bold"
-        android:layout_marginLeft="170dp"
         android:gravity="center"/>
+    <TextView
+        android:id="@+id/username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="X iksiński "
+        android:textSize="20dp"
+        android:textStyle="bold"
+        android:gravity="center"/>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="10dp">
+        android:padding="10dp"
+        android:orientation="horizontal">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Pracownik: " />
+            android:text="Rozlicz za: "
+            android:padding="10dp"/>
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="Szymon" />
+            android:id="@+id/date_display"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"/>
+        <Button
+            android:id="@+id/date_selected_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Wybierz datę"
+            android:backgroundTint="@color/blue"
+            android:padding="10dp"/>
     </LinearLayout>
 
     <LinearLayout
@@ -37,12 +60,42 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Czas ogólnie: " />
+            android:padding="10dp"
+            android:text="Przepracowany czas: " />
         <TextView
+            android:id="@+id/worked_time"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="500 h" />
+            android:padding="10dp"
+            />
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="Podaj stawkę za H " />
+        <EditText
+            android:id="@+id/bid_enter"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="10dp"
+            android:textSize="12dp"
+            android:inputType="number"
+            android:hint="Podaj \n stawkę w zł" />
+        <Button
+            android:id="@+id/confirm_bid_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Potwierdź Stawkę"
+            android:backgroundTint="@color/blue"
+            android:padding="10dp"/>
     </LinearLayout>
 
     <LinearLayout
@@ -52,65 +105,39 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Aktualny miesiąc: " />
+            android:padding="10dp"
+            android:text="Możliwe do wypłacenia: " />
         <TextView
+            android:id="@+id/to_pay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="160 h" />
+            android:padding="10dp"
+             />
 
     </LinearLayout>
-
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Aktualny dzień: " />
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="8 h" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="10dp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Pieniądze do wypłaty: " />
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="2zł" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="10dp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Wypłacone pieniądze: " />
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="10 zł" />
-
-    </LinearLayout>
-
+        android:padding="10dp"
+        android:orientation="horizontal">
     <Button
+        android:id="@+id/confirm_payment_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:backgroundTint="#DD0707"
-        android:text="wypłać"
-        android:layout_marginLeft="170dp"/>
+        android:text="Potwierdź wypłatę "
+        android:padding="10dp"
+        />
 
+    <Button
+        android:id="@+id/cancel_payment_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#DD0707"
+        android:text="Anuluj"
+        android:padding="10dp"
+        android:layout_marginLeft="80dp"/>
+
+    </LinearLayout>
 
 </androidx.appcompat.widget.LinearLayoutCompat>

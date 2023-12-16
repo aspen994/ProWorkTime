@@ -540,7 +540,7 @@ public class UserMainActivity extends AppCompatActivity {
 
                     if (timerStarted) {
 
-                        //TODO I am working delay
+
                         if(delayToAssign>0)
                         {
                             delayToAssign=-toPost;
@@ -604,7 +604,6 @@ public class UserMainActivity extends AppCompatActivity {
         public void onActivityResult(ScanIntentResult result) {
 
             // For QRCODE 1
-            //TODO Przerób tak żeby admin mógł dodawać czas delayu i qr code
             if(result.getContents()!=null && result.getContents().toString().equals(QRCODE1))
             {
 
@@ -813,11 +812,11 @@ public class UserMainActivity extends AppCompatActivity {
         timeModel.setUserName(userName.getText().toString());
         timeModel.setTimeAdded(new Timestamp(new Date()));
 
-        // TODO Make with MVVM
+
         if(timeModel.getTimeOverallInLong()>0)
         {
             authViewModel.saveTimeModelToFirebase(timeModel);
-            Log.i("How many times","How many");
+
             authViewModel.updatedDataHoursToFirebaseUser(timeModel);
         }
 

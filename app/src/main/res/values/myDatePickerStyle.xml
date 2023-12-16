@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ThemeOverlay.App.MaterialCalendar" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
+        <!-- just override the colors used in the default style -->
+<!--        <item name="colorOnPrimary">#00796B</item>
+        <item name="colorPrimary">#1E88E5</item>
+        &lt;!&ndash;<item name="colorSurface">#D62828</item>&ndash;&gt;-->
+        <item name="colorAccent">@color/red</item>
+
+        <item name="android:datePickerStyle">@style/MyDatePickerStyle</item>
+        <item name="android:colorAccent">@color/black</item>
+    </style>
+
+    <style name="MyDatePickerStyle" parent="@android:style/Widget.Material.Light.DatePicker">
+        <item name="android:headerBackground">@color/teal_200</item>
+        <item name="android:calendarTextColor">@color/teal_700</item>
+        <item name="android:dayOfWeekBackground">@color/black</item>
+        <item name="android:yearListSelectorColor">@color/blue</item>
+        <item name="android:datePickerMode">calendar</item>
+        <item name="android:minDate">01/01/2000</item>
+    </style>
+</resources>
