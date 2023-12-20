@@ -7,19 +7,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ogrdapp.model.TimeModel;
 
-import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 
 public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.MyViewHolder> {
 
@@ -40,15 +36,11 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         View inflate = layoutInflater.inflate(R.layout.adapter_user_time,parent,false);
 
-
-
         return new MyViewHolder(inflate);
     }
 
     @Override
     public void onBindViewHolder(@NonNull TimeOverallAdapter.MyViewHolder holder, int position) {
-
-
 
         //Hiding the LinearLayout for last record of the day
         holder.linearLayoutLastRecord.setVisibility(View.VISIBLE);
@@ -68,6 +60,7 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
         holder.dateLastRecord.setText(dateFormatted);
 
         holder.hours_last_record.setText(R.string.hours_shortcut);
+        holder.noteSettled.setText(list.get(position).getMoneyOverall()?"Rozliczone":"");
 
         //Setting date
         holder.date.setText(formattedDate(date));
@@ -172,7 +165,7 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
-        TextView date,beginTime, endTime,hourInDay,dateLastRecord,hoursInDayLastRecord,hours_last_record,dateSumming,hoursInMonthSumming,hoursSumming;
+        TextView date,beginTime, endTime,hourInDay,dateLastRecord,hoursInDayLastRecord,hours_last_record,dateSumming,hoursInMonthSumming,hoursSumming, noteSettled;
         LinearLayout linearLayoutLastRecord,linearLayoutSummingRecord;
 
     public  MyViewHolder (@NonNull View itemView) {
@@ -185,6 +178,7 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
         beginTime = itemView.findViewById(R.id.startTime);
         endTime = itemView.findViewById(R.id.endTime);
         hourInDay = itemView.findViewById(R.id.hoursInDay);
+        noteSettled = itemView.findViewById(R.id.note_settled);
 
         // sum for each day
         linearLayoutLastRecord = itemView.findViewById(R.id.linearLayout);

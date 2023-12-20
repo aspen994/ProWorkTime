@@ -62,6 +62,7 @@ public class AuthRepository {
     private final String KEY_PAYCHECK = "paycheck";
     private final String KEY_MONEYOVERALL = "moneyOverall";
     private final String WITH_DRAWN_MONEY = "withdrawnMoney";
+    private final String LOGER = "FirebaseRepository";
 
     public AuthRepository(Application application) {
 
@@ -179,7 +180,7 @@ public class AuthRepository {
                             }
                             timeSelectedForUserListMutableLiveData.setValue(timeModelArrayList);
 
-                            Log.i("Firebase","getSelectedTimeForUser");
+                            Log.i(LOGER,"getSelectedTimeForUser");
                         }
                     }
                 });
@@ -217,7 +218,7 @@ public class AuthRepository {
                             timeForUserListMutableLiveData.setValue(timeModelArrayList);
                         }
 
-                        Log.i("Firebase","getTimeForUser");
+                        Log.i(LOGER,"getTimeForUser");
 
                     }
                 });
@@ -252,7 +253,7 @@ public class AuthRepository {
                             }
                             timeModelArrayListMutableLiveData.postValue(timeModelArrayList);
                         }
-                        Log.i("Firebase","getData");
+                        Log.i(LOGER,"getData");
                     }
                 });
     }
@@ -281,7 +282,7 @@ public class AuthRepository {
 
                         result.put("hoursToSettle",user1.getHoursToSettle());
 
-                        Log.i("Firebase","updatedDataHoursToFirebaseUser");
+                        Log.i(LOGER,"updatedDataHoursToFirebaseUser");
 
                         updateUserTime(result);
                     }
@@ -290,7 +291,7 @@ public class AuthRepository {
         });
     }
 
-    // TODO Nie jest to używane można usunąć.
+    // Nie jest to używane można usunąć.
     public void getPaycheckAndHoursToSettleLong(String userId)
     {
         collectionReference.whereEqualTo("userId",userId).addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -309,7 +310,7 @@ public class AuthRepository {
                         result.put("paycheck",paycheck);
                         result.put("hoursToSettle", hoursToSettle);
 
-                        Log.i("Firebase","getPaycheckAndHoursToSettleLong");
+                        Log.i(LOGER,"getPaycheckAndHoursToSettleLong");
 
                         paycheckHoursToSettleMutableLiveData.postValue(result);
 
@@ -330,7 +331,7 @@ public class AuthRepository {
                     for(QueryDocumentSnapshot snapshot:queryDocumentSnapshots)
                     {
                         Long hoursToSettle = snapshot.getLong("hoursToSettle");
-                        long paycheck = (long)snapshot.get("paycheck");
+                        double paycheck =  snapshot.getDouble("paycheck");
                         String email = snapshot.getString("email");
 
                         Map<String, Object> result = new HashMap<>();
@@ -339,7 +340,7 @@ public class AuthRepository {
                         result.put("hoursToSettle", hoursToSettle);
                         result.put("email",email);
 
-                        Log.i("Firebase","getDataToUpdatePayCheck");
+                        Log.i(LOGER,"getDataToUpdatePayCheck");
 
                         paycheckHoursToSettleMutableLiveData.postValue(result);
 
@@ -362,7 +363,7 @@ public class AuthRepository {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(application, "Fail on adding data", Toast.LENGTH_SHORT).show();
-                Log.i("Firebase","saveDataToFireBase");
+                Log.i(LOGER,"saveDataToFireBase");
             }
         });
     }
@@ -396,7 +397,7 @@ public class AuthRepository {
 
         resultToSend.put("hoursOverall",hoursOverallToSend);
         resultToSend.put("hoursToSettle",hoursToSettleToSend);
-        Log.i("Firebase","updateUserTime");
+        Log.i(LOGER,"updateUserTime");
         collectionReference.document(userEmail).update(resultToSend).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
@@ -429,19 +430,19 @@ public class AuthRepository {
 
     }
 
-    public void updateStatusOfPayment(String documentID,boolean isSettled,int withDrawnMoney)
+    public void updateStatusOfPayment(String documentID,boolean isSettled,double withDrawnMoney)
     {
         Map<String,Object> result = new HashMap<>();
         result.put(KEY_MONEYOVERALL,isSettled);
         result.put(WITH_DRAWN_MONEY,withDrawnMoney);
 
-        Log.i("Firebase","updateStatusOfPayment");
+        Log.i(LOGER,"updateStatusOfPayment");
 
         collectionReferenceTime.document(documentID).update(result);
     }
 
 
-    public void updateStatusOfTimeForUser(String email, long settledTimeInMillis, long payCheck)
+    public void updateStatusOfTimeForUser(String email, long settledTimeInMillis, double payCheck)
     {
                             Map<String, Object> result = new HashMap<>();
 
@@ -458,11 +459,41 @@ public class AuthRepository {
 
 
 
+    public void getUserDataAssignedToAdmin(String workerId)
+    {
+        Log.i(LOGER,"getUsersDataAssignedToAdmin 2 method");
+        collectionReference.whereEqualTo("foreign_key",currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                if(!queryDocumentSnapshots.isEmpty())
+                {
+                    List<User> userArrayList = new ArrayList<>();
 
-    // TODO Było add snapshotListener zmieniam na add on SuccesListenr
+                    for(QueryDocumentSnapshot snapshot:queryDocumentSnapshots)
+                    {
+                        if(currentUserId.equals(snapshot.getString("foreign_key")))
+                        {
+                            ifAdminMutableLiveData.postValue(true);
+
+                            User user = snapshot.toObject(User.class);
+
+                            userArrayList.add(user);
+
+
+                            userArrayListOfUserMutableLiveData.postValue(userArrayList);
+                        }
+
+                    }
+
+                }
+            }
+        });
+    }
+
+    //  Było add snapshotListener zmieniam na add on SuccesListenr
     public void getUsersDataAssignedToAdmin()
     {
-        Log.i("Firebase","getUsersDataAssignedToAdmin");
+        Log.i(LOGER,"getUsersDataAssignedToAdmin");
         collectionReference.whereEqualTo("foreign_key",currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
@@ -550,7 +581,7 @@ public class AuthRepository {
     public boolean checkIfAdmin ()
     {
 
-        Log.i("Firebase","checkIfAdmin");
+        Log.i(LOGER,"checkIfAdmin");
 
         collectionReference.whereEqualTo("foreign_key",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -582,7 +613,7 @@ public class AuthRepository {
     public void register (String email, String password,String userName_send,String surName_send,String foreign_email)
     {
 
-        Log.i("Firebase","register");
+        Log.i(LOGER,"register");
 
         collectionReference.whereEqualTo("email",foreign_email).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -645,7 +676,7 @@ public class AuthRepository {
     public void signIn(String email, String password)
     {
 
-        Log.i("Firebase","signIn");
+        Log.i(LOGER,"signIn");
 
         firebaseAuth.signInWithEmailAndPassword(email,password).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
             @Override
@@ -663,7 +694,7 @@ public class AuthRepository {
 
     public void resetPassword(String email)
     {
-        Log.i("Firebase","resetPassword");
+        Log.i(LOGER,"resetPassword");
 
         firebaseAuth.sendPasswordResetEmail(email).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
@@ -681,7 +712,7 @@ public class AuthRepository {
 
     public TimeModel getUsernameAndSurname()
     {
-        Log.i("Firebase","getUsernameAndSurname");
+        Log.i(LOGER,"getUsernameAndSurname");
 
         checkIfAdmin();
         TimeModel timeModel = new TimeModel();
@@ -714,7 +745,7 @@ public class AuthRepository {
     public void singOut(){
         firebaseAuth.signOut();
         userLoggedMutableLiveData.postValue(true);
-        Log.i("Firebase","singOut");
+        Log.i(LOGER,"singOut");
     }
 
 }

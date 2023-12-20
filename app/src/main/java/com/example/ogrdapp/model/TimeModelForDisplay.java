@@ -12,12 +12,13 @@ public class TimeModelForDisplay {
     private String id;
     private long timeOverallInLong;
     private Timestamp timeAdded;
-    private int withdrawnMoney;
+    private double withdrawnMoney;
     private String documentId;
     private long timeOverallInLongLefToSettle;
 
+
     public TimeModelForDisplay(String userName, String userSurname, String timeBegin, String timeEnd, String timeOverall,
-                     boolean moneyOverall, String id, long timeOverallInLong, Timestamp timeAdded,int withdrawnMoney,String documentId,
+                     boolean moneyOverall, String id, long timeOverallInLong, Timestamp timeAdded,double withdrawnMoney,String documentId,
                                long timeOverallInLongLefToSettle) {
         this.userName = userName;
         this.userSurname = userSurname;
@@ -31,6 +32,7 @@ public class TimeModelForDisplay {
         this.withdrawnMoney = withdrawnMoney;
         this.documentId = documentId;
         this.timeOverallInLongLefToSettle = timeOverallInLongLefToSettle;
+
     }
 
 
@@ -109,11 +111,11 @@ public class TimeModelForDisplay {
         this.moneyOverall = moneyOverall;
     }
 
-    public int getWithdrawnMoney() {
+    public double getWithdrawnMoney() {
         return withdrawnMoney;
     }
 
-    public void setWithdrawnMoney(int withdrawnMoney) {
+    public void setWithdrawnMoney(double withdrawnMoney) {
         this.withdrawnMoney = withdrawnMoney;
     }
 

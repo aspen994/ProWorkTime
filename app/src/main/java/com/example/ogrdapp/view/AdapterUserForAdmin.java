@@ -65,6 +65,8 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
         TimeModelForDisplay timeModel = list.get(position);
 
 
+
+
         if(holder.getAdapterPosition()%2==0)
         {
             holder.linearLayoutAdmin.setBackgroundColor(ContextCompat.getColor(context, R.color.blue_grey_400));
@@ -72,9 +74,12 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
             holder.linearLayoutAdmin.setBackgroundColor(ContextCompat.getColor(context,R.color.blue_grey_500));
         }
 
+        long settledHours = list.get(position).getTimeOverallInLong() - list.get(position).getTimeOverallInLongLefToSettle();
+
         holder.workerToAdapter.setText("Pracownik: "+list.get(position).getUserName());
         holder.workerTimeToAdapter.setText("Przepracowane godziny: " + FormattedTime.formattedTime(list.get(position).getTimeOverallInLong()));
         holder.hoursToSettleToAdapter.setText("Godziny do rozliczenia: " + FormattedTime.formattedTime(list.get(position).getTimeOverallInLongLefToSettle()));
+        holder.settledHours.setText("Rozliczone godziny: " + FormattedTime.formattedTime(settledHours));
         holder.workerMoneyToWithdrawnToAdapter.setText(context.getString(R.string.money_paid) + list.get(position).getWithdrawnMoney() + " zł");
 
 
@@ -116,11 +121,13 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
         i.putExtra("List",(Serializable) listOfAllRecordsForUser);
         i.putExtra("UserName",userName);
         i.putExtra("Id",id);
+        //i.putExtra("fragmentActivity",(Serializable) fragmentActivity);
         context.startActivity(i);
+
     }
 
-    private int giveTheUserPaycheck(String id, List<User> userModelArrayList) {
-        int paycheck =0;
+    private double giveTheUserPaycheck(String id, List<User> userModelArrayList) {
+        double paycheck =0;
         for(User user: userModelArrayList)
         {
             if(id.equals(user.getUserId()))
@@ -176,7 +183,7 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
 
-        TextView workerToAdapter,workerTimeToAdapter,workerMoneyToWithdrawnToAdapter, hoursToSettleToAdapter;
+        TextView workerToAdapter,workerTimeToAdapter,workerMoneyToWithdrawnToAdapter, hoursToSettleToAdapter,settledHours;
         ViewGroup  linearLayoutAdmin;
 
         public  MyViewHolder (@NonNull View itemView) {
@@ -186,6 +193,7 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
             workerTimeToAdapter = itemView.findViewById(R.id.worker_time_to_adapter);
             workerMoneyToWithdrawnToAdapter= itemView.findViewById(R.id.worker_money_toWithdrawn_to_adapter);
             hoursToSettleToAdapter = itemView.findViewById(R.id.hours_to_settle);
+            settledHours = itemView.findViewById(R.id.settled_hours);
         }
     }
 }

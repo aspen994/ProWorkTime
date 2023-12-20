@@ -3,6 +3,7 @@ package com.example.ogrdapp.view;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.util.Pair;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -24,7 +25,6 @@ import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
 
-import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -46,14 +46,19 @@ public class UserOverall extends AppCompatActivity {
 
     private long timeToSettlement;
     private int bidEnterValue;
+    //private FragmentActivity fragmentActivity;
 
     private AuthViewModel authViewModel;
+
+    public static boolean isWithdrawn;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_overall);
+
+        isWithdrawn=false;
 
         // 1-set widgets
         username = findViewById(R.id.username);
@@ -71,6 +76,7 @@ public class UserOverall extends AppCompatActivity {
         listOfAllRecordsForUser = (List<TimeModel>) intent.getSerializableExtra("List");
         this.userName = intent.getStringExtra("UserName");
         this.id = intent.getStringExtra("Id");
+        //this.fragmentActivity = (FragmentActivity) intent.getSerializableExtra("fragmentActivity");
 
         username.setText(userName);
 
@@ -90,7 +96,7 @@ public class UserOverall extends AppCompatActivity {
             public void onClick(View view) {
 
                 bidEnterValue = Integer.parseInt(bidEnter.getText().toString());
-                toPay.setText(bidEnterValue * FormattedTime.formattedTimeInInt(timeToSettlement)+"zł");
+                toPay.setText(round((bidEnterValue * FormattedTime.formattedTimeInDoubleToSave(timeToSettlement)),2)+"zł");
             }
         });
 
@@ -98,6 +104,7 @@ public class UserOverall extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 withdrawnOperation();
+
             }
         });
 
@@ -112,7 +119,14 @@ public class UserOverall extends AppCompatActivity {
 
 
     }
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
 
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
+    }
     private void withdrawnOperation() {
 
 
@@ -120,64 +134,63 @@ public class UserOverall extends AppCompatActivity {
 
         s = s.replace("zł","");
 
-        int i = 0;
+        double i = 0;
 
         if(!s.equals(""))
         {
-            i = Integer.parseInt(s);
+            i = Double.parseDouble(s);
+
         }
 
-
+        if(i!=0.0) {
         // To dla pętli działa
         for(TimeModel timeModel: selectedTimeModelList)
         {
-            int i1 = bidEnterValue * FormattedTime.formattedTimeInInt(timeModel.getTimeOverallInLong());
-            authViewModel.updateStatusOfSettled(timeModel.getDocumentId(),true,i1);
-            //tu tutaj
-            // TODO TUTAJ WYŁĄCZAM
-            //timeModel.setMoneyOverall(true);
-            // Zaktualizuj dla listy
-        }
+            //TODO zrób tak żeby do ostaniego wpisu dawało resztę kwoty
+            double i1 = bidEnterValue * FormattedTime.formattedTimeInDoubleToSave(timeModel.getTimeOverallInLong());
+            double round = round(i1, 2);
+            //Log.i("FormateTime",FormattedTime.formattedTimeInDoubleToSave(timeModel.getTimeOverallInLong())+"");
+            authViewModel.updateStatusOfSettled(timeModel.getDocumentId(),true,round);
+            Log.i("withdrawOperation",timeModel.getTimeAdded().toDate().toString());
+            isWithdrawn= true;
 
-      /*  for (int j = 0; j <selectedTimeModelList.size() ; j++) {
-            for (int k = 0; k < listOfAllRecordsForUser.size(); k++) {
-             if(selectedTimeModelList.get(j).getDocumentId().equals(listOfAllRecordsForUser.get(k).getDocumentId()))
-             {
-                 // TODO TUTAJ WYŁĄCZAM
-              //listOfAllRecordsForUser.get(k).setMoneyOverall(true);
-             }
-            }
         }
-*/
-
-        if(i!=0) {
             authViewModel.getDataToUpdatePayCheck(selectedTimeModelList.get(0).getId());
         }
+        else{
+            Toast.makeText(this, "Nie zatwierdziłeś stawki albo nie wybrałeś godzin", Toast.LENGTH_SHORT).show();
+        }
 
-        int finalIrrational = i;
+        double finalIrrational = i;
         authViewModel.getPaycheckHoursToSettleMutableLiveData().observe(this,new Observer<Map<String, Object>>() {
             @Override
             public void onChanged(Map<String, Object> stringObjectMap) {
                 if(!stringObjectMap.isEmpty())
                 {
-                    long paycheck1 = (long)stringObjectMap.get("paycheck");
+                    double paycheck1 = (double) stringObjectMap.get("paycheck");
                     long hoursToSettle1 = (long)stringObjectMap.get("hoursToSettle");
                     String email1 = (String) stringObjectMap.get("email");
 
                     paycheck1 += finalIrrational;
+                    paycheck1=round(paycheck1,2);
                     hoursToSettle1-=timeToSettlement;
+
+                    Log.i("Paycheck value",paycheck1+"");
 
                     Log.i("Update User","Update User");
 
-                    // TODO tutaj updateuje się dane dla Usera.
+                    // tutaj updateuje się dane dla Usera.
                     authViewModel.updateStatusOfTimeForUser(email1, hoursToSettle1, paycheck1);
 
+                    String updateUserID= selectedTimeModelList.get(0).getId();
+
+                    finish();
+                    Intent intent =  new Intent(UserOverall.this, AdminView.class);
+                    intent.putExtra("USER_ID",updateUserID);
+                    startActivity(intent);
                 }
             }
         });
-        finish();
-        Intent intent =  new Intent(UserOverall.this, AdminView.class);
-        startActivity(intent);
 
     }
 
@@ -236,27 +249,6 @@ public class UserOverall extends AppCompatActivity {
 
         long time = 0;
 
-
-      /*  for (int i = 0; i < listOfAllRecordsForUser.size(); i++) {
-            if(listOfAllRecordsForUser.get(i).getId().equals(id) && !listOfAllRecordsForUser.get(i).getMoneyOverall()) {
-
-
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(listOfAllRecordsForUser.get(i).getTimeAdded().toDate().toInstant().toEpochMilli());
-
-                if (calendar1.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) &&
-                        calendar1.get(Calendar.DAY_OF_YEAR) <= calendar.get(Calendar.DAY_OF_YEAR) &&
-                        calendar2.get(Calendar.DAY_OF_YEAR) >= calendar.get(Calendar.DAY_OF_YEAR))
-                {
-
-                    time += listOfAllRecordsForUser.get(i).getTimeOverallInLong();
-                    selectedTimeModelList.add(listOfAllRecordsForUser.get(i));
-                    Log.i("DOCUMENT ID 1",listOfAllRecordsForUser.get(i).getDocumentId());
-                    Log.i("DOCUMENT ID 2",listOfAllRecordsForUser.get(i).getMoneyOverall()+"");
-                }
-            }
-        }*/
-
         for(TimeModel x: listOfAllRecordsForUser)
         {
             if(x.getId().equals(id) && x.getMoneyOverall()==false) {
@@ -307,20 +299,51 @@ public class UserOverall extends AppCompatActivity {
     }
     private List<Calendar> getValidDateToSettle() {
 
-
         List<Calendar> blockedDates = new ArrayList<>();
 
         for (int i = 0; i < listOfAllRecordsForUser.size(); i++)
         {
-            if (listOfAllRecordsForUser.get(i).getId().equals(id)&& listOfAllRecordsForUser.get(i).getMoneyOverall()) {
-
+            if (listOfAllRecordsForUser.get(i).getId().equals(id) && listOfAllRecordsForUser.get(i).getMoneyOverall()) {
                 long time = listOfAllRecordsForUser.get(i).getTimeAdded().toDate().getTime();
                 Calendar calendar1 = Calendar.getInstance();
                 calendar1.setTimeInMillis(time);
-                blockedDates.add(calendar1);
-                Log.i("VALIDATE",listOfAllRecordsForUser.get(i).getMoneyOverall()+"");
-                Log.i("VALIDATE_2",listOfAllRecordsForUser.get(i).getDocumentId());
+                calendar1.set(Calendar.HOUR_OF_DAY, 0);
+                calendar1.set(Calendar.MINUTE, 0);
+                calendar1.set(Calendar.SECOND, 0);
+                calendar1.set(Calendar.MILLISECOND, 0);
+                if(i>0) {
+                    long time1 = listOfAllRecordsForUser.get(i - 1).getTimeAdded().toDate().getTime();
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(time1);
+                    calendar.set(Calendar.HOUR_OF_DAY, 0);
+                    calendar.set(Calendar.MINUTE, 0);
+                    calendar.set(Calendar.SECOND, 0);
+                    calendar.set(Calendar.MILLISECOND, 0);
+                    if (calendar1.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)
+                            && calendar1.get(Calendar.DAY_OF_YEAR) != calendar.get(Calendar.DAY_OF_YEAR))
+                    {
+                        blockedDates.add(calendar1);
+                    }
+                }
+                Log.i("add Validate",listOfAllRecordsForUser.get(i).getTimeAdded().toDate().toString());
             }
+            else if (listOfAllRecordsForUser.get(i).getId().equals(id) && !listOfAllRecordsForUser.get(i).getMoneyOverall()){
+                long time = listOfAllRecordsForUser.get(i).getTimeAdded().toDate().getTime();
+                Calendar calendar1 = Calendar.getInstance();
+                calendar1.setTimeInMillis(time);
+                calendar1.set(Calendar.HOUR_OF_DAY, 0);
+                calendar1.set(Calendar.MINUTE, 0);
+                calendar1.set(Calendar.SECOND, 0);
+                calendar1.set(Calendar.MILLISECOND, 0);
+
+                blockedDates.remove(calendar1);
+
+                Log.i("Remove validate",listOfAllRecordsForUser.get(i).getTimeAdded().toDate().toString());
+            }
+        }
+
+        for (Calendar blockedDate : blockedDates) {
+            Log.i("THE BLOCKED DATES",blockedDate.get(Calendar.DAY_OF_YEAR)+" "+blockedDate.get(Calendar.YEAR)+"");
         }
 
         return blockedDates;

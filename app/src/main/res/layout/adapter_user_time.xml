@@ -67,6 +67,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/hours_shortcut" />
+        <TextView
+            android:id="@+id/note_settled"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"/>
     </LinearLayout>
     <LinearLayout
         android:id="@+id/summinglinearLayout"

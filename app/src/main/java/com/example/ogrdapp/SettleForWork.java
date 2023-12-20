@@ -97,7 +97,8 @@ private List<TimeModel> selectedTimeModelList = new ArrayList<>();
         // To dla pętli działa
         for(TimeModel timeModel: selectedTimeModelList)
         {
-            int i1 = bidEnterValue * FormattedTime.formattedTimeInInt(timeModel.getTimeOverallInLong());
+
+            int i1 = bidEnterValue * FormattedTime.formattedTimeInIntToPay(timeModel.getTimeOverallInLong());
             Log.i("i1 value",i1+"");
             Log.i("TimeOverall",timeModel.getTimeOverallInLong()+"");
             Log.i("i",i+"");
@@ -155,6 +156,13 @@ private List<TimeModel> selectedTimeModelList = new ArrayList<>();
 
                 blockedDates.add(calendar1);
             }
+            if (timeModelsList.get(i).getId().equals(id)&&timeModelsList.get(i).getMoneyOverall()==false) {
+                long time = timeModelsList.get(i).getTimeAdded().toDate().getTime();
+                Calendar calendar1 = Calendar.getInstance();
+                calendar1.setTimeInMillis(time);
+
+                blockedDates.remove(time);
+            }
         }
 
         return blockedDates;
@@ -200,7 +208,7 @@ private List<TimeModel> selectedTimeModelList = new ArrayList<>();
             public void onClick(View view) {
 
                 bidEnterValue = Integer.parseInt(bidEnter.getText().toString());
-                moneyToPaidDisplay.setText(bidEnterValue * FormattedTime.formattedTimeInInt(timeToSettlement)+"zł");
+                moneyToPaidDisplay.setText(bidEnterValue * FormattedTime.formattedTimeInIntToPay(timeToSettlement)+"zł");
             }
         });
 

@@ -3,6 +3,7 @@ package com.example.ogrdapp.view;
 import android.app.AlertDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.ogrdapp.R;
 import com.example.ogrdapp.TimeOverallAdapter;
 import com.example.ogrdapp.model.TimeModel;
+import com.example.ogrdapp.utility.FormattedTime;
 import com.example.ogrdapp.utility.SwipeController;
 import com.example.ogrdapp.utility.SwipeControllerActions;
 import com.example.ogrdapp.viewmodel.AuthViewModel;
@@ -32,6 +34,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.gson.Gson;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -40,6 +43,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import javax.security.auth.login.LoginException;
 
 public class UserTimeTable extends AppCompatActivity {
 
@@ -71,6 +76,35 @@ public class UserTimeTable extends AppCompatActivity {
     public TextView editTextTimeOverall;
     public int hour,minute;
     long overall;
+    public  boolean isChanged;
+
+    private void writeTimeModelForDisplayToSharedPref() {
+        Gson gson = new Gson();
+        String jsonString = gson.toJson(timeModelArrayList);
+
+        SharedPreferences sharedPreferences =getSharedPreferences("UserTimeTableSharedPreferences",MODE_PRIVATE);
+
+        SharedPreferences.Editor myEdit = sharedPreferences.edit();
+        myEdit.putString("timeModelArrayList",jsonString);
+        myEdit.commit();
+        myEdit.apply();
+    }
+    @Override
+    protected void onPause() {
+        if(isChanged)
+        {
+            writeTimeModelForDisplayToSharedPref();
+        }
+        isChanged=false;
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+
+        //writeTimeModelForDisplayToSharedPref();
+        super.onStop();
+    }
 
 
     @Override
@@ -126,6 +160,8 @@ public class UserTimeTable extends AppCompatActivity {
                 }
             });
         }
+        
+        //readTimeModelArrayList(timeModelArrayList);
 
         swipeControllerToRecyclerView();
 
@@ -145,6 +181,8 @@ public class UserTimeTable extends AppCompatActivity {
                 selectedSpinnerOnYear = parent.getItemAtPosition(position).toString();
 
                 String year = parent.getItemAtPosition(position).toString();
+
+                readTimeModelArrayList(timeModelArrayList);
 
                 if(!timeModelArrayList.isEmpty()) {
                     //ArrayList<TimeModel> arrayListTmp = new ArrayList<>();
@@ -192,8 +230,6 @@ public class UserTimeTable extends AppCompatActivity {
                         String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate()).toLowerCase();
                         String s1 = month.toLowerCase() + selectedSpinnerOnYear;
 
-
-
                         if (s1.equals(s)) {
                             arrayListTmp.add(model);
                         }
@@ -216,9 +252,18 @@ public class UserTimeTable extends AppCompatActivity {
 
     }
 
+    private void readTimeModelArrayList(ArrayList<TimeModel> timeModelArrayList) {
+        for (TimeModel timeModel: timeModelArrayList) {
+            Log.i("read UserTimeTable",timeModel.getMoneyOverall()+"");
+
+        }
+    }
+
     public void swipeControllerToRecyclerView() {
 
         if (idUserSelectedByAdmin != null) {
+
+            //tutaj gdzieś zablokuj możliwość zmieniania danych które już są rozliczone.
             swipeController = new SwipeController(new SwipeControllerActions() {
                 @Override
                 public void onRightClicked(int position) {
@@ -258,6 +303,9 @@ public class UserTimeTable extends AppCompatActivity {
                 // Edycja danych
                 @Override
                 public void onLeftClicked(int position) {
+
+                    if(arrayListTmp.get(position).getMoneyOverall()==false){
+
                     AlertDialog.Builder builder2 = new AlertDialog.Builder(UserTimeTable.this);
                     LayoutInflater layoutInflater = LayoutInflater.from(UserTimeTable.this);
                     View inflate = layoutInflater.inflate(R.layout.edit_user_time_table, null);
@@ -276,22 +324,26 @@ public class UserTimeTable extends AppCompatActivity {
                     editTextBeginTime.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            timePickerDialog("Ustaw godzinę rozpoczęcia",editTextBeginTime);
+                            timePickerDialog("Ustaw godzinę rozpoczęcia", editTextBeginTime);
                         }
                     });
 
                     editTextEndTime.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            timePickerDialog("Ustaw godzinę zakończenia",editTextEndTime);
+                            timePickerDialog("Ustaw godzinę zakończenia", editTextEndTime);
                         }
                     });
 
                     editTextTimeOverall.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                             timePickerDialog("Ustaw ogólny czas", editTextTimeOverall);
-                             Log.i("Overall", overall+"");
+
+
+
+
+                             /*timePickerDialog("Ustaw ogólny czas", editTextTimeOverall);
+                             Log.i("Overall", overall+"");*/
                         }
                     });
 
@@ -300,34 +352,40 @@ public class UserTimeTable extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
-                            TimeModel timeModel = arrayListTmp.get(position);
+                            if (!editTextTimeOverall.getText().toString().equals("Co jest ziomuś ?")) {
+                                TimeModel timeModel = arrayListTmp.get(position);
 
-                            long timeInLongToDelete = -timeModel.getTimeOverallInLong();
+                                long timeInLongToDelete = -timeModel.getTimeOverallInLong();
 
-                            TimeModel timeModel1 = new TimeModel();
-                            timeModel1.setId(timeModel.getId());
-                            timeModel1.setTimeOverallInLong((timeInLongToDelete +overall));
-                            authViewModel.updatedDataHoursToFirebaseUser(timeModel1);
+                                TimeModel timeModel1 = new TimeModel();
+                                timeModel1.setId(timeModel.getId());
+                                timeModel1.setTimeOverallInLong((timeInLongToDelete + overall));
+                                authViewModel.updatedDataHoursToFirebaseUser(timeModel1);
 
 
-                            authViewModel.updateDataToFirebase(
+                                authViewModel.updateDataToFirebase(
                                         arrayListTmp.get(position).getDocumentId(),
                                         editTextBeginTime.getText().toString(),
                                         editTextEndTime.getText().toString(),
                                         editTextTimeOverall.getText().toString(),
-                                        overall==0?arrayListTmp.get(position).getTimeOverallInLong():overall);
+                                        overall == 0 ? arrayListTmp.get(position).getTimeOverallInLong() : overall);
 
-                            Log.i("onLeftClicked",overall+"");
+                                Log.i("onLeftClicked", overall + "");
 
                                 arrayListTmp.get(position).setTimeBegin(editTextBeginTime.getText().toString());
                                 arrayListTmp.get(position).setTimeEnd(editTextEndTime.getText().toString());
                                 arrayListTmp.get(position).setTimeOverall(editTextTimeOverall.getText().toString());
-                                arrayListTmp.get(position).setTimeOverallInLong(overall==0?arrayListTmp.get(position).getTimeOverallInLong():overall);
+                                arrayListTmp.get(position).setTimeOverallInLong(overall == 0 ? arrayListTmp.get(position).getTimeOverallInLong() : overall);
+                                isChanged = true;
+
+                                //Aktualizacja TimeModelArrayList
+                                updateTimeModelArrayList(arrayListTmp.get(position));
+
                                 Toast.makeText(UserTimeTable.this, "ZAKTUALIZOWANE", Toast.LENGTH_SHORT).show();
 
-                                overall=0;
+                                overall = 0;
                                 timeOverallAdapter.notifyDataSetChanged();
-
+                            }
                         }
                     });
                     builder2.setNegativeButton("Anuluj", new DialogInterface.OnClickListener() {
@@ -340,6 +398,10 @@ public class UserTimeTable extends AppCompatActivity {
                     AlertDialog alertDialog = builder2.create();
                     alertDialog.show();
                     super.onLeftClicked(position);
+                    }
+                    else {
+                        Toast.makeText(UserTimeTable.this, "Nie możesz edytować rozliczonych danych", Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
 
@@ -356,8 +418,26 @@ public class UserTimeTable extends AppCompatActivity {
 
     }
 
-    private void timePickerDialog(String titleName, TextView textView) {
+    private void updateTimeModelArrayList( TimeModel timeModel) {
+        for (int i = 0; i < timeModelArrayList.size(); i++) {
+            if(timeModelArrayList.get(i).getDocumentId().equals(timeModel.getDocumentId()))
+            {
+                timeModelArrayList.remove(i);
+                timeModelArrayList.add(timeModel);
+                break;
+            }
+        }
 
+       /* for (int i = 0; i < timeModelArrayList.size(); i++) {
+            Log.i("Update TimeModel",timeModelArrayList.get(i).getUserName());
+            Log.i("Update TimeModel",timeModelArrayList.get(i).getTimeAdded().toDate().toString());
+            Log.i("Update TimeModel",timeModelArrayList.get(i).getTimeBegin());
+            Log.i("Update TimeModel",timeModelArrayList.get(i).getTimeEnd());
+        }*/
+
+    }
+
+    private void timePickerDialog(String titleName, TextView textView) {
 
         overall=0;
 
@@ -369,14 +449,46 @@ public class UserTimeTable extends AppCompatActivity {
                 Log.i("HourOfDay",hourOfDay+"");
                 Log.i("minuteOfDay",minuteOfDay+"");
 
-                if(titleName.equals("Ustaw ogólny czas"))
-                {
-                    overall += minuteOfDay * 60000;
-                    overall += hourOfDay * 3600000;
-                }
 
-                Log.i("timePickerDialog", overall +"");
-                textView.setText(String.format(Locale.getDefault(),"%02d:%02d",hour,minute));
+                if(titleName.equals("Ustaw godzinę zakończenia")| titleName.equals("Ustaw godzinę rozpoczęcia"))
+                {
+                    Log.i("timePickerDialog", overall +"");
+                    textView.setText(String.format(Locale.getDefault(),"%02d:%02d",hour,minute));
+
+
+                    String[] split = editTextBeginTime.getText().toString().split(":");
+                    String[] split1 = editTextEndTime.getText().toString().split(":");
+
+                    int hoursEditTextBeginTimeConvertedToMinute = Integer.parseInt(split[0])*60;
+                    int minutesEditTextBeginTimeInMinutes = Integer.parseInt(split[1])*1;
+                    int timeInMinutesForBeginTime = hoursEditTextBeginTimeConvertedToMinute+minutesEditTextBeginTimeInMinutes;
+
+                    int hoursEditTextEndTimeConvertedToMinute = Integer.parseInt(split1[0]) * 60;
+                    int minutesEditTextEndTimeInMinutes = Integer.parseInt(split1[1])*1;
+
+                    int timeInMinutesForEndTime = hoursEditTextEndTimeConvertedToMinute+minutesEditTextEndTimeInMinutes;
+
+                    int overallTimeInMinutes = timeInMinutesForEndTime - timeInMinutesForBeginTime;
+
+                    if(overallTimeInMinutes>=0) {
+                        overall = overallTimeInMinutes * 60 * 1000;
+                    }
+                    else {
+                        overall=0;
+                    }
+
+                    Log.i("overallTimeInMinutes",overallTimeInMinutes+"");
+
+                    String formattedTimeInHoursAndMinutes = FormattedTime.formattedTimeInHoursAndMinutes(overallTimeInMinutes);
+                    if(formattedTimeInHoursAndMinutes.contains("-")) {
+                        Toast.makeText(UserTimeTable.this, "Godzina rozpoczęcia nie może być później niż godzina zaczęcia", Toast.LENGTH_SHORT).show();
+                        editTextTimeOverall.setText("Co jest ziomuś ?");
+                    }
+                    else {
+                        editTextTimeOverall.setText(formattedTimeInHoursAndMinutes);
+                    }
+
+                }
             }
         };
 

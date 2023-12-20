@@ -18,12 +18,12 @@ public class TimeModel  implements Parcelable {
     private String id;
     private long timeOverallInLong;
     private Timestamp timeAdded;
-    private int withdrawnMoney;
+    private double withdrawnMoney;
     private String documentId;
 
 
     public TimeModel(String userName, String userSurname, String timeBegin, String timeEnd, String timeOverall,
-                     boolean moneyOverall, String id, long timeOverallInLong, Timestamp timeAdded,int withdrawnMoney,String documentId) {
+                     boolean moneyOverall, String id, long timeOverallInLong, Timestamp timeAdded,double withdrawnMoney,String documentId) {
         this.userName = userName;
         this.userSurname = userSurname;
         this.timeBegin = timeBegin;
@@ -51,7 +51,7 @@ public class TimeModel  implements Parcelable {
         this.id= in.readString();
         this.timeOverallInLong = in.readLong();
         this.timeAdded = in.readParcelable(Timestamp.class.getClassLoader());
-        this.withdrawnMoney = in.readInt();
+        this.withdrawnMoney = in.readDouble();
         this.documentId = in.readString();
     }
 
@@ -130,11 +130,11 @@ public class TimeModel  implements Parcelable {
         this.moneyOverall = moneyOverall;
     }
 
-    public int getWithdrawnMoney() {
+    public double getWithdrawnMoney() {
         return withdrawnMoney;
     }
 
-    public void setWithdrawnMoney(int withdrawnMoney) {
+    public void setWithdrawnMoney(double withdrawnMoney) {
         this.withdrawnMoney = withdrawnMoney;
     }
 
@@ -166,7 +166,7 @@ public class TimeModel  implements Parcelable {
         parcel.writeString(id);
         parcel.writeLong(timeOverallInLong);
         parcel.writeParcelable(timeAdded,i);
-        parcel.writeInt(withdrawnMoney);
+        parcel.writeDouble(withdrawnMoney);
         parcel.writeString(documentId);
     }
 

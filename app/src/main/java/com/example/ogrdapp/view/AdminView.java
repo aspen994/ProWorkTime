@@ -1,7 +1,12 @@
 package com.example.ogrdapp.view;
 
+import static com.example.ogrdapp.view.UserOverall.isWithdrawn;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -23,7 +28,10 @@ import com.example.ogrdapp.utility.SwipeControllerActions;
 import com.example.ogrdapp.viewmodel.AuthViewModel;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 
+import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,7 +44,7 @@ public class AdminView extends AppCompatActivity {
 
     private AuthViewModel authViewModel;
     private ArrayList<User> userModelArrayList;
-    private ArrayList<TimeModelForDisplay> timeModelArrayList;
+    private ArrayList<TimeModelForDisplay> timeModelForDisplayArrayList;
     private ArrayList<TimeModel> timeModelArrayListForAdmin;
 
     private ArrayList<TimeModelForDisplay> brandNewArrayList;
@@ -48,9 +56,44 @@ public class AdminView extends AppCompatActivity {
     public static int i=0;
     SwipeController swipeController;
     public static final String TAG_ADMIN_VIEW ="ADMIN VIEW";
+    String jsonString2;
 
 
+    @Override
+    protected void onPause() {
+        SharedPreferences preferences = getSharedPreferences("UserTimeTableSharedPreferences", MODE_PRIVATE);
+        preferences.edit().remove("timeModelArrayList").commit();
 
+        super.onPause();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        if(isWithdrawn)
+        {
+            finish();
+        }
+        SharedPreferences sharedPreferences1 = getSharedPreferences("UserTimeTableSharedPreferences",MODE_PRIVATE);
+        jsonString2 = sharedPreferences1.getString("timeModelArrayList",null);
+
+        Log.i("onRestart Jstrong",jsonString2==null?"true":"false");
+
+
+        if(jsonString2!=null)
+        {
+            Gson gson1 = new Gson();
+            ArrayList<TimeModel> timeModels;
+            Type type = new TypeToken<ArrayList<TimeModel>>(){}.getType();
+            timeModels = gson1.fromJson(jsonString2,type);
+
+            findTimeModelForDisplayToUpdateAndClearIt(timeModels.get(0).getId());
+            timeModelForDisplayArrayList.addAll(summingTime(timeModels));
+            setupRecyclerView();
+        }
+
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,10 +102,9 @@ public class AdminView extends AppCompatActivity {
         View view = binding.getRoot();
         setContentView(view);
 
-        // Wyłączyłem SwipeGesture na adminView
-        //swipeGestureToRecyclerView();
 
-        timeModelArrayList = new ArrayList<>();
+
+        timeModelForDisplayArrayList = new ArrayList<>();
         //Czyszczę bo każda kolejne zmiany potem dodają wiecej użytkowników w ADMIN VIEW
         //timeModelArrayList.clear();
 
@@ -76,19 +118,44 @@ public class AdminView extends AppCompatActivity {
 
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
-        authViewModel.getUsersDataAssignedToAdmin();
-        authViewModel.getUserArrayListOfUserMutableLiveData().observe(this, new Observer<List<User>>() {
-            @Override
-            public void onChanged(List<User> user) {
-                userModelArrayList.addAll(user);
+        Intent intent = getIntent();
 
-                for(User users: userModelArrayList)
-                {
-                    assignUserToTime(users.getUserId());
+        SharedPreferences sharedPreferences1 = getSharedPreferences("MySharedPrefForList",MODE_PRIVATE);
+        jsonString2 = sharedPreferences1.getString("LIST_KEY","");
+
+        // tak żeby czytało listę z SharedPref
+      /*  if(jsonString2 !=null)
+        {
+            readTimeModelForDisplayToSharedPref();
+        }*/
+        if(intent.hasExtra("USER_ID"))
+        {
+            String userId = intent.getStringExtra("USER_ID");
+            Log.i("userId",userId);
+
+            //SharedPreferences - reading
+            readTimeModelForDisplayToSharedPref();
+
+            findTimeModelForDisplayToUpdateAndClearIt(userId);
+            authViewModel.getTimeForUser(userId);
+
+        }
+        else {//(jsonString2==null)
+            authViewModel.getUsersDataAssignedToAdmin();
+            authViewModel.getUserArrayListOfUserMutableLiveData().observe(this, new Observer<List<User>>() {
+                @Override
+                public void onChanged(List<User> user) {
+                    userModelArrayList.addAll(user);
+
+                    for(User users: userModelArrayList)
+                    {
+                        assignUserToTimeModel(users.getUserId());
+                    }
                 }
+            });
+        }
 
-            }
-        });
+
 
         authViewModel.getTimeForUserListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
             @Override
@@ -97,10 +164,11 @@ public class AdminView extends AppCompatActivity {
                 timeModelArrayListForAdmin.addAll(timeModels);
                 listOfAllRecordsForUser.addAll(timeModels);
 
-                //2 // TODO ze względu na to ,że pobiera dużo list. Trzeba zrobić metodę ,która będzie porównawała listy i dodawała nowe bez dupilkatów.
-                // TODO to działa tak że pobiera dla jednego użytkownika i potem dodaje. zrób Tak żeby nie dodawało tej samej listy.
-                timeModelArrayList.addAll(summingTime((ArrayList<TimeModel>) timeModels));
-
+                //2 //  ze względu na to ,że pobiera dużo list. Trzeba zrobić metodę ,która będzie porównawała listy i dodawała nowe bez dupilkatów.
+                // to działa tak że pobiera dla jednego użytkownika i potem dodaje. zrób Tak żeby nie dodawało tej samej listy.
+                timeModelForDisplayArrayList.addAll(summingTime((ArrayList<TimeModel>) timeModels));
+                //readForLogcat(timeModels);
+                writeTimeModelForDisplayToSharedPref();
                 setupRecyclerView();
             }
         });
@@ -129,7 +197,6 @@ public class AdminView extends AppCompatActivity {
                 setDataForSelectDate(stringBuilder.toString());
 
 
-
                 //1
                 //checkArrayListMethod();
             }
@@ -149,6 +216,44 @@ public class AdminView extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void readForLogcat(List<TimeModel> timeModels) {
+        for (TimeModel timeModel : timeModels) {
+            Log.i("For Logcat U",timeModel.getUserName());
+            Log.i("For Logcat S",timeModel.getTimeOverallInLong()+"");
+        }
+    }
+
+    private void readTimeModelForDisplayToSharedPref() {
+        SharedPreferences sharedPreferences1 = getSharedPreferences("MySharedPrefForList",MODE_PRIVATE);
+        jsonString2 = sharedPreferences1.getString("LIST_KEY","");
+
+        Gson gson1 = new Gson();
+        Type type = new TypeToken<ArrayList<TimeModelForDisplay>>(){}.getType();
+        timeModelForDisplayArrayList = gson1.fromJson(jsonString2,type);
+    }
+
+    private void writeTimeModelForDisplayToSharedPref() {
+        Gson gson = new Gson();
+        String jsonString = gson.toJson(timeModelForDisplayArrayList);
+
+        SharedPreferences sharedPreferences =getSharedPreferences("MySharedPrefForList",MODE_PRIVATE);
+
+        SharedPreferences.Editor myEdit = sharedPreferences.edit();
+        myEdit.putString("LIST_KEY",jsonString);
+        myEdit.commit();
+        myEdit.apply();
+    }
+
+    private void findTimeModelForDisplayToUpdateAndClearIt(String userId) {
+        for (int j = 0; j < timeModelForDisplayArrayList.size(); j++) {
+            Log.i("FIND_TIMEMODEL",timeModelForDisplayArrayList.get(j).getUserName());
+            if(timeModelForDisplayArrayList.get(j).getId().equals(userId))
+            {
+                timeModelForDisplayArrayList.remove(j);
+            }
+        }
     }
 
     public void setDataForSelectDate(String fromDatePicker)
@@ -210,9 +315,11 @@ public class AdminView extends AppCompatActivity {
     private ArrayList<TimeModelForDisplay> summingTimeFromDatePicker(ArrayList<TimeModel> arrayListFromInsideSelectDateMethod) {
         // INVOKED FOR EACH INDIVIDUAL USER, NOT FOR ALL USER
         ArrayList<TimeModelForDisplay> timeModels = new ArrayList<>();
+        long settledHours=0;
         long summedTime=0;
         int summedMoney=0;
         long leftHours=0;
+
 
 
         for (int i = 0,j=1; j < arrayListFromInsideSelectDateMethod.size(); i++,j++) {
@@ -226,6 +333,10 @@ public class AdminView extends AppCompatActivity {
                 {
                     leftHours+=arrayListFromInsideSelectDateMethod.get(i).getTimeOverallInLong();
                 }
+                 if(arrayListFromInsideSelectDateMethod.get(i).getMoneyOverall())
+                {
+                    settledHours+=arrayListFromInsideSelectDateMethod.get(i).getTimeOverallInLong();
+                }
 
                 if(j== arrayListFromInsideSelectDateMethod.size()-1)
                 {
@@ -234,6 +345,11 @@ public class AdminView extends AppCompatActivity {
                     {
                         leftHours+=arrayListFromInsideSelectDateMethod.get(j).getTimeOverallInLong();
                     }
+                    if(arrayListFromInsideSelectDateMethod.get(j).getMoneyOverall()==true)
+                    {
+                        settledHours+=arrayListFromInsideSelectDateMethod.get(j).getTimeOverallInLong();
+                    }
+
                     summedMoney +=arrayListFromInsideSelectDateMethod.get(j).getWithdrawnMoney();
                     Log.i("Summed Money", summedMoney+"");
 
@@ -248,6 +364,7 @@ public class AdminView extends AppCompatActivity {
                     leftHours=0;
                     summedTime=0;
                     summedMoney=0;
+                    settledHours=0;
                 }
             }
 
@@ -258,6 +375,10 @@ public class AdminView extends AppCompatActivity {
                     if(arrayListFromInsideSelectDateMethod.get(i).getMoneyOverall()==false)
                     {
                         leftHours+=arrayListFromInsideSelectDateMethod.get(i).getTimeOverallInLong();
+                    }
+                    if(arrayListFromInsideSelectDateMethod.get(i).getMoneyOverall())
+                    {
+                        settledHours+=arrayListFromInsideSelectDateMethod.get(i).getTimeOverallInLong();
                     }
 
                     summedMoney +=arrayListFromInsideSelectDateMethod.get(i).getWithdrawnMoney();
@@ -272,6 +393,7 @@ public class AdminView extends AppCompatActivity {
                     summedTime = 0;
                     summedMoney=0;
                     leftHours=0;
+                    settledHours=0;
                 }
                 else if(j==arrayListFromInsideSelectDateMethod.size()-1)
                 {
@@ -281,10 +403,17 @@ public class AdminView extends AppCompatActivity {
                     summedTime += arrayListFromInsideSelectDateMethod.get(i).getTimeOverallInLong();
                     summedMoney +=arrayListFromInsideSelectDateMethod.get(i).getWithdrawnMoney();
 
+
+
                     if(arrayListFromInsideSelectDateMethod.get(i).getMoneyOverall()==false)
                     {
                         leftHours+=arrayListFromInsideSelectDateMethod.get(i).getTimeOverallInLong();
                     }
+                    if(arrayListFromInsideSelectDateMethod.get(i).getMoneyOverall())
+                    {
+                        settledHours+=arrayListFromInsideSelectDateMethod.get(i).getTimeOverallInLong();
+                    }
+
 
                     timeModels1[0].setUserName(arrayListFromInsideSelectDateMethod.get(i).getUserName());
                     timeModels1[0].setTimeOverallInLong(summedTime);
@@ -295,12 +424,17 @@ public class AdminView extends AppCompatActivity {
                     summedTime = 0;
                     summedMoney=0;
                     leftHours=0;
+                    settledHours=0;
                     summedTime += arrayListFromInsideSelectDateMethod.get(j).getTimeOverallInLong();
                     summedMoney +=arrayListFromInsideSelectDateMethod.get(j).getWithdrawnMoney();
 
                     if(arrayListFromInsideSelectDateMethod.get(j).getMoneyOverall()==false)
                     {
                         leftHours+=arrayListFromInsideSelectDateMethod.get(j).getTimeOverallInLong();
+                    }
+                    if(arrayListFromInsideSelectDateMethod.get(j).getMoneyOverall())
+                    {
+                        settledHours+=arrayListFromInsideSelectDateMethod.get(j).getTimeOverallInLong();
                     }
                     timeModels1[1].setUserName(arrayListFromInsideSelectDateMethod.get(j).getUserName());
                     timeModels1[1].setTimeOverallInLong(summedTime);
@@ -312,6 +446,7 @@ public class AdminView extends AppCompatActivity {
                  summedTime=0;
                  summedMoney=0;
                  leftHours=0;
+                 settledHours=0;
                 }
             }
         }
@@ -322,8 +457,7 @@ public class AdminView extends AppCompatActivity {
     private void setupRecyclerView() {
         // TEN ADAPTER JEST ZACZYTYWANY PRZY PIERWSZYM URUCHOMIENIU
 
-        Toast.makeText(this, "Download from base", Toast.LENGTH_SHORT).show();
-        adapterUserForAdmin = new AdapterUserForAdmin(AdminView.this, timeModelArrayList,this, listOfAllRecordsForUser);
+        adapterUserForAdmin = new AdapterUserForAdmin(AdminView.this, timeModelForDisplayArrayList,this, listOfAllRecordsForUser);
         binding.recyclerViewCardy.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         binding.recyclerViewCardy.setAdapter(adapterUserForAdmin);
     }
@@ -360,7 +494,7 @@ public class AdminView extends AppCompatActivity {
         ArrayList<TimeModelForDisplay> timeModels = new ArrayList<>();
 
         long sumTime=0;
-        int summedMoney = 0;
+        double summedMoney = 0;
         long leftHours = 0;
 
 
@@ -368,6 +502,10 @@ public class AdminView extends AppCompatActivity {
         {
         sumTime += timeModelArrayList.get(i).getTimeOverallInLong();
         summedMoney+= timeModelArrayList.get(i).getWithdrawnMoney();
+
+        summedMoney=UserOverall.round(summedMoney,2);
+
+
 
         if(timeModelArrayList.get(i).getMoneyOverall()==false)
         {
@@ -398,7 +536,7 @@ public class AdminView extends AppCompatActivity {
 
 
 
-    private void assignUserToTime(String userId) {
+    private void assignUserToTimeModel(String userId) {
         authViewModel.getTimeForUser(userId);
     }
 }
