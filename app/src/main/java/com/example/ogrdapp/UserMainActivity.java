@@ -193,12 +193,15 @@ public class UserMainActivity extends AppCompatActivity {
         holdResumeWork.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(timeDisplay.getText().toString().contains("-"))
+                {
+                    Toast.makeText(UserMainActivity.this, "Poczekaj jeszcze: " + timeDisplay.getText().toString(), Toast.LENGTH_SHORT).show();
+                }
+                else{
+                
                 ServiceHelper.isCountingTimeActive = true;
 
-
                 isPaused = !isPaused;
-
-
 
                 saveCreationTimeToSharedPref(new Date().getTime());
                 startCountingTimeWithHandler(delayToAssign);
@@ -232,6 +235,7 @@ public class UserMainActivity extends AppCompatActivity {
                     holdResumeWork.setText(getString(R.string.hold_work));
                 }
 
+            }
             }
 
         });
@@ -546,6 +550,12 @@ public class UserMainActivity extends AppCompatActivity {
                             delayToAssign=-toPost;
                             timeDisplay.setText(getTimerText(toPost));
                             handler1.postDelayed(this, 1000);
+                            //TODO to może się wyjebać
+                        /*    if(!timeDisplay.getText().toString().contains("-"))
+                            {
+                                holdResumeWork.setText("Wstrzymaj pracę");
+                                holdResumeWork.setBackgroundColor(Color.parseColor("#A214D5"));
+                            }*/
                         }
                         else {
                             timeDisplay.setText(getTimerText(toPost));
@@ -661,7 +671,8 @@ public class UserMainActivity extends AppCompatActivity {
 
                     saveTimeModelToSharedPreferences();
                     tmpBeginTime = getCurrentTimeInSimpleFormat();
-                    delayToAssign= 5* MINUTE_IN_SECONDS;
+                    //delayToAssign= 5* MINUTE_IN_SECONDS;
+                    delayToAssign=10;
                     startTimer((new Date().getTime()+ (delayToAssign*1000)));
                     begingTime.setText(getString(R.string.begin_work_at) +getCurrentTimeWithDelay(delayToAssign*1000));
                     holdResumeWork.setText(getString(R.string.hold_work));

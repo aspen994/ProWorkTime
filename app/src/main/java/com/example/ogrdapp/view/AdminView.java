@@ -37,19 +37,20 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.TimeZone;
 
 public class AdminView extends AppCompatActivity {
 
     private AuthViewModel authViewModel;
-    private ArrayList<User> userModelArrayList;
-    private ArrayList<TimeModelForDisplay> timeModelForDisplayArrayList;
-    private ArrayList<TimeModel> timeModelArrayListForAdmin;
+    private LinkedList<User> userModelArrayList;
+    private LinkedList<TimeModelForDisplay> timeModelForDisplayArrayList;
+    private LinkedList<TimeModel> timeModelArrayListForAdmin;
 
-    private ArrayList<TimeModelForDisplay> brandNewArrayList;
-    private ArrayList<TimeModel> arrayListFromInsideSelectDateMethod;
-    public List<TimeModel> listOfAllRecordsForUser;
+    private LinkedList<TimeModelForDisplay> brandNewArrayList;
+    private LinkedList<TimeModel> arrayListFromInsideSelectDateMethod;
+    public LinkedList<TimeModel> listOfAllRecordsForUser;
 
     private AdapterUserForAdmin adapterUserForAdmin;
     private ActivityAdminViewBinding binding;
@@ -104,17 +105,17 @@ public class AdminView extends AppCompatActivity {
 
 
 
-        timeModelForDisplayArrayList = new ArrayList<>();
+        timeModelForDisplayArrayList = new LinkedList<>();
         //Czyszczę bo każda kolejne zmiany potem dodają wiecej użytkowników w ADMIN VIEW
         //timeModelArrayList.clear();
 
-        userModelArrayList = new ArrayList<>();
+        userModelArrayList = new LinkedList<>();
         //userModelArrayList.clear();
 
-        timeModelArrayListForAdmin = new ArrayList<>();
-        brandNewArrayList= new ArrayList<>();
-        arrayListFromInsideSelectDateMethod =new ArrayList<>();
-        listOfAllRecordsForUser = new ArrayList<>();
+        timeModelArrayListForAdmin = new LinkedList<>();
+        brandNewArrayList= new LinkedList<>();
+        arrayListFromInsideSelectDateMethod =new LinkedList<>();
+        listOfAllRecordsForUser = new LinkedList<>();
 
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
@@ -312,7 +313,7 @@ public class AdminView extends AppCompatActivity {
 
     }
 
-    private ArrayList<TimeModelForDisplay> summingTimeFromDatePicker(ArrayList<TimeModel> arrayListFromInsideSelectDateMethod) {
+    private ArrayList<TimeModelForDisplay> summingTimeFromDatePicker(LinkedList<TimeModel> arrayListFromInsideSelectDateMethod) {
         // INVOKED FOR EACH INDIVIDUAL USER, NOT FOR ALL USER
         ArrayList<TimeModelForDisplay> timeModels = new ArrayList<>();
         long settledHours=0;
