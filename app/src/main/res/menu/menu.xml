@@ -18,9 +18,15 @@
         android:icon="@drawable/baseline_manage_accounts_24"
         app:showAsAction="never"/>
     <item
+        android:id="@+id/action_qrCode_management"
+        android:title="Zarządzaj QR-Code"
+        android:icon="@drawable/baseline_qr_code_24"
+        app:showAsAction="never"/>
+    <item
         android:id="@+id/action_logout"
         android:title="@string/logout_menu"
         android:icon="@drawable/baseline_logout_24"
         app:showAsAction="never"/>
+
 
 </menu>

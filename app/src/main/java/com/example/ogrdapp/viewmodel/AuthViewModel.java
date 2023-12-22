@@ -6,11 +6,14 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.ogrdapp.model.QRModel;
 import com.example.ogrdapp.model.TimeModel;
 import com.example.ogrdapp.model.User;
 import com.example.ogrdapp.repository.AuthRepository;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +29,8 @@ public class AuthViewModel extends AndroidViewModel {
     private MutableLiveData<List<TimeModel>> timeForUserListMutableLiveData;
     private MutableLiveData<Map<String, Object>> paycheckHoursToSettleMutableLiveData;
     private MutableLiveData<String> emailMutableLiveData;
+    private MutableLiveData<String> adminIdMutableLiveData;
+    private MutableLiveData<LinkedList<QRModel>>getQrModelMutableLiveData;
 
 
 
@@ -41,6 +46,17 @@ public class AuthViewModel extends AndroidViewModel {
         timeForUserListMutableLiveData = authRepository.getTimeForUserListMutableLiveData();
         paycheckHoursToSettleMutableLiveData = authRepository.getPaycheckHoursToSettleMutableLiveData();
         emailMutableLiveData = authRepository.getEmailMutableLiveData();
+        adminIdMutableLiveData =authRepository.getAdminIdMutableLiveData();
+        getQrModelMutableLiveData= authRepository.getQrModelMutableLiveData();
+
+    }
+
+    public MutableLiveData<LinkedList<QRModel>> getGetQrModelMutableLiveData() {
+        return getQrModelMutableLiveData;
+    }
+
+    public MutableLiveData<String> getAdminIdMutableLiveData() {
+        return adminIdMutableLiveData;
     }
 
     public MutableLiveData<String> getEmailMutableLiveData() {
@@ -88,6 +104,11 @@ public class AuthViewModel extends AndroidViewModel {
     public void getUsersDataAssignedToAdmin()
     {
         authRepository.getUsersDataAssignedToAdmin();
+    }
+
+    public void setNewQrCode(Map<String,Object> qrCodeMap)
+    {
+        authRepository.setNewQrCode(qrCodeMap);
     }
 
     public void updatedDataHoursToFirebaseUser(TimeModel timeModel)
@@ -169,6 +190,11 @@ public class AuthViewModel extends AndroidViewModel {
     public String getUserId()
     {
         return authRepository.getUserId();
+    }
+
+    public void getDataQRCode(String adminId)
+    {
+        authRepository.getDataQRCode(adminId);
     }
 
 

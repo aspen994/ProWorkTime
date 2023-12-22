@@ -42,6 +42,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
+import com.example.ogrdapp.model.QRModel;
 import com.example.ogrdapp.model.TimeModel;
 import com.example.ogrdapp.scanner.CustomScannerActivity;
 import com.example.ogrdapp.services.ForegroundServices;
@@ -60,13 +61,14 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.Map;
+import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 
 public class UserMainActivity extends AppCompatActivity {
 
     public static final String QRCODE1="Tk6&zE8*odwq7G$u2#IVL1e!Q@JvXrFgS0^NbCn5mO9pDyA4(PcHhY3Za6lWsB)";
     public static final String QRCODE2delay5minutes="yJGZ*q7W#8n6Dv@B1F$%9X4hpYQeS^gU+sa0RwM3zNtVxOcZ2dL5fIHkA6i";
+    public LinkedList<QRModel> QRCodeLinkedList;
     public static final long MINUTE_IN_SECONDS =60;
 
     //Widgets
@@ -101,6 +103,7 @@ public class UserMainActivity extends AppCompatActivity {
 
     private SharedPreferencesDataSource sharedPreferencesDataSource=  SharedPreferencesDataSource.getInstance();
     private AuthViewModel authViewModel;
+    String foreginKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,6 +121,8 @@ public class UserMainActivity extends AppCompatActivity {
         begingTime = findViewById(R.id.begining_time);
         endingTime = findViewById(R.id.ending_time);
         timerOverall = findViewById(R.id.timeOverall);
+
+        QRCodeLinkedList = new LinkedList<>();
 
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -259,7 +264,12 @@ public class UserMainActivity extends AppCompatActivity {
             public void onChanged(TimeModel timeModel) {
                 String username = timeModel.getUserName();
                 String userSurname = timeModel.getUserSurname();
+
                 userName.setText(username+" " + userSurname);
+
+                //TODO TUTAJ DAJE ID FOREGINKEY DLA QR CODE DO ODCZYTU.
+                foreginKey = timeModel.getId();
+                authViewModel.getDataQRCode(foreginKey);
             }
         });
 
@@ -327,6 +337,9 @@ public class UserMainActivity extends AppCompatActivity {
                 {
                     alertDialogLConfirmation();
                     //authViewModel.signOut();
+                } else if (R.id.action_qrCode_management== item.getItemId()) {
+                    Intent i = new Intent(UserMainActivity.this,QRCodeManagement.class);
+                    startActivity(i);
                 }
 
                 return true;
@@ -348,6 +361,13 @@ public class UserMainActivity extends AppCompatActivity {
 
         intentFilter = new IntentFilter();
         intentFilter.addAction("Counter");
+
+        authViewModel.getGetQrModelMutableLiveData().observe(UserMainActivity.this, new Observer<LinkedList<QRModel>>() {
+            @Override
+            public void onChanged(LinkedList<QRModel> qrModels) {
+                QRCodeLinkedList.addAll(qrModels);
+            }
+        });
 
 
     }
@@ -377,11 +397,13 @@ public class UserMainActivity extends AppCompatActivity {
     private void showItem() {
         Menu menu = navigationView.getMenu();
         menu.findItem(R.id.action_admin_panel).setVisible(true);
+        menu.findItem(R.id.action_qrCode_management).setVisible(true);
     }
 
     private void hideItem() {
         Menu menu = navigationView.getMenu();
         menu.findItem(R.id.action_admin_panel).setVisible(false);
+        menu.findItem(R.id.action_qrCode_management).setVisible(false);
     }
 
     private void openDialog(Context context) {
@@ -613,7 +635,63 @@ public class UserMainActivity extends AppCompatActivity {
         @Override
         public void onActivityResult(ScanIntentResult result) {
 
-            // For QRCODE 1
+            //
+           /* authViewModel.getGetQrModelMutableLiveData().observe(UserMainActivity.this, new Observer<LinkedList<QRModel>>() {
+                @Override
+                public void onChanged(LinkedList<QRModel> qrModels) {
+                    QRCodeLinkedList.addAll(qrModels);
+                }
+            });*/
+
+            if(!QRCodeLinkedList.isEmpty())
+            {
+                for (QRModel qrModel : QRCodeLinkedList) {
+                    Log.i("QRCODE METHOD", qrModel.getQRCode());
+                    Log.i("RESUlT",result.getContents().toString());
+                    if (result.getContents() != null && result.getContents().toString().equals(qrModel.getQRCode())) {
+                        Log.i("Start Counting","SHOULD START");
+                        if (timerStarted == false) {
+                            timerOverall.setText("");
+                            timerStarted = true;
+                            isPaused = false;
+                            saveIsTimeStartedToSharedPreferences(timerStarted);
+
+                            timeDisplay.setText("");
+                            textMain.setText(getString(R.string.stop_work));
+                            cleanDataForTimeModelToSharedPreferences();
+                            currentTime = getCurrentTime();
+
+                            saveTimeModelToSharedPreferences();
+                            delayToAssign = qrModel.getDelay() * MINUTE_IN_SECONDS;
+                            tmpBeginTime = getCurrentTimeInSimpleFormat();
+                            startTimer((new Date().getTime() + (delayToAssign * 1000)));
+                            begingTime.setText(getString(R.string.begin_work_at) + getCurrentTimeWithDelay(delayToAssign * 1000));
+                            holdResumeWork.setText(getString(R.string.hold_work));
+                            startCountingTimeWithHandler(delayToAssign);
+
+
+                            endingTime.setText("");
+
+                            stopWork.setVisibility(View.VISIBLE);
+                            holdResumeWork.setVisibility(View.VISIBLE);
+                            holdResumeWork.setBackgroundColor(Color.parseColor("#A214D5"));
+                        } else {
+                            stopCountingTime();
+                            stopTime();
+                            delayToAssign = 0;
+                            qr.setVisibility(View.VISIBLE);
+                            stopWork.setVisibility(View.INVISIBLE);
+                            holdResumeWork.setVisibility(View.INVISIBLE);
+                        }
+
+                    }
+                }
+            }
+
+
+
+
+            /*// For QRCODE 1
             if(result.getContents()!=null && result.getContents().toString().equals(QRCODE1))
             {
 
@@ -631,6 +709,7 @@ public class UserMainActivity extends AppCompatActivity {
 
                     saveTimeModelToSharedPreferences();
                     begingTime.setText(getString(R.string.begin_work_at) + currentTime);
+                    delayToAssign=0;
                     tmpBeginTime = getCurrentTimeInSimpleFormat();
                     startTimer(new Date().getTime());
                     holdResumeWork.setText(getString(R.string.hold_work));
@@ -654,7 +733,7 @@ public class UserMainActivity extends AppCompatActivity {
 
             }
 
-
+                //--------------||-----------------
 
             if(result.getContents()!=null && result.getContents().toString().equals(QRCODE2delay5minutes))
             {
@@ -694,7 +773,7 @@ public class UserMainActivity extends AppCompatActivity {
 
                 }
 
-            }
+            }*/
 
         }
     });

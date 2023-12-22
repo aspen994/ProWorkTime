@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.ogrdapp.R;
+import com.example.ogrdapp.model.QRModel;
 import com.example.ogrdapp.model.TimeModel;
 import com.example.ogrdapp.model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,12 +46,19 @@ public class AuthRepository {
     private MutableLiveData<List<TimeModel>> timeSelectedForUserListMutableLiveData;
     private MutableLiveData<Map<String, Object>> paycheckHoursToSettleMutableLiveData;
     private MutableLiveData<String> emailMutableLiveData;
+    private MutableLiveData<String> adminIdMutableLiveData;
+    private MutableLiveData<LinkedList<QRModel>> qrModelMutableLiveData;
+
+
 
     private FirebaseAuth firebaseAuth;
     private FirebaseFirestore db;
     private CollectionReference collectionReference;
     private FirebaseUser fireBaseUser;
     private CollectionReference collectionReferenceTime;
+    private CollectionReference collectionReferenceQrCode;
+
+    private final String collectionReferenceQrCodeString = "QRCode";
     private String currentUserId;
 
     private List<String> arrayListForAssigningEmail;
@@ -79,16 +88,21 @@ public class AuthRepository {
         this.timeSelectedForUserListMutableLiveData = new MutableLiveData<>();
         this.paycheckHoursToSettleMutableLiveData = new MutableLiveData<>();
         this.emailMutableLiveData = new MutableLiveData<>();
+        this.adminIdMutableLiveData = new MutableLiveData<>();
+        this.qrModelMutableLiveData = new MutableLiveData<>();
+
         firebaseAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
         collectionReference = db.collection("Users");
         collectionReferenceTime = db.collection("Time");
+        collectionReferenceQrCode = db.collection("QRCode");
 
         if(firebaseAuth.getCurrentUser()!=null)
         {
             fireBaseUser = firebaseAuth.getCurrentUser();
             firebaseUserMutableLiveData.postValue(firebaseAuth.getCurrentUser());
             currentUserId = fireBaseUser.getUid();
+            adminIdMutableLiveData.postValue(currentUserId);
         }
 
     }
@@ -100,6 +114,9 @@ public class AuthRepository {
         return  fireBaseUser.getUid();
     }
 
+    public MutableLiveData<LinkedList<QRModel>> getQrModelMutableLiveData() {
+        return qrModelMutableLiveData;
+    }
 
     public MutableLiveData<List<TimeModel>> getTimeForUserListMutableLiveData() {
         return timeForUserListMutableLiveData;
@@ -147,6 +164,36 @@ public class AuthRepository {
 
     public MutableLiveData<String> getEmailMutableLiveData() {
         return emailMutableLiveData;
+    }
+
+    public MutableLiveData<String> getAdminIdMutableLiveData() {
+        return adminIdMutableLiveData;
+    }
+
+    //FOR QRCODE
+    public void setNewQrCode(Map<String,Object> qrCodeMap)
+    {
+        collectionReferenceQrCode.document().set(qrCodeMap).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+            Log.i("setNewQrCode","Added Succesfully");
+            LinkedList<QRModel> qrModelLinkedList = new LinkedList<>();
+
+                QRModel qrModel = new QRModel();
+                qrModel.setDelay((int)qrCodeMap.get("delay"));
+                qrModel.setAdminId((String)qrCodeMap.get("idAdmin"));
+                qrModel.setQRCode((String) qrCodeMap.get("QRCode"));
+
+                qrModelLinkedList.add(qrModel);
+
+                qrModelMutableLiveData.postValue(qrModelLinkedList);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+            Log.i("Fail setNewCodeQR",e.getMessage().toString());
+            }
+        });
     }
 
     //getTimeSelectedForUserListMutableLiveData - mutable live data for this below.
@@ -219,6 +266,36 @@ public class AuthRepository {
                         }
 
                         Log.i(LOGER,"getTimeForUser");
+
+                    }
+                });
+    }
+
+    public void getDataQRCode(String adminId)
+    {
+
+        collectionReferenceQrCode.whereEqualTo("idAdmin", adminId)
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                        if(!queryDocumentSnapshots.isEmpty())
+                        {
+
+                            LinkedList<QRModel> qrModelLink = new LinkedList<>();
+
+                            for(QueryDocumentSnapshot qrModels: queryDocumentSnapshots)
+                            {
+
+                                QRModel qrModel = qrModels.toObject(QRModel.class);
+
+
+                                qrModelLink.add(qrModel);
+
+                            }
+                            qrModelMutableLiveData.postValue(qrModelLink);
+                        }
 
                     }
                 });
@@ -457,6 +534,11 @@ public class AuthRepository {
                         });
     }
 
+    // METODA Stworzona 22.12.2023r.
+    public void getUserForeignKey()
+    {
+        //collectionReference.whereEqualTo("userId").get()
+    }
 
 
     public void getUserDataAssignedToAdmin(String workerId)
@@ -725,6 +807,7 @@ public class AuthRepository {
                     {
                         timeModel.setUserName(snapshot.getString("username"));
                         timeModel.setUserSurname(snapshot.getString("surName"));
+                        timeModel.setId(snapshot.getString("foreign_key"));
                     }
 
                     firebaseTimeModel.postValue(timeModel);
