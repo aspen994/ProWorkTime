@@ -47,6 +47,8 @@ public class RegisterActivity extends AppCompatActivity {
 
         buttonRegister = findViewById(R.id.button_rejestruj);
 
+        getSupportActionBar().hide();
+
         emailOfAdmin.setVisibility(View.VISIBLE);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override

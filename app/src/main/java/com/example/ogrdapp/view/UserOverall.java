@@ -60,6 +60,7 @@ public class UserOverall extends AppCompatActivity {
 
         isWithdrawn=false;
 
+        getSupportActionBar().hide();
         // 1-set widgets
         username = findViewById(R.id.username);
         dateDisplay = findViewById(R.id.date_display);

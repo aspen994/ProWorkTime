@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     // Widgets
     private Button loginBtn;
     private TextView textViewRegister,textViewZresetuj;
+    private EditText editText;
     private AutoCompleteTextView email, password;
 
     private AuthViewModel authViewModel;
@@ -43,6 +45,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         setContentView(R.layout.activity_main);
+
+        getSupportActionBar().hide();
+
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
         //! ! ! ! ! ! ! ! ! ! ! !-FOR NEXT IMPROVEMNET LEAV IT ! ! ! ! ! ! ! ! ! ! ! !
@@ -54,23 +59,26 @@ public class MainActivity extends AppCompatActivity {
 
         email = findViewById(R.id.autoCompleteTextView_email_main);
         password = findViewById(R.id.autoCompleteTextView_password_main);
+
+
+
         //! ! ! ! ! ! ! ! ! ! ! !-FOR NEXT IMPROVEMENT LEAVE IT ! ! ! ! ! ! ! ! ! ! ! !
 
-       /* ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,R.array.language, android.R.layout.simple_spinner_item);
+        /*ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,R.array.language, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setPrompt("Wybierz język");
-        spinner.setAdapter(adapter);
-*/
+        spinner.setAdapter(adapter);*/
+
         //! ! ! ! ! ! ! ! ! ! ! !-FOR NEXT IMPROVEMENT LEAVE IT ! ! ! ! ! ! ! ! ! ! ! !
-       /* textViewSelectLanguage.setOnClickListener(new View.OnClickListener() {
+        /*textViewSelectLanguage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 spinner.performClick();
             }
-        });*/
+        });
 
         //! ! ! ! ! ! ! ! ! ! ! !-FOR NEXT IMPROVEMENT LEAVE IT ! ! ! ! ! ! ! ! ! ! ! !
-      /*  spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedLanguage = parent.getItemAtPosition(position).toString();
@@ -99,8 +107,8 @@ public class MainActivity extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> parent) {
 
             }
-        });
-*/
+        });*/
+
 
 
         textViewZresetuj.setOnClickListener(new View.OnClickListener() {
@@ -129,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //startActivity(new Intent(MainActivity.this,UserMainActivity.class));
+
                 String emailToLogin = email.getText().toString();
                 String passwordToLogin = password.getText().toString();
                 if(!TextUtils.isEmpty(email.getText().toString())&&!TextUtils.isEmpty(password.getText().toString())) {
@@ -137,7 +146,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
     }
 
     //! ! ! ! ! ! ! ! ! ! ! !-FOR NEXT IMPROVEMNET LEAV IT ! ! ! ! ! ! ! ! ! ! ! !

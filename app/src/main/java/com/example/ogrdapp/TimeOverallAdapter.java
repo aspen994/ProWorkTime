@@ -2,6 +2,7 @@ package com.example.ogrdapp;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,7 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
     public TimeOverallAdapter(Context context, ArrayList<TimeModel> list) {
         this.context = context;
         this.list = list;
+        //Log.i("TIMEOVERALLADAPTER_S",list.get(0).getUserName());
     }
 
 

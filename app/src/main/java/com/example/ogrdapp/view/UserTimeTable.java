@@ -40,6 +40,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -189,8 +190,12 @@ public class UserTimeTable extends AppCompatActivity {
                     arrayListTmp.clear();
                     for (TimeModel model : timeModelArrayList) {
                         String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate()).toLowerCase();
-                        String s1 = selectedSpinnerOnMonth.toLowerCase()+year.toLowerCase();
-
+                        Calendar  calendar = Calendar.getInstance();
+                        calendar.set(Calendar.YEAR, Integer.parseInt(selectedSpinnerOnYear));
+                        calendar.set(Calendar.MONTH,position);
+                        String s1 = formatDateWithMonthAndYear(new Date(calendar.getTime().toInstant().toEpochMilli()));
+                        Log.i("Invoked S",s);
+                        Log.i("Invoked S1",s1);
 
                         if (s1.equals(s)) {
                             arrayListTmp.add(model);
@@ -228,7 +233,15 @@ public class UserTimeTable extends AppCompatActivity {
                     arrayListTmp.clear();
                     for (TimeModel model : timeModelArrayList) {
                         String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate()).toLowerCase();
-                        String s1 = month.toLowerCase() + selectedSpinnerOnYear;
+                        //String s1 = month.toLowerCase() + selectedSpinnerOnYear;
+                        Calendar  calendar = Calendar.getInstance();
+                        calendar.set(Calendar.YEAR, Integer.parseInt(selectedSpinnerOnYear));
+                        calendar.set(Calendar.MONTH,position);
+                        String s1 = formatDateWithMonthAndYear(new Date(calendar.getTime().toInstant().toEpochMilli())).toLowerCase();
+
+                        //Log.i("Calendar",calendar.getTime().toString());
+                        Log.i("Invoked SpinnerMonth",s);
+                        Log.i("Invoked SpinnerMonth1",s1);
 
                         if (s1.equals(s)) {
                             arrayListTmp.add(model);

@@ -846,9 +846,9 @@ public class UserMainActivity extends AppCompatActivity {
         {
             drawerLayout.closeDrawer(GravityCompat.START);
         }
-        else {
+        /*else {
             super.onBackPressed();
-        }
+        }*/
     }
 
     @Override
@@ -943,6 +943,8 @@ public class UserMainActivity extends AppCompatActivity {
         }
         super.onStop();
     }
+
+
 
 
 
