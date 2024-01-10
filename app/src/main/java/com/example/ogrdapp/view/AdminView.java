@@ -55,6 +55,7 @@ public class AdminView extends AppCompatActivity {
     private AdapterUserForAdmin adapterUserForAdmin;
     private ActivityAdminViewBinding binding;
     public static int i=0;
+    public static boolean isDownloaded;
     SwipeController swipeController;
     public static final String TAG_ADMIN_VIEW ="ADMIN VIEW";
     String jsonString2;
@@ -103,8 +104,6 @@ public class AdminView extends AppCompatActivity {
         View view = binding.getRoot();
         setContentView(view);
 
-
-
         timeModelForDisplayArrayList = new LinkedList<>();
         //Czyszczę bo każda kolejne zmiany potem dodają wiecej użytkowników w ADMIN VIEW
         //timeModelArrayList.clear();
@@ -118,6 +117,12 @@ public class AdminView extends AppCompatActivity {
         listOfAllRecordsForUser = new LinkedList<>();
 
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+
+        //WSTAW METODĘ KTÓRA BĘDZIE NASŁUCHIWAĆ ZMIANY
+
+        //TODO 08.01.2024r SPRWADZAM CZY WYŚWIETLI MI TYLKO JEDEN ELEMENT DODANY
+        authViewModel.checkMethod();
+
 
         Intent intent = getIntent();
 
@@ -139,9 +144,12 @@ public class AdminView extends AppCompatActivity {
 
             findTimeModelForDisplayToUpdateAndClearIt(userId);
             authViewModel.getTimeForUser(userId);
+            Log.i("USER_ID","Invoked");
 
         }
         else {//(jsonString2==null)
+
+            Log.i("Download FB", "Firebase");
             authViewModel.getUsersDataAssignedToAdmin();
             authViewModel.getUserArrayListOfUserMutableLiveData().observe(this, new Observer<List<User>>() {
                 @Override
@@ -156,8 +164,6 @@ public class AdminView extends AppCompatActivity {
             });
         }
 
-
-
         authViewModel.getTimeForUserListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
             @Override
             public void onChanged(List<TimeModel> timeModels) {
@@ -168,7 +174,7 @@ public class AdminView extends AppCompatActivity {
                 //2 //  ze względu na to ,że pobiera dużo list. Trzeba zrobić metodę ,która będzie porównawała listy i dodawała nowe bez dupilkatów.
                 // to działa tak że pobiera dla jednego użytkownika i potem dodaje. zrób Tak żeby nie dodawało tej samej listy.
                 timeModelForDisplayArrayList.addAll(summingTime((ArrayList<TimeModel>) timeModels));
-                //readForLogcat(timeModels);
+                readForLogcat(timeModels);
                 writeTimeModelForDisplayToSharedPref();
                 setupRecyclerView();
             }
@@ -223,6 +229,7 @@ public class AdminView extends AppCompatActivity {
         for (TimeModel timeModel : timeModels) {
             Log.i("For Logcat U",timeModel.getUserName());
             Log.i("For Logcat S",timeModel.getTimeOverallInLong()+"");
+            Log.i("For Logcat DId",timeModel.getDocumentId());
         }
     }
 

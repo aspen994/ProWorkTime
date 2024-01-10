@@ -30,6 +30,7 @@ import com.example.ogrdapp.utility.FormattedTime;
 import com.example.ogrdapp.utility.SwipeController;
 import com.example.ogrdapp.utility.SwipeControllerActions;
 import com.example.ogrdapp.viewmodel.AuthViewModel;
+import com.example.ogrdapp.viewmodel.RoomViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -69,6 +70,7 @@ public class UserTimeTable extends AppCompatActivity {
     private String selectedSpinnerOnMonth="";
     private int moneyMultiplier = 16;
     private AuthViewModel authViewModel;
+    private RoomViewModel roomViewModel;
     public String idUserSelectedByAdmin;
     SwipeController swipeController = null;
     ArrayList<TimeModel> arrayListTmp;
@@ -79,17 +81,7 @@ public class UserTimeTable extends AppCompatActivity {
     long overall;
     public  boolean isChanged;
 
-    private void writeTimeModelForDisplayToSharedPref() {
-        Gson gson = new Gson();
-        String jsonString = gson.toJson(timeModelArrayList);
 
-        SharedPreferences sharedPreferences =getSharedPreferences("UserTimeTableSharedPreferences",MODE_PRIVATE);
-
-        SharedPreferences.Editor myEdit = sharedPreferences.edit();
-        myEdit.putString("timeModelArrayList",jsonString);
-        myEdit.commit();
-        myEdit.apply();
-    }
     @Override
     protected void onPause() {
         if(isChanged)
@@ -122,8 +114,18 @@ public class UserTimeTable extends AppCompatActivity {
         arrayListTmp = new ArrayList<>();
 
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        roomViewModel = new ViewModelProvider(this).get(RoomViewModel.class);
 
-  //      Toast.makeText(this, "To Tu powinno", Toast.LENGTH_SHORT).show();
+        /*roomViewModel.getAllContacts().observe(this, new Observer<List<TimeModel>>() {
+            @Override
+            public void onChanged(List<TimeModel> timeModels) {
+                Log.i("SIZE TimeModel",timeModels.size()+"");
+            }
+        });*/
+
+
+
+        //      Toast.makeText(this, "To Tu powinno", Toast.LENGTH_SHORT).show();
 //        authViewModel.getAllIdDocumentFromTimeModel();
 
         // FOR ADMIN
@@ -132,8 +134,58 @@ public class UserTimeTable extends AppCompatActivity {
         // FOR USER
 
         idUserSelectedByAdmin = getIntent().getStringExtra("Id");
-        if(idUserSelectedByAdmin!=null) {
 
+        if((getIntent().getSerializableExtra("listOfAllRecordsForUser"))!=null) {
+
+            Toast.makeText(this, "if", Toast.LENGTH_SHORT).show();
+
+            timeModelArrayList.clear();
+
+            timeModelArrayList.addAll((List<TimeModel>)getIntent().getSerializableExtra("listOfAllRecordsForUser"));
+            activateSpinner();
+            activateSpinnerYear();
+            timeOverallAdapter.notifyDataSetChanged();
+        }
+        else{
+            Toast.makeText(this, "else", Toast.LENGTH_SHORT).show();
+            // TODO 06.01.2024r wyłączony firebase
+            authViewModel.getData();
+
+          /*  roomViewModel.getAllContacts().observe(this, new Observer<List<TimeModel>>() {
+                @Override
+                public void onChanged(List<TimeModel> timeModels) {
+                    timeModelArrayList.clear();
+                    timeModelArrayList.addAll(timeModels);
+                    Log.i("Size timeModels",timeModels.size()+"");
+                    activateSpinner();
+                    activateSpinnerYear();
+                    timeOverallAdapter.notifyDataSetChanged();
+                    readTimeModelArrayList(timeModelArrayList);
+                }
+            });*/
+
+            //TODO 05.01.2024 r - Wyłączony firebase
+            authViewModel.getTimeModelListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
+                @Override
+                public void onChanged(List<TimeModel> timeModels) {
+                    timeModelArrayList.clear();
+                    timeModelArrayList.addAll(timeModels);
+                    activateSpinner();
+                    activateSpinnerYear();
+                    timeOverallAdapter.notifyDataSetChanged();
+                }
+            });
+
+
+
+        }
+
+        // Tutaj to zakomentowałem 02.01.2024
+      /*  if(idUserSelectedByAdmin!=null) {
+
+            Log.i("idUserSelectedByAdmin","null");
+            // Nie powinien pobierać tutaj bo wcześniej na admin view-
+            // miał pobrane już.
             authViewModel.getTimeForUser(idUserSelectedByAdmin);
 
             authViewModel.getTimeForUserListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
@@ -161,7 +213,7 @@ public class UserTimeTable extends AppCompatActivity {
                 }
             });
         }
-        
+        */
         //readTimeModelArrayList(timeModelArrayList);
 
         swipeControllerToRecyclerView();
@@ -175,6 +227,9 @@ public class UserTimeTable extends AppCompatActivity {
         /*Intent i = getIntent();
         timeModelArrayList.addAll((ArrayList<TimeModel>) i.getSerializableExtra("timeModel"));*/
 
+        // Calendar dla spinnerów
+        Calendar calendar  = Calendar.getInstance();
+
         spinnerYear.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -183,19 +238,19 @@ public class UserTimeTable extends AppCompatActivity {
 
                 String year = parent.getItemAtPosition(position).toString();
 
-                readTimeModelArrayList(timeModelArrayList);
+                //readTimeModelArrayList(timeModelArrayList);
 
                 if(!timeModelArrayList.isEmpty()) {
+                    Toast.makeText(UserTimeTable.this, "spinner year selected", Toast.LENGTH_SHORT).show();
                     //ArrayList<TimeModel> arrayListTmp = new ArrayList<>();
                     arrayListTmp.clear();
                     for (TimeModel model : timeModelArrayList) {
                         String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate()).toLowerCase();
-                        Calendar  calendar = Calendar.getInstance();
                         calendar.set(Calendar.YEAR, Integer.parseInt(selectedSpinnerOnYear));
-                        calendar.set(Calendar.MONTH,position);
                         String s1 = formatDateWithMonthAndYear(new Date(calendar.getTime().toInstant().toEpochMilli()));
                         Log.i("Invoked S",s);
                         Log.i("Invoked S1",s1);
+
 
                         if (s1.equals(s)) {
                             arrayListTmp.add(model);
@@ -229,12 +284,11 @@ public class UserTimeTable extends AppCompatActivity {
                 selectedSpinnerOnMonth = parent.getItemAtPosition(position).toString();
 
                 if(!timeModelArrayList.isEmpty()) {
+                    Toast.makeText(UserTimeTable.this, "spinner month selected", Toast.LENGTH_SHORT).show();
                     //ArrayList<TimeModel> arrayListTmp = new ArrayList<>();
                     arrayListTmp.clear();
                     for (TimeModel model : timeModelArrayList) {
                         String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate()).toLowerCase();
-                        //String s1 = month.toLowerCase() + selectedSpinnerOnYear;
-                        Calendar  calendar = Calendar.getInstance();
                         calendar.set(Calendar.YEAR, Integer.parseInt(selectedSpinnerOnYear));
                         calendar.set(Calendar.MONTH,position);
                         String s1 = formatDateWithMonthAndYear(new Date(calendar.getTime().toInstant().toEpochMilli())).toLowerCase();
@@ -267,7 +321,11 @@ public class UserTimeTable extends AppCompatActivity {
 
     private void readTimeModelArrayList(ArrayList<TimeModel> timeModelArrayList) {
         for (TimeModel timeModel: timeModelArrayList) {
-            Log.i("read UserTimeTable",timeModel.getMoneyOverall()+"");
+            Log.i("TimeModel userName",timeModel.getUserName()+"");
+            Log.i("TimeModel getTimeBegin",timeModel.getTimeBegin()+"");
+            Log.i("TimeModel getTimeEnd",timeModel.getTimeEnd()+"");
+            Log.i("TimeModel getPostStamp",timeModel.getTimeAdded().toDate()+"");
+            Log.i("TimeModel idDocument",timeModel.getDocumentId()+"");
 
         }
     }
@@ -549,6 +607,18 @@ public class UserTimeTable extends AppCompatActivity {
             sum += arrayList.get(i).getTimeOverallInLong();
         }
         sumTextView.setText((sum/3600000)*moneyMultiplier+" zł");
+    }
+
+    private void writeTimeModelForDisplayToSharedPref() {
+        Gson gson = new Gson();
+        String jsonString = gson.toJson(timeModelArrayList);
+
+        SharedPreferences sharedPreferences =getSharedPreferences("UserTimeTableSharedPreferences",MODE_PRIVATE);
+
+        SharedPreferences.Editor myEdit = sharedPreferences.edit();
+        myEdit.putString("timeModelArrayList",jsonString);
+        myEdit.commit();
+        myEdit.apply();
     }
 
 }

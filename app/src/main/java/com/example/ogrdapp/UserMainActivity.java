@@ -51,6 +51,7 @@ import com.example.ogrdapp.view.AdminView;
 import com.example.ogrdapp.view.MainActivity;
 import com.example.ogrdapp.view.UserTimeTable;
 import com.example.ogrdapp.viewmodel.AuthViewModel;
+import com.example.ogrdapp.viewmodel.RoomViewModel;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.Timestamp;
 import com.journeyapps.barcodescanner.ScanContract;
@@ -103,12 +104,14 @@ public class UserMainActivity extends AppCompatActivity {
 
     private SharedPreferencesDataSource sharedPreferencesDataSource=  SharedPreferencesDataSource.getInstance();
     private AuthViewModel authViewModel;
+    private RoomViewModel roomViewModel;
     String foreginKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_main);
+
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.nav_View);
         qr = findViewById(R.id.buttonQR);
@@ -135,6 +138,7 @@ public class UserMainActivity extends AppCompatActivity {
         uploadAndLoadPausedTimeFromSharedPreferences();
 
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        roomViewModel = new ViewModelProvider(this).get(RoomViewModel.class);
 
 
 
@@ -905,9 +909,13 @@ public class UserMainActivity extends AppCompatActivity {
 
         if(timeModel.getTimeOverallInLong()>0)
         {
+            //TODO Wyłączam 05.01.2024
             authViewModel.saveTimeModelToFirebase(timeModel);
-
             authViewModel.updatedDataHoursToFirebaseUser(timeModel);
+
+           // roomViewModel.addTimeModel(timeModel);
+            Toast.makeText(this, "Invoked", Toast.LENGTH_SHORT).show();
+
         }
 
 

@@ -5,10 +5,18 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
 
+import com.example.ogrdapp.converter.TimestampConverter;
 import com.google.firebase.Timestamp;
 
+@Entity(tableName = "TimeModel_table")
 public class TimeModel  implements Parcelable {
+
+
     private String userName;
     private String userSurname;
     private String timeBegin;
@@ -19,6 +27,8 @@ public class TimeModel  implements Parcelable {
     private long timeOverallInLong;
     private Timestamp timeAdded;
     private double withdrawnMoney;
+    @PrimaryKey
+    @NonNull
     private String documentId;
 
 
@@ -179,4 +189,21 @@ public class TimeModel  implements Parcelable {
             return new TimeModel[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return "TimeModel{" +
+                "userName='" + userName + '\'' +
+                ", userSurname='" + userSurname + '\'' +
+                ", timeBegin='" + timeBegin + '\'' +
+                ", timeEnd='" + timeEnd + '\'' +
+                ", timeOverall='" + timeOverall + '\'' +
+                ", moneyOverall=" + moneyOverall +
+                ", id='" + id + '\'' +
+                ", timeOverallInLong=" + timeOverallInLong +
+                ", timeAdded=" + timeAdded +
+                ", withdrawnMoney=" + withdrawnMoney +
+                ", documentId='" + documentId + '\'' +
+                '}';
+    }
 }

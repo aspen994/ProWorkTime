@@ -64,9 +64,6 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
 
         TimeModelForDisplay timeModel = list.get(position);
 
-
-
-
         if(holder.getAdapterPosition()%2==0)
         {
             holder.linearLayoutAdmin.setBackgroundColor(ContextCompat.getColor(context, R.color.blue_grey_400));
@@ -96,8 +93,14 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
                 selectPath.viewById.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        // TUTAJ zamienń jak w settleForWork
+                        /*Intent intent = new Intent(context, UserTimeTable.class);
+                        intent.putExtra("Id",timeModel.getId());
+                        context.startActivity(intent);*/
+
                         Intent intent = new Intent(context, UserTimeTable.class);
                         intent.putExtra("Id",timeModel.getId());
+                        intent.putExtra("listOfAllRecordsForUser",(Serializable) listOfAllRecordsForUser);
                         context.startActivity(intent);
                     }
                 });

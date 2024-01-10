@@ -197,5 +197,10 @@ public class AuthViewModel extends AndroidViewModel {
         authRepository.getDataQRCode(adminId);
     }
 
+    public void checkMethod(){
+        authRepository.checkMethod();
+    }
+
+
 
 }
