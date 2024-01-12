@@ -24,6 +24,11 @@ public class RoomViewModel extends AndroidViewModel {
         return roomRepository.getAllTimeModels();
     }
 
+    public void deleteAllCollection()
+    {
+        roomRepository.deleteAllTimeModels();
+    }
+
     public void addTimeModel(TimeModel timeModel)
     {
         roomRepository.addTimeModel(timeModel);

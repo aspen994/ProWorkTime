@@ -138,11 +138,13 @@ public class AdminView extends AppCompatActivity {
         {
             String userId = intent.getStringExtra("USER_ID");
             Log.i("userId",userId);
-
+            Toast.makeText(this, userId, Toast.LENGTH_SHORT).show();
             //SharedPreferences - reading
             readTimeModelForDisplayToSharedPref();
 
             findTimeModelForDisplayToUpdateAndClearIt(userId);
+
+            // TO TUTAJ 10.01.2024
             authViewModel.getTimeForUser(userId);
             Log.i("USER_ID","Invoked");
 
@@ -156,14 +158,25 @@ public class AdminView extends AppCompatActivity {
                 public void onChanged(List<User> user) {
                     userModelArrayList.addAll(user);
 
+                    Log.i("HOW MANY TIMES1","INVOKED1");
+
                     for(User users: userModelArrayList)
                     {
+                        //Log.i("HOW MANY TIMES",users.getUserId());
+
+                        // TO TUTAJ 10.01.2024
                         assignUserToTimeModel(users.getUserId());
+
                     }
+
+                 /*   // TO TUTAJ 10.01.2024
+                    assignUserToTimeModel(user.get(0).getUserId());
+                    assignUserToTimeModel(user.get(2).getUserId());*/
                 }
             });
         }
 
+        // TO TUTAJ 10.01.2024
         authViewModel.getTimeForUserListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
             @Override
             public void onChanged(List<TimeModel> timeModels) {
@@ -497,9 +510,9 @@ public class AdminView extends AppCompatActivity {
         return dateFormat.format(date);
     }
 
-    private ArrayList<TimeModelForDisplay> summingTime(ArrayList<TimeModel> timeModelArrayList) {
+    private List<TimeModelForDisplay> summingTime(List<TimeModel> timeModelArrayList) {
         // INVOKED FOR EACH INDIVIDUAL USER, NOT FOR ALL USER
-        ArrayList<TimeModelForDisplay> timeModels = new ArrayList<>();
+        List<TimeModelForDisplay> timeModels = new ArrayList<>();
 
         long sumTime=0;
         double summedMoney = 0;
@@ -544,7 +557,27 @@ public class AdminView extends AppCompatActivity {
 
 
 
+    // TODO 10.01.2024 Tutaj coś się rozducpyło, pobiera te same dane 8 razy, zaimplementuj z githuba starą metodę i podejrzyj jak działa stara metoda
+    // TODO a jak działa nowa tutaj.
     private void assignUserToTimeModel(String userId) {
         authViewModel.getTimeForUser(userId);
+
+     /*   for (User user1 : user) {
+            authViewModel.getTimeForUser(user1.getUserId()).observe(this, new Observer<List<TimeModel>>() {
+                @Override
+                public void onChanged(List<TimeModel> timeModels) {
+                    Log.i("UserID", user1.getUserId());
+                    timeModelArrayListForAdmin.addAll(timeModels);
+                    listOfAllRecordsForUser.addAll(timeModels);
+                    //2 //  ze względu na to ,że pobiera dużo list. Trzeba zrobić metodę ,która będzie porównawała listy i dodawała nowe bez dupilkatów.
+                    // to działa tak że pobiera dla jednego użytkownika i potem dodaje. zrób Tak żeby nie dodawało tej samej listy.
+                    timeModelForDisplayArrayList.addAll(summingTime(timeModels));
+                    readForLogcat(timeModels);
+                    writeTimeModelForDisplayToSharedPref();
+                    setupRecyclerView();
+                }
+            });
+
+        }*/
     }
 }

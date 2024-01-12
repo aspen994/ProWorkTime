@@ -4,6 +4,7 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.ogrdapp.model.QRModel;
@@ -12,7 +13,6 @@ import com.example.ogrdapp.model.User;
 import com.example.ogrdapp.repository.AuthRepository;
 import com.google.firebase.auth.FirebaseUser;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -23,14 +23,14 @@ public class AuthViewModel extends AndroidViewModel {
     private MutableLiveData<FirebaseUser> userData;
     private MutableLiveData<Boolean> loggedStatus;
     private MutableLiveData<TimeModel> timeModelMutableLiveData;
-    private MutableLiveData<List<TimeModel>> timeModelListMutableLiveData;
     private MutableLiveData<Boolean> ifAdminMutableLiveData;
     private MutableLiveData<List<User>> userArrayListOfUserMutableLiveData;
     private MutableLiveData<List<TimeModel>> timeForUserListMutableLiveData;
     private MutableLiveData<Map<String, Object>> paycheckHoursToSettleMutableLiveData;
     private MutableLiveData<String> emailMutableLiveData;
     private MutableLiveData<String> adminIdMutableLiveData;
-    private MutableLiveData<LinkedList<QRModel>>getQrModelMutableLiveData;
+    private MutableLiveData<List<TimeModel>> timeModelListMutableLiveData;
+
 
 
 
@@ -38,8 +38,7 @@ public class AuthViewModel extends AndroidViewModel {
         super(application);
         authRepository = new AuthRepository(application);
         userData = authRepository.getFirebaseUserMutableLiveData();
-        timeModelMutableLiveData = authRepository.getFirebaseTimeModel();
-        timeModelListMutableLiveData=authRepository.getTimeModelArrayListMutableLiveData();
+        timeModelMutableLiveData = authRepository.getGetUsernameAndSurname();
         loggedStatus = authRepository.getUserLoggedMutableLiveData();
         ifAdminMutableLiveData = authRepository.getIfAdminMutableLiveData();
         userArrayListOfUserMutableLiveData = authRepository.getUserArrayListOfUserMutableLiveData();
@@ -47,12 +46,13 @@ public class AuthViewModel extends AndroidViewModel {
         paycheckHoursToSettleMutableLiveData = authRepository.getPaycheckHoursToSettleMutableLiveData();
         emailMutableLiveData = authRepository.getEmailMutableLiveData();
         adminIdMutableLiveData =authRepository.getAdminIdMutableLiveData();
-        getQrModelMutableLiveData= authRepository.getQrModelMutableLiveData();
+        timeModelListMutableLiveData=authRepository.getTimeModelArrayListMutableLiveData();
 
     }
 
-    public MutableLiveData<LinkedList<QRModel>> getGetQrModelMutableLiveData() {
-        return getQrModelMutableLiveData;
+
+    public MutableLiveData<List<TimeModel>> getTimeModelListMutableLiveData() {
+        return timeModelListMutableLiveData;
     }
 
     public MutableLiveData<String> getAdminIdMutableLiveData() {
@@ -75,7 +75,6 @@ public class AuthViewModel extends AndroidViewModel {
     public MutableLiveData<List<User>> getUserArrayListOfUserMutableLiveData() {
         return userArrayListOfUserMutableLiveData;
     }
-
     public MutableLiveData<FirebaseUser> getUserData() {
         return userData;
     }
@@ -87,10 +86,6 @@ public class AuthViewModel extends AndroidViewModel {
     public MutableLiveData<TimeModel> getUsernameAndSurnameMB()
     {
         return timeModelMutableLiveData;
-    }
-
-    public MutableLiveData<List<TimeModel>> getTimeModelListMutableLiveData() {
-        return timeModelListMutableLiveData;
     }
 
     public MutableLiveData<Boolean> getIfAdminMutableLiveData() {
@@ -119,7 +114,14 @@ public class AuthViewModel extends AndroidViewModel {
     {
         authRepository.saveDataToFireBase(timeModel);
     }
-    public TimeModel getUsernameAndSurname()
+
+    public void saveAllCollectionToSQLite(List<TimeModel>timeModelList)
+    {
+        authRepository.saveAllCollectionToSQLite(timeModelList);
+    }
+
+    // zwróć liveData
+    public LiveData<TimeModel> getUsernameAndSurname()
     {
         return authRepository.getUsernameAndSurname();
     }
@@ -192,9 +194,9 @@ public class AuthViewModel extends AndroidViewModel {
         return authRepository.getUserId();
     }
 
-    public void getDataQRCode(String adminId)
+    public LiveData<List<QRModel>> getDataQRCode(String adminId)
     {
-        authRepository.getDataQRCode(adminId);
+        return authRepository.getDataQRCode(adminId);
     }
 
     public void checkMethod(){

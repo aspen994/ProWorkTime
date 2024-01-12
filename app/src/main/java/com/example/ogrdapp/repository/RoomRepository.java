@@ -63,4 +63,9 @@ public class RoomRepository {
     {
         return timeModelDAO.getAllTimeModels();
     }
+
+    public void deleteAllTimeModels()
+    {
+        executor.execute(()->timeModelDAO.deleteAllTimeModels());
+    }
 }

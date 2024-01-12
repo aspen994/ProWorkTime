@@ -262,25 +262,22 @@ public class UserMainActivity extends AppCompatActivity {
 
 
         // Assignment user name and surname to textView from collectionReferences
-        authViewModel.getUsernameAndSurname();
-        authViewModel.getUsernameAndSurnameMB().observe(this, new Observer<TimeModel>() {
-            @Override
-            public void onChanged(TimeModel timeModel) {
-                String username = timeModel.getUserName();
-                String userSurname = timeModel.getUserSurname();
 
-                userName.setText(username+" " + userSurname);
+        authViewModel.getUsernameAndSurname().observe(this,timeModel1 -> {
+            String username = timeModel1.getUserName();
+            String userSurname = timeModel1.getUserSurname();
 
-                //TODO TUTAJ DAJE ID FOREGINKEY DLA QR CODE DO ODCZYTU.
-                foreginKey = timeModel.getId();
-                authViewModel.getDataQRCode(foreginKey);
-            }
+            userName.setText(username+" " + userSurname);
+
+            //TUTAJ DAJE ID FOREGINKEY DLA QR CODE DO ODCZYTU.
+
+            foreginKey = timeModel1.getId();
+            authViewModel.getDataQRCode(foreginKey).observe(this, qrModels -> {
+                QRCodeLinkedList.addAll(qrModels);
+            });
         });
 
-
         date.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
-
-
 
         qr.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -365,14 +362,6 @@ public class UserMainActivity extends AppCompatActivity {
 
         intentFilter = new IntentFilter();
         intentFilter.addAction("Counter");
-
-        authViewModel.getGetQrModelMutableLiveData().observe(UserMainActivity.this, new Observer<LinkedList<QRModel>>() {
-            @Override
-            public void onChanged(LinkedList<QRModel> qrModels) {
-                QRCodeLinkedList.addAll(qrModels);
-            }
-        });
-
 
     }
 

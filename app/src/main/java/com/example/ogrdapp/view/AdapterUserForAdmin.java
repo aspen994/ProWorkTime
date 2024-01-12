@@ -97,10 +97,12 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
                         /*Intent intent = new Intent(context, UserTimeTable.class);
                         intent.putExtra("Id",timeModel.getId());
                         context.startActivity(intent);*/
+                        Toast.makeText(context, timeModel.getUserName()+"here", Toast.LENGTH_SHORT).show();
 
                         Intent intent = new Intent(context, UserTimeTable.class);
                         intent.putExtra("Id",timeModel.getId());
                         intent.putExtra("listOfAllRecordsForUser",(Serializable) listOfAllRecordsForUser);
+
                         context.startActivity(intent);
                     }
                 });

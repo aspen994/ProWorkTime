@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.ogrdapp.R;
@@ -25,7 +26,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -47,7 +47,7 @@ public class AuthRepository {
     private Application application;
     private MutableLiveData<FirebaseUser> firebaseUserMutableLiveData;
     private MutableLiveData<Boolean> userLoggedMutableLiveData;
-    private MutableLiveData<TimeModel> firebaseTimeModel;
+    private MutableLiveData<TimeModel> getUsernameAndSurname;
     private MutableLiveData<List<TimeModel>> timeModelArrayListMutableLiveData;
     private MutableLiveData<Boolean> ifAdminMutableLiveData;
     private MutableLiveData<List<User>> userArrayListOfUserMutableLiveData;
@@ -56,7 +56,7 @@ public class AuthRepository {
     private MutableLiveData<Map<String, Object>> paycheckHoursToSettleMutableLiveData;
     private MutableLiveData<String> emailMutableLiveData;
     private MutableLiveData<String> adminIdMutableLiveData;
-    private MutableLiveData<LinkedList<QRModel>> qrModelMutableLiveData;
+    private MutableLiveData<List<QRModel>> qrModelMutableLiveData;
 
 
     private FirebaseAuth firebaseAuth;
@@ -90,7 +90,7 @@ public class AuthRepository {
         this.application = application;
         this.firebaseUserMutableLiveData = new MutableLiveData<>();
         this.userLoggedMutableLiveData = new MutableLiveData<>();
-        this.firebaseTimeModel = new MutableLiveData<>();
+        this.getUsernameAndSurname = new MutableLiveData<>();
         this.timeModelArrayListMutableLiveData = new MutableLiveData<>();
         this.arrayListForAssigningEmail = new ArrayList<>();
         this.arrayListIfAdmin = new ArrayList<>();
@@ -133,25 +133,26 @@ public class AuthRepository {
         return fireBaseUser.getUid();
     }
 
-    public MutableLiveData<LinkedList<QRModel>> getQrModelMutableLiveData() {
+    public MutableLiveData<List<TimeModel>> getTimeModelArrayListMutableLiveData() {
+        return timeModelArrayListMutableLiveData;
+    }
+
+    public MutableLiveData<List<QRModel>> getQrModelMutableLiveData() {
         return qrModelMutableLiveData;
     }
 
     public MutableLiveData<List<TimeModel>> getTimeForUserListMutableLiveData() {
         return timeForUserListMutableLiveData;
     }
-
     public MutableLiveData<List<User>> getUserArrayListOfUserMutableLiveData() {
         return userArrayListOfUserMutableLiveData;
     }
+
 
     public MutableLiveData<Boolean> getIfAdminMutableLiveData() {
         return ifAdminMutableLiveData;
     }
 
-    public MutableLiveData<List<TimeModel>> getTimeModelArrayListMutableLiveData() {
-        return timeModelArrayListMutableLiveData;
-    }
 
     public MutableLiveData<FirebaseUser> getFirebaseUserMutableLiveData() {
         return firebaseUserMutableLiveData;
@@ -161,8 +162,8 @@ public class AuthRepository {
         return userLoggedMutableLiveData;
     }
 
-    public MutableLiveData<TimeModel> getFirebaseTimeModel() {
-        return firebaseTimeModel;
+    public MutableLiveData<TimeModel> getGetUsernameAndSurname() {
+        return getUsernameAndSurname;
     }
 
     public MutableLiveData<Map<String, Object>> getPaycheckHoursToSettleMutableLiveData() {
@@ -284,6 +285,7 @@ public class AuthRepository {
 
                                 Log.i("getTimeForUser UserName", timeModel.getUserName());
                                 Log.i("getTimeForUser TimeAded", timeModel.getTimeAdded().toString());
+                                Log.i("getTimeForUser Id",timeModel.getDocumentId());
 
                             }
                             timeForUserListMutableLiveData.setValue(timeModelArrayList);
@@ -293,6 +295,7 @@ public class AuthRepository {
 
                     }
                 });
+
 /*
         // DRUGA FUNKCJA ZE SNAPSHOT LISTNER
         collectionReferenceTime.whereEqualTo("id", userId)
@@ -329,7 +332,7 @@ public class AuthRepository {
 
     }
 
-    public void getDataQRCode(String adminId) {
+    public LiveData<List<QRModel>> getDataQRCode(String adminId) {
 
         collectionReferenceQrCode.whereEqualTo("idAdmin", adminId)
                 .get()
@@ -339,7 +342,7 @@ public class AuthRepository {
 
                         if (!queryDocumentSnapshots.isEmpty()) {
 
-                            LinkedList<QRModel> qrModelLink = new LinkedList<>();
+                            List<QRModel> qrModelLink = new LinkedList<>();
 
                             for (QueryDocumentSnapshot qrModels : queryDocumentSnapshots) {
 
@@ -354,9 +357,11 @@ public class AuthRepository {
 
                     }
                 });
+
+        return qrModelMutableLiveData;
     }
 
-    public void getData() {
+     public void getData() {
 
         collectionReferenceTime.whereEqualTo("id", currentUserId)
                 .get()
@@ -386,6 +391,8 @@ public class AuthRepository {
                         Log.i(LOGER, "getData");
                     }
                 });
+
+        //return timeModelArrayListMutableLiveData;
     }
 
     // I tutaj
@@ -469,6 +476,16 @@ public class AuthRepository {
                     }
 
                 }
+            }
+        });
+    }
+
+    public void saveAllCollectionToSQLite(List<TimeModel>timeModelList)
+    {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                timeModelDAO.insertAllCollection(timeModelList);
             }
         });
     }
@@ -917,7 +934,7 @@ public class AuthRepository {
         });
     }
 
-    public TimeModel getUsernameAndSurname()
+    public LiveData<TimeModel> getUsernameAndSurname()
     {
         Log.i(LOGER,"getUsernameAndSurname");
 
@@ -935,7 +952,7 @@ public class AuthRepository {
                         timeModel.setId(snapshot.getString("foreign_key"));
                     }
 
-                    firebaseTimeModel.postValue(timeModel);
+                    getUsernameAndSurname.postValue(timeModel);
                 }
                 else {
 
@@ -945,7 +962,7 @@ public class AuthRepository {
         });
 
 
-        return timeModel;
+        return getUsernameAndSurname;
     }
 
 

@@ -114,7 +114,7 @@ public class UserTimeTable extends AppCompatActivity {
         arrayListTmp = new ArrayList<>();
 
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
-        roomViewModel = new ViewModelProvider(this).get(RoomViewModel.class);
+        //roomViewModel = new ViewModelProvider(this).get(RoomViewModel.class);
 
         /*roomViewModel.getAllContacts().observe(this, new Observer<List<TimeModel>>() {
             @Override
@@ -134,10 +134,41 @@ public class UserTimeTable extends AppCompatActivity {
         // FOR USER
 
         idUserSelectedByAdmin = getIntent().getStringExtra("Id");
+        if(idUserSelectedByAdmin!=null) {
+
+            authViewModel.getTimeForUser(idUserSelectedByAdmin);
+
+            authViewModel.getTimeForUserListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
+                @Override
+                public void onChanged(List<TimeModel> timeModels) {
+                    timeModelArrayList.clear();
+                    timeModelArrayList.addAll(timeModels);
+                    activateSpinner();
+                    activateSpinnerYear();
+                    timeOverallAdapter.notifyDataSetChanged();
+                }
+            });
+        }
+        else{
+            authViewModel.getData();
+
+            authViewModel.getTimeModelListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
+                @Override
+                public void onChanged(List<TimeModel> timeModels) {
+                    timeModelArrayList.clear();
+                    timeModelArrayList.addAll(timeModels);
+                    activateSpinner();
+                    activateSpinnerYear();
+                    timeOverallAdapter.notifyDataSetChanged();
+                }
+            });
+        }
+
+      /*  idUserSelectedByAdmin = getIntent().getStringExtra("Id");
 
         if((getIntent().getSerializableExtra("listOfAllRecordsForUser"))!=null) {
 
-            Toast.makeText(this, "if", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "if", Toast.LENGTH_SHORT).show();
 
             timeModelArrayList.clear();
 
@@ -149,9 +180,30 @@ public class UserTimeTable extends AppCompatActivity {
         else{
             Toast.makeText(this, "else", Toast.LENGTH_SHORT).show();
             // TODO 06.01.2024r wyłączony firebase
-            authViewModel.getData();
+           *//* authViewModel.getData().observe(this,(timeModelArrayList)->{
+                timeModelArrayList.clear();
+                timeModelArrayList.addAll(timeModelArrayList);
+                authViewModel.saveAllCollectionToSQLite(timeModelArrayList);
+                activateSpinner();
+                activateSpinnerYear();
+                timeOverallAdapter.notifyDataSetChanged();
+            });*//*
 
-          /*  roomViewModel.getAllContacts().observe(this, new Observer<List<TimeModel>>() {
+
+            authViewModel.getData().observe(this, new Observer<List<TimeModel>>() {
+                @Override
+                public void onChanged(List<TimeModel> timeModelList) {
+                    timeModelArrayList.clear();
+                    timeModelArrayList.addAll(timeModelList);
+                    authViewModel.saveAllCollectionToSQLite(timeModelList);
+                    activateSpinner();
+                    activateSpinnerYear();
+                    timeOverallAdapter.notifyDataSetChanged();
+                }
+            });
+
+///////////////// TO NIE TYKAJ ////////////////////////////
+          *//*  roomViewModel.getAllContacts().observe(this, new Observer<List<TimeModel>>() {
                 @Override
                 public void onChanged(List<TimeModel> timeModels) {
                     timeModelArrayList.clear();
@@ -162,23 +214,22 @@ public class UserTimeTable extends AppCompatActivity {
                     timeOverallAdapter.notifyDataSetChanged();
                     readTimeModelArrayList(timeModelArrayList);
                 }
-            });*/
-
+            });*//*
             //TODO 05.01.2024 r - Wyłączony firebase
-            authViewModel.getTimeModelListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
+     *//*       authViewModel.getTimeModelListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
                 @Override
                 public void onChanged(List<TimeModel> timeModels) {
                     timeModelArrayList.clear();
                     timeModelArrayList.addAll(timeModels);
+                    authViewModel.saveAllCollectionToSQLite(timeModels);
                     activateSpinner();
                     activateSpinnerYear();
                     timeOverallAdapter.notifyDataSetChanged();
                 }
-            });
+            });*//*
+///////////////// TO NIE TYKAJ ////////////////////////////
 
-
-
-        }
+        }*/
 
         // Tutaj to zakomentowałem 02.01.2024
       /*  if(idUserSelectedByAdmin!=null) {
