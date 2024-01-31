@@ -61,15 +61,17 @@ import com.journeyapps.barcodescanner.ScanOptions;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class UserMainActivity extends AppCompatActivity {
 
-    public static final String QRCODE1="Tk6&zE8*odwq7G$u2#IVL1e!Q@JvXrFgS0^NbCn5mO9pDyA4(PcHhY3Za6lWsB)";
+    //public static final String QRCODE1="Tk6&zE8*odwq7G$u2#IVL1e!Q@JvXrFgS0^NbCn5mO9pDyA4(PcHhY3Za6lWsB)";
+    public static final String QRCODE1="$`P<`}j?5>Ifv7_yB*qG91=-7nck+|*GDY%cuOw$shH;B@&b_$\\O**7I+DULFuMAvE>gYb83j";
     public static final String QRCODE2delay5minutes="yJGZ*q7W#8n6Dv@B1F$%9X4hpYQeS^gU+sa0RwM3zNtVxOcZ2dL5fIHkA6i";
-    public LinkedList<QRModel> QRCodeLinkedList;
+    public List<QRModel> QRCodeList;
     public static final long MINUTE_IN_SECONDS =60;
 
     //Widgets
@@ -125,7 +127,7 @@ public class UserMainActivity extends AppCompatActivity {
         endingTime = findViewById(R.id.ending_time);
         timerOverall = findViewById(R.id.timeOverall);
 
-        QRCodeLinkedList = new LinkedList<>();
+        QRCodeList = new ArrayList<>();
 
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -139,8 +141,6 @@ public class UserMainActivity extends AppCompatActivity {
 
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
         roomViewModel = new ViewModelProvider(this).get(RoomViewModel.class);
-
-
 
         // Should start the service if the timer i started.
         if(!isMyServiceRunning(ForegroundServices.class)&&(timerStarted||isPaused))
@@ -198,7 +198,7 @@ public class UserMainActivity extends AppCompatActivity {
             }
         });
 
-        // - - - - - - - - - - - HOLD_RESUME_WORK ON CLICKLISTNER - - - - - - - -//
+        // - - - - - - - - - - - HOLD_RESUME_WORK ON CLICKLISTNER - - - - - - - -//q
         holdResumeWork.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -207,7 +207,7 @@ public class UserMainActivity extends AppCompatActivity {
                     Toast.makeText(UserMainActivity.this, "Poczekaj jeszcze: " + timeDisplay.getText().toString(), Toast.LENGTH_SHORT).show();
                 }
                 else{
-                
+
                 ServiceHelper.isCountingTimeActive = true;
 
                 isPaused = !isPaused;
@@ -273,7 +273,10 @@ public class UserMainActivity extends AppCompatActivity {
 
             foreginKey = timeModel1.getId();
             authViewModel.getDataQRCode(foreginKey).observe(this, qrModels -> {
-                QRCodeLinkedList.addAll(qrModels);
+                QRCodeList.clear();
+                QRCodeList.addAll(qrModels);
+                //Log.i("QRCode observe",qrModels.size()+"");
+                //Log.i("QRCodeList observe",QRCodeList.size()+"");
             });
         });
 
@@ -636,14 +639,18 @@ public class UserMainActivity extends AppCompatActivity {
                 }
             });*/
 
-            if(!QRCodeLinkedList.isEmpty())
+            //TODO 240124
+            if(!QRCodeList.isEmpty())
             {
-                for (QRModel qrModel : QRCodeLinkedList) {
-                    Log.i("QRCODE METHOD", qrModel.getQRCode());
-                    Log.i("RESUlT",result.getContents().toString());
+                for (QRModel qrModel : QRCodeList) {
+                    //Log.i("QRCodeLinkedList SIZE", QRCodeList.size()+"");
+                    //Log.i("QRCODE METHOD", qrModel.getQRCode());
+                    //Log.i("RESUlT",result.getContents().toString());
                     if (result.getContents() != null && result.getContents().toString().equals(qrModel.getQRCode())) {
-                        Log.i("Start Counting","SHOULD START");
+
+                        //Log.i("Start Counting","SHOULD START");
                         if (timerStarted == false) {
+                            //Log.i("QRCODE STARTED","Szymon");
                             timerOverall.setText("");
                             timerStarted = true;
                             isPaused = false;
@@ -669,6 +676,7 @@ public class UserMainActivity extends AppCompatActivity {
                             holdResumeWork.setVisibility(View.VISIBLE);
                             holdResumeWork.setBackgroundColor(Color.parseColor("#A214D5"));
                         } else {
+                            //Log.i("QRCODE STOPED","Szymon");
                             stopCountingTime();
                             stopTime();
                             delayToAssign = 0;
@@ -676,7 +684,7 @@ public class UserMainActivity extends AppCompatActivity {
                             stopWork.setVisibility(View.INVISIBLE);
                             holdResumeWork.setVisibility(View.INVISIBLE);
                         }
-
+                        //QRCodeList.clear();
                     }
                 }
             }
@@ -684,7 +692,7 @@ public class UserMainActivity extends AppCompatActivity {
 
 
 
-            /*// For QRCODE 1
+           /* // For QRCODE 1
             if(result.getContents()!=null && result.getContents().toString().equals(QRCODE1))
             {
 
@@ -871,10 +879,12 @@ public class UserMainActivity extends AppCompatActivity {
         stopWork.setVisibility(View.VISIBLE);
         holdResumeWork.setVisibility(View.VISIBLE);
         holdResumeWork.setBackgroundColor(Color.parseColor("#A214D5"));
+        //Log.i("START COUNTING TIME","Over Here");
     }
 
     public void stopCountingTime()
     {
+        //Log.i("STOP COUNTING TIME","HERE");
         timeModel = new TimeModel();
         timerStarted = false;
         textMain.setText(getString(R.string.begin_work));
@@ -894,16 +904,17 @@ public class UserMainActivity extends AppCompatActivity {
         timeModel.setId(authViewModel.getUserId());
         timeModel.setUserName(userName.getText().toString());
         timeModel.setTimeAdded(new Timestamp(new Date()));
+        timeModel.setTimestamp(new Timestamp(new Date()));
 
 
         if(timeModel.getTimeOverallInLong()>0)
         {
-            //TODO Wyłączam 05.01.2024
+
             authViewModel.saveTimeModelToFirebase(timeModel);
             authViewModel.updatedDataHoursToFirebaseUser(timeModel);
 
            // roomViewModel.addTimeModel(timeModel);
-            Toast.makeText(this, "Invoked", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Invoked", Toast.LENGTH_SHORT).show();
 
         }
 

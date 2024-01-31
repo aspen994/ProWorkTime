@@ -16,7 +16,6 @@ import com.google.firebase.Timestamp;
 @Entity(tableName = "TimeModel_table")
 public class TimeModel  implements Parcelable {
 
-
     private String userName;
     private String userSurname;
     private String timeBegin;
@@ -27,13 +26,14 @@ public class TimeModel  implements Parcelable {
     private long timeOverallInLong;
     private Timestamp timeAdded;
     private double withdrawnMoney;
+    private Timestamp timestamp;
     @PrimaryKey
     @NonNull
     private String documentId;
 
 
     public TimeModel(String userName, String userSurname, String timeBegin, String timeEnd, String timeOverall,
-                     boolean moneyOverall, String id, long timeOverallInLong, Timestamp timeAdded,double withdrawnMoney,String documentId) {
+                     boolean moneyOverall, String id, long timeOverallInLong, Timestamp timeAdded,double withdrawnMoney,String documentId,Timestamp timestamp) {
         this.userName = userName;
         this.userSurname = userSurname;
         this.timeBegin = timeBegin;
@@ -45,6 +45,7 @@ public class TimeModel  implements Parcelable {
         this.timeAdded = timeAdded;
         this.withdrawnMoney = withdrawnMoney;
         this.documentId = documentId;
+        this.timestamp = timestamp;
     }
 
 
@@ -63,9 +64,18 @@ public class TimeModel  implements Parcelable {
         this.timeAdded = in.readParcelable(Timestamp.class.getClassLoader());
         this.withdrawnMoney = in.readDouble();
         this.documentId = in.readString();
+        this.timestamp = in.readParcelable(Timestamp.class.getClassLoader());
     }
 
     public TimeModel() {
+    }
+
+    public Timestamp getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Timestamp timestamp) {
+        this.timestamp = timestamp;
     }
 
     public Timestamp getTimeAdded() {
@@ -178,6 +188,7 @@ public class TimeModel  implements Parcelable {
         parcel.writeParcelable(timeAdded,i);
         parcel.writeDouble(withdrawnMoney);
         parcel.writeString(documentId);
+        parcel.writeParcelable(timestamp,i);
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
@@ -203,6 +214,7 @@ public class TimeModel  implements Parcelable {
                 ", timeOverallInLong=" + timeOverallInLong +
                 ", timeAdded=" + timeAdded +
                 ", withdrawnMoney=" + withdrawnMoney +
+                ", timestamp=" + timestamp +
                 ", documentId='" + documentId + '\'' +
                 '}';
     }

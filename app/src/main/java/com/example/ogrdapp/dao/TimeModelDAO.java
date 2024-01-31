@@ -6,6 +6,7 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import com.example.ogrdapp.model.TimeModel;
 
@@ -24,8 +25,17 @@ public interface TimeModelDAO {
     @Delete
     void delete(TimeModel timeModel);
 
-    @Query("SELECT * FROM TimeModel_table")
-    LiveData<List<TimeModel>> getAllTimeModels();
+    @Update
+    void updated(TimeModel timeModel);
+    @Update
+    void updateList(List<TimeModel>list);
+
+    @Query("SELECT * FROM TimeModel_table WHERE id =:currentUser")
+    LiveData<List<TimeModel>> getAllTimeModels(String currentUser);
+
+    @Query("SELECT * FROM TimeModel_table WHERE id =:currentUser")
+    List<TimeModel> getAllTimeModelsList(String currentUser);
+
 
     @Query("delete from TimeModel_table ")
     void deleteAllTimeModels();

@@ -16,6 +16,8 @@ import com.example.ogrdapp.model.TimeModel;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 
 public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.MyViewHolder> {
@@ -28,7 +30,12 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
     public TimeOverallAdapter(Context context, ArrayList<TimeModel> list) {
         this.context = context;
         this.list = list;
-        //Log.i("TIMEOVERALLADAPTER_S",list.get(0).getUserName());
+        Collections.sort(list, new Comparator<TimeModel>() {
+            @Override
+            public int compare(TimeModel o1, TimeModel o2) {
+                return o1.getTimeAdded().compareTo(o2.getTimeAdded());
+            }
+        });
     }
 
 
@@ -37,8 +44,19 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
     public TimeOverallAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         View inflate = layoutInflater.inflate(R.layout.adapter_user_time,parent,false);
+        readerOfList(list);
+
 
         return new MyViewHolder(inflate);
+    }
+
+    private void readerOfList(ArrayList<TimeModel> list) {
+        for(TimeModel timeModel: list)
+        {
+            Log.i("Time Model name: ",timeModel.getUserName());
+            Log.i("TimeModel added: ",timeModel.getTimeAdded().toDate()+"");
+            Log.i("-----------","------");
+        }
     }
 
     @Override
@@ -78,7 +96,6 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
         // Hiding LinearLayout for the Last record
         for (int i = 0; i < position; i++) {
 
-
             Date date1 = list.get(i).getTimeAdded().toDate();
             String s = formattedDate(date1);
 
@@ -88,6 +105,9 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
             if(dateLastRecordDate.equals(s))
             {
                 holder.linearLayoutLastRecord.setVisibility(View.GONE);
+                Log.i("S",s);
+                Log.i("dateLastRecordDate",dateLastRecordDate);
+
             }
 
         }

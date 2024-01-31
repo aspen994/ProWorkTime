@@ -99,10 +99,10 @@ private List<TimeModel> selectedTimeModelList = new ArrayList<>();
         {
 
             int i1 = bidEnterValue * FormattedTime.formattedTimeInIntToPay(timeModel.getTimeOverallInLong());
-            Log.i("i1 value",i1+"");
-            Log.i("TimeOverall",timeModel.getTimeOverallInLong()+"");
-            Log.i("i",i+"");
-            authViewModel.updateStatusOfSettled(timeModel.getDocumentId(),true,i1);
+            //Log.i("i1 value",i1+"");
+            //Log.i("TimeOverall",timeModel.getTimeOverallInLong()+"");
+            //Log.i("i",i+"");
+            //authViewModel.updateStatusOfSettled(timeModel.getDocumentId(),true,i1);
             //tu tutaj
             timeModel.setMoneyOverall(true);
             // Zaktualizuj dla listy
@@ -193,13 +193,13 @@ private List<TimeModel> selectedTimeModelList = new ArrayList<>();
         dateToDisplay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(context, "dateToDisplay", Toast.LENGTH_SHORT).show();
+             //   Toast.makeText(context, "dateToDisplay", Toast.LENGTH_SHORT).show();
             }
         });
         timeWorkedDisplay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(context, "time Worked Display", Toast.LENGTH_SHORT).show();
+            //    Toast.makeText(context, "time Worked Display", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -258,7 +258,7 @@ private List<TimeModel> selectedTimeModelList = new ArrayList<>();
 
         long time = 0;
 
-        Log.i("LOGGED","getTimeFromRangeDate");
+        //Log.i("LOGGED","getTimeFromRangeDate");
         for(TimeModel x: timeModelsList)
         {
             if(x.getId().equals(id)&&x.getMoneyOverall()==false) {

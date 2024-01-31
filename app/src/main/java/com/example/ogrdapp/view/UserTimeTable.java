@@ -46,8 +46,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import javax.security.auth.login.LoginException;
-
 public class UserTimeTable extends AppCompatActivity {
 
 
@@ -132,13 +130,15 @@ public class UserTimeTable extends AppCompatActivity {
 
 
         // FOR USER
-
         idUserSelectedByAdmin = getIntent().getStringExtra("Id");
+
         if(idUserSelectedByAdmin!=null) {
 
-            authViewModel.getTimeForUser(idUserSelectedByAdmin);
+            //Toast.makeText(this, "first", Toast.LENGTH_SHORT).show();
 
-            authViewModel.getTimeForUserListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
+            //TODO 170124
+            //authViewModel.getTimeForUser(idUserSelectedByAdmin);
+           /* authViewModel.getTimeForUserListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
                 @Override
                 public void onChanged(List<TimeModel> timeModels) {
                     timeModelArrayList.clear();
@@ -147,11 +147,23 @@ public class UserTimeTable extends AppCompatActivity {
                     activateSpinnerYear();
                     timeOverallAdapter.notifyDataSetChanged();
                 }
+            });*/
+
+            authViewModel.getAllTimeModelsForAdminSQL(idUserSelectedByAdmin).observe(this, new Observer<List<TimeModel>>() {
+                @Override
+                public void onChanged(List<TimeModel> timeModelList) {
+                    timeModelArrayList.clear();
+                    timeModelArrayList.addAll(timeModelList);
+                    readTimeModelArrayList(timeModelArrayList);
+                    activateSpinner();
+                    activateSpinnerYear();
+                    timeOverallAdapter.notifyDataSetChanged();
+                }
             });
+
         }
         else{
-            authViewModel.getData();
-
+    /*        authViewModel.getData();
             authViewModel.getTimeModelListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
                 @Override
                 public void onChanged(List<TimeModel> timeModels) {
@@ -162,6 +174,23 @@ public class UserTimeTable extends AppCompatActivity {
                     timeOverallAdapter.notifyDataSetChanged();
                 }
             });
+*/
+            /*user = firebaseAuth.getCurrentUser();
+            String currentUserId = user.getUid();*/
+
+            //Toast.makeText(this, "second", Toast.LENGTH_SHORT).show();
+                authViewModel.getAllTimeModelsForUserSQL().observe(this, new Observer<List<TimeModel>>() {
+                    @Override
+                    public void onChanged(List<TimeModel> timeModelList) {
+                        timeModelArrayList.clear();
+                        timeModelArrayList.addAll(timeModelList);
+                        readTimeModelArrayList(timeModelArrayList);
+                        activateSpinner();
+                        activateSpinnerYear();
+                        timeOverallAdapter.notifyDataSetChanged();
+                    }
+                });
+
         }
 
       /*  idUserSelectedByAdmin = getIntent().getStringExtra("Id");
@@ -292,15 +321,15 @@ public class UserTimeTable extends AppCompatActivity {
                 //readTimeModelArrayList(timeModelArrayList);
 
                 if(!timeModelArrayList.isEmpty()) {
-                    Toast.makeText(UserTimeTable.this, "spinner year selected", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(UserTimeTable.this, "spinner year selected", Toast.LENGTH_SHORT).show();
                     //ArrayList<TimeModel> arrayListTmp = new ArrayList<>();
                     arrayListTmp.clear();
                     for (TimeModel model : timeModelArrayList) {
                         String s = formatDateWithMonthAndYear(model.getTimeAdded().toDate()).toLowerCase();
                         calendar.set(Calendar.YEAR, Integer.parseInt(selectedSpinnerOnYear));
                         String s1 = formatDateWithMonthAndYear(new Date(calendar.getTime().toInstant().toEpochMilli()));
-                        Log.i("Invoked S",s);
-                        Log.i("Invoked S1",s1);
+                       // Log.i("Invoked S",s);
+                        //Log.i("Invoked S1",s1);
 
 
                         if (s1.equals(s)) {
@@ -312,8 +341,6 @@ public class UserTimeTable extends AppCompatActivity {
                     timeOverallAdapter = new TimeOverallAdapter(UserTimeTable.this, arrayListTmp);
                     recyclerView.setLayoutManager(new LinearLayoutManager(UserTimeTable.this,LinearLayoutManager.VERTICAL,false));
                     recyclerView.setAdapter(timeOverallAdapter);
-
-
                 }
 
             }
@@ -335,7 +362,7 @@ public class UserTimeTable extends AppCompatActivity {
                 selectedSpinnerOnMonth = parent.getItemAtPosition(position).toString();
 
                 if(!timeModelArrayList.isEmpty()) {
-                    Toast.makeText(UserTimeTable.this, "spinner month selected", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(UserTimeTable.this, "spinner month selected", Toast.LENGTH_SHORT).show();
                     //ArrayList<TimeModel> arrayListTmp = new ArrayList<>();
                     arrayListTmp.clear();
                     for (TimeModel model : timeModelArrayList) {
@@ -345,8 +372,8 @@ public class UserTimeTable extends AppCompatActivity {
                         String s1 = formatDateWithMonthAndYear(new Date(calendar.getTime().toInstant().toEpochMilli())).toLowerCase();
 
                         //Log.i("Calendar",calendar.getTime().toString());
-                        Log.i("Invoked SpinnerMonth",s);
-                        Log.i("Invoked SpinnerMonth1",s1);
+                       // Log.i("Invoked SpinnerMonth",s);
+                        //Log.i("Invoked SpinnerMonth1",s1);
 
                         if (s1.equals(s)) {
                             arrayListTmp.add(model);
@@ -372,11 +399,11 @@ public class UserTimeTable extends AppCompatActivity {
 
     private void readTimeModelArrayList(ArrayList<TimeModel> timeModelArrayList) {
         for (TimeModel timeModel: timeModelArrayList) {
-            Log.i("TimeModel userName",timeModel.getUserName()+"");
-            Log.i("TimeModel getTimeBegin",timeModel.getTimeBegin()+"");
-            Log.i("TimeModel getTimeEnd",timeModel.getTimeEnd()+"");
-            Log.i("TimeModel getPostStamp",timeModel.getTimeAdded().toDate()+"");
-            Log.i("TimeModel idDocument",timeModel.getDocumentId()+"");
+          //  Log.i("TimeModel userName",timeModel.getUserName()+"");
+          //  Log.i("TimeModel getTimeBegin",timeModel.getTimeBegin()+"");
+          //  Log.i("TimeModel getTimeEnd",timeModel.getTimeEnd()+"");
+           // Log.i("TimeModel getTimeStamp",timeModel.getTimestamp().toDate()+"");
+          //  Log.i("TimeModel idDocument",timeModel.getDocumentId()+"");
 
         }
     }
@@ -396,12 +423,18 @@ public class UserTimeTable extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
-                            authViewModel.deleteDateFromFireBase(arrayListTmp.get(position).getDocumentId());
+                            //TODO 260124
+                            authViewModel.deleteDateFromFireBase(arrayListTmp.get(position));
                             TimeModel timeModel = arrayListTmp.get(position);
                             arrayListTmp.remove(position);
 
-                            // Delete for the user
+                     /*       Log.i("1 UTM username",timeModel.getUserName());
+                            Log.i("1 UTM time begin",timeModel.getTimeBegin());
+                            Log.i("1 UTM time end",timeModel.getTimeEnd());
+                            Log.i("1 UTM time overall",timeModel.getTimeOverallInLong()+"");
+*/
 
+                            // Delete for the user
                             timeModel.setTimeOverallInLong(-timeModel.getTimeOverallInLong());
                             authViewModel.updatedDataHoursToFirebaseUser(timeModel);
 
@@ -461,9 +494,6 @@ public class UserTimeTable extends AppCompatActivity {
                         @Override
                         public void onClick(View v) {
 
-
-
-
                              /*timePickerDialog("Ustaw ogólny czas", editTextTimeOverall);
                              Log.i("Overall", overall+"");*/
                         }
@@ -490,9 +520,10 @@ public class UserTimeTable extends AppCompatActivity {
                                         editTextBeginTime.getText().toString(),
                                         editTextEndTime.getText().toString(),
                                         editTextTimeOverall.getText().toString(),
-                                        overall == 0 ? arrayListTmp.get(position).getTimeOverallInLong() : overall);
+                                        overall == 0 ? arrayListTmp.get(position).getTimeOverallInLong() : overall,
+                                        arrayListTmp.get(position));
 
-                                Log.i("onLeftClicked", overall + "");
+                                //Log.i("onLeftClicked", overall + "");
 
                                 arrayListTmp.get(position).setTimeBegin(editTextBeginTime.getText().toString());
                                 arrayListTmp.get(position).setTimeEnd(editTextEndTime.getText().toString());
@@ -503,7 +534,7 @@ public class UserTimeTable extends AppCompatActivity {
                                 //Aktualizacja TimeModelArrayList
                                 updateTimeModelArrayList(arrayListTmp.get(position));
 
-                                Toast.makeText(UserTimeTable.this, "ZAKTUALIZOWANE", Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(UserTimeTable.this, "ZAKTUALIZOWANE", Toast.LENGTH_SHORT).show();
 
                                 overall = 0;
                                 timeOverallAdapter.notifyDataSetChanged();
@@ -522,7 +553,7 @@ public class UserTimeTable extends AppCompatActivity {
                     super.onLeftClicked(position);
                     }
                     else {
-                        Toast.makeText(UserTimeTable.this, "Nie możesz edytować rozliczonych danych", Toast.LENGTH_SHORT).show();
+                       // Toast.makeText(UserTimeTable.this, "Nie możesz edytować rozliczonych danych", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
@@ -594,16 +625,18 @@ public class UserTimeTable extends AppCompatActivity {
 
                     if(overallTimeInMinutes>=0) {
                         overall = overallTimeInMinutes * 60 * 1000;
+                        Log.i("CO TU WPISAĆ","elo");
                     }
                     else {
                         overall=0;
+                        Log.i("MAłpy chodzą","elo");
                     }
 
                     Log.i("overallTimeInMinutes",overallTimeInMinutes+"");
 
                     String formattedTimeInHoursAndMinutes = FormattedTime.formattedTimeInHoursAndMinutes(overallTimeInMinutes);
                     if(formattedTimeInHoursAndMinutes.contains("-")) {
-                        Toast.makeText(UserTimeTable.this, "Godzina rozpoczęcia nie może być później niż godzina zaczęcia", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(UserTimeTable.this, "Godzina rozpoczęcia nie może być później niż godzina zaczęcia", Toast.LENGTH_SHORT).show();
                         editTextTimeOverall.setText("Co jest ziomuś ?");
                     }
                     else {

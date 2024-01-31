@@ -11,9 +11,9 @@ import com.example.ogrdapp.model.QRModel;
 import com.example.ogrdapp.model.TimeModel;
 import com.example.ogrdapp.model.User;
 import com.example.ogrdapp.repository.AuthRepository;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseUser;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +31,9 @@ public class AuthViewModel extends AndroidViewModel {
     private MutableLiveData<String> adminIdMutableLiveData;
     private MutableLiveData<List<TimeModel>> timeModelListMutableLiveData;
 
+    private MutableLiveData<List<TimeModel>> getAllTimeModelsForAdminSQLLiveData;
+    private MutableLiveData<Integer> getIntegerHelps;
+
 
 
 
@@ -47,8 +50,18 @@ public class AuthViewModel extends AndroidViewModel {
         emailMutableLiveData = authRepository.getEmailMutableLiveData();
         adminIdMutableLiveData =authRepository.getAdminIdMutableLiveData();
         timeModelListMutableLiveData=authRepository.getTimeModelArrayListMutableLiveData();
-
+        getAllTimeModelsForAdminSQLLiveData = authRepository.getGetAllTimeModelsForAdminSQLLiveData();
+        this.getIntegerHelps = authRepository.getGetIntegerHelps();
     }
+
+    public MutableLiveData<Integer> getGetIntegerHelps() {
+        return getIntegerHelps;
+    }
+
+    public MutableLiveData<List<TimeModel>> getGetAllTimeModelsForAdminSQLLiveData() {
+        return getAllTimeModelsForAdminSQLLiveData;
+    }
+
 
 
     public MutableLiveData<List<TimeModel>> getTimeModelListMutableLiveData() {
@@ -94,7 +107,7 @@ public class AuthViewModel extends AndroidViewModel {
 
     public void getTimeForUser(String userId)
     {
-        authRepository.getTimeForUser(userId);
+        authRepository.getTimeForUserNewMethod(userId);
     }
     public void getUsersDataAssignedToAdmin()
     {
@@ -136,18 +149,18 @@ public class AuthViewModel extends AndroidViewModel {
     }
 
 
-    public void deleteDateFromFireBase(String documentId)
+    public void deleteDateFromFireBase(TimeModel timeModel)
     {
-        authRepository.deleteDateFromFireBase(documentId);
+        authRepository.deleteDateFromFireBase(timeModel);
     }
-    public void updateDataToFirebase(String documentID,String beginTime,String endTime,String overall,long timeInLong)
+    public void updateDataToFirebase(String documentID,String beginTime,String endTime,String overall,long timeInLong,TimeModel timeModel)
     {
-        authRepository.updateDataToFirebase(documentID,beginTime,endTime,overall,timeInLong);
+        authRepository.updateDataToFirebase(documentID,beginTime,endTime,overall,timeInLong,timeModel);
     }
 
-    public void updateStatusOfSettled(String documentID, boolean isSettled,double withDrawnMoney )
+    public void updateStatusOfSettled(String documentID, boolean isSettled, double withDrawnMoney, Timestamp timestamp)
     {
-        authRepository.updateStatusOfPayment(documentID,isSettled,withDrawnMoney);
+        authRepository.updateStatusOfPayment(documentID,isSettled,withDrawnMoney,timestamp);
     }
 
     public void updateStatusOfTimeForUser(String userId,long settletedTimeInMillis, double payCheck )
@@ -170,6 +183,19 @@ public class AuthViewModel extends AndroidViewModel {
         authRepository.getAllIdDocumentFromTimeModel();
     }
 */
+
+
+
+    public LiveData<List<TimeModel>> getAllTimeModelsForUserSQL()
+    {
+        return authRepository.getAllTimeModelsForUserSQL();
+    }
+
+    public LiveData<List<TimeModel>> getAllTimeModelsForAdminSQL(String userId)
+    {
+        return authRepository.getAllTimeModelsForAdminSQL(userId);
+    }
+
     public void signIn(String email, String password)
     {
         authRepository.signIn(email,password);
@@ -182,7 +208,8 @@ public class AuthViewModel extends AndroidViewModel {
 
     public void getData()
     {
-        authRepository.getData();
+        //TODO 170124
+       // authRepository.getDataFirebase();
     }
     public void signOut()
     {
@@ -202,6 +229,13 @@ public class AuthViewModel extends AndroidViewModel {
     public void checkMethod(){
         authRepository.checkMethod();
     }
+
+    public void deleteLastRecordsMETHODTODELTE()
+    {
+       // authRepository.deleteLastRecordsMETHODTODELTE();
+        authRepository.deleteAllTimeModels();
+    }
+
 
 
 

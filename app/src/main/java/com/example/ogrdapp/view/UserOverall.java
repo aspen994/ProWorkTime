@@ -24,10 +24,12 @@ import com.example.ogrdapp.viewmodel.AuthViewModel;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
+import com.google.firebase.Timestamp;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -95,7 +97,7 @@ public class UserOverall extends AppCompatActivity {
         confirmBidButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                //Toast.makeText(UserOverall.this, "", Toast.LENGTH_SHORT).show();
                 bidEnterValue = Integer.parseInt(bidEnter.getText().toString());
                 toPay.setText(round((bidEnterValue * FormattedTime.formattedTimeInDoubleToSave(timeToSettlement)),2)+"zł");
             }
@@ -151,8 +153,8 @@ public class UserOverall extends AppCompatActivity {
             double i1 = bidEnterValue * FormattedTime.formattedTimeInDoubleToSave(timeModel.getTimeOverallInLong());
             double round = round(i1, 2);
             //Log.i("FormateTime",FormattedTime.formattedTimeInDoubleToSave(timeModel.getTimeOverallInLong())+"");
-            authViewModel.updateStatusOfSettled(timeModel.getDocumentId(),true,round);
-            Log.i("withdrawOperation",timeModel.getTimeAdded().toDate().toString());
+            authViewModel.updateStatusOfSettled(timeModel.getDocumentId(),true,round,new Timestamp(new Date()));
+         //   Log.i("withdrawOperation",timeModel.getTimeAdded().toDate().toString());
             isWithdrawn= true;
 
         }
@@ -176,9 +178,9 @@ public class UserOverall extends AppCompatActivity {
                     paycheck1=round(paycheck1,2);
                     hoursToSettle1-=timeToSettlement;
 
-                    Log.i("Paycheck value",paycheck1+"");
+             //       Log.i("Paycheck value",paycheck1+"");
 
-                    Log.i("Update User","Update User");
+                 //   Log.i("Update User","Update User");
 
                     // tutaj updateuje się dane dla Usera.
                     authViewModel.updateStatusOfTimeForUser(email1, hoursToSettle1, paycheck1);
@@ -265,7 +267,7 @@ public class UserOverall extends AppCompatActivity {
 
                     time += x.getTimeOverallInLong();
                     selectedTimeModelList.add(x);
-                    Log.i("DOCUMENT ID",x.getDocumentId());
+                //    Log.i("DOCUMENT ID",x.getDocumentId());
                 }
             }
             // Daty z listy
@@ -273,7 +275,7 @@ public class UserOverall extends AppCompatActivity {
 
         timeToSettlement=time;
 
-        Log.i("TIME",time+"");
+       // Log.i("TIME",time+"");
 
         return time;
     }
@@ -326,7 +328,7 @@ public class UserOverall extends AppCompatActivity {
                         blockedDates.add(calendar1);
                     }
                 }
-                Log.i("add Validate",listOfAllRecordsForUser.get(i).getTimeAdded().toDate().toString());
+               // Log.i("add Validate",listOfAllRecordsForUser.get(i).getTimeAdded().toDate().toString());
             }
             else if (listOfAllRecordsForUser.get(i).getId().equals(id) && !listOfAllRecordsForUser.get(i).getMoneyOverall()){
                 long time = listOfAllRecordsForUser.get(i).getTimeAdded().toDate().getTime();
@@ -339,12 +341,12 @@ public class UserOverall extends AppCompatActivity {
 
                 blockedDates.remove(calendar1);
 
-                Log.i("Remove validate",listOfAllRecordsForUser.get(i).getTimeAdded().toDate().toString());
+              //  Log.i("Remove validate",listOfAllRecordsForUser.get(i).getTimeAdded().toDate().toString());
             }
         }
 
         for (Calendar blockedDate : blockedDates) {
-            Log.i("THE BLOCKED DATES",blockedDate.get(Calendar.DAY_OF_YEAR)+" "+blockedDate.get(Calendar.YEAR)+"");
+           // Log.i("THE BLOCKED DATES",blockedDate.get(Calendar.DAY_OF_YEAR)+" "+blockedDate.get(Calendar.YEAR)+"");
         }
 
         return blockedDates;

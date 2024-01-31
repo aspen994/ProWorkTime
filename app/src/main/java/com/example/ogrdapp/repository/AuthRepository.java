@@ -1,9 +1,6 @@
 package com.example.ogrdapp.repository;
 
-import android.annotation.SuppressLint;
 import android.app.Application;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -22,6 +19,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -36,6 +34,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,12 +56,14 @@ public class AuthRepository {
     private MutableLiveData<String> emailMutableLiveData;
     private MutableLiveData<String> adminIdMutableLiveData;
     private MutableLiveData<List<QRModel>> qrModelMutableLiveData;
-
+    private MutableLiveData<List<TimeModel>> timeModelMutableLiveData;
+    private MutableLiveData<List<TimeModel>> getAllTimeModelsForAdminSQLLiveData;
+    private MutableLiveData<Integer> getIntegerHelps;
 
     private FirebaseAuth firebaseAuth;
     private FirebaseFirestore db;
-    private CollectionReference collectionReference;
     private FirebaseUser fireBaseUser;
+    private CollectionReference collectionReferenceUser;
     private CollectionReference collectionReferenceTime;
     private CollectionReference collectionReferenceQrCode;
 
@@ -79,11 +80,15 @@ public class AuthRepository {
     private final String KEY_PAYCHECK = "paycheck";
     private final String KEY_MONEYOVERALL = "moneyOverall";
     private final String WITH_DRAWN_MONEY = "withdrawnMoney";
+    private final String KEY_TIMESTAMP = "timestamp";
     private final String LOGER = "FirebaseRepository";
 
     private final TimeModelDAO timeModelDAO;
     private ExecutorService executor;
-    private Handler handler;
+
+    private String ROOM_DB_LOGGER = "ROOM_DB";
+    private String FIREBASE_LOGGER = "FIREBASE_DB";
+
 
     public AuthRepository(Application application) {
 
@@ -102,10 +107,14 @@ public class AuthRepository {
         this.emailMutableLiveData = new MutableLiveData<>();
         this.adminIdMutableLiveData = new MutableLiveData<>();
         this.qrModelMutableLiveData = new MutableLiveData<>();
+        this.getAllTimeModelsForAdminSQLLiveData = new MutableLiveData<>();
+        this.getIntegerHelps = new MutableLiveData<>();
+
 
         firebaseAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
-        collectionReference = db.collection("Users");
+
+        collectionReferenceUser = db.collection("Users");
         collectionReferenceTime = db.collection("Time");
         collectionReferenceQrCode = db.collection("QRCode");
 
@@ -115,8 +124,6 @@ public class AuthRepository {
         // Used for Background Database Operations
         executor = Executors.newSingleThreadExecutor();
 
-        // Used for updating the UI
-        handler = new Handler(Looper.getMainLooper());
 
         if (firebaseAuth.getCurrentUser() != null) {
             fireBaseUser = firebaseAuth.getCurrentUser();
@@ -133,8 +140,25 @@ public class AuthRepository {
         return fireBaseUser.getUid();
     }
 
+    //getAllTimeModelsForAdminSQLLiveData
+
+
+    public MutableLiveData<Integer> getGetIntegerHelps() {
+        return getIntegerHelps;
+    }
+
+    public MutableLiveData<List<TimeModel>> getGetAllTimeModelsForAdminSQLLiveData() {
+        return getAllTimeModelsForAdminSQLLiveData;
+    }
+
+
+
     public MutableLiveData<List<TimeModel>> getTimeModelArrayListMutableLiveData() {
         return timeModelArrayListMutableLiveData;
+    }
+
+    public LiveData<List<TimeModel>> getGetAllTimeModelsForAdminSQLLiveData(String userId) {
+        return timeModelDAO.getAllTimeModels(userId);
     }
 
     public MutableLiveData<List<QRModel>> getQrModelMutableLiveData() {
@@ -195,7 +219,7 @@ public class AuthRepository {
         collectionReferenceQrCode.document().set(qrCodeMap).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-                Log.i("setNewQrCode", "Added Succesfully");
+                //Log.i(LOGER, "Added Succesfully");
                 LinkedList<QRModel> qrModelLinkedList = new LinkedList<>();
 
                 QRModel qrModel = new QRModel();
@@ -243,7 +267,7 @@ public class AuthRepository {
                             }
                             timeSelectedForUserListMutableLiveData.setValue(timeModelArrayList);
 
-                            Log.i(LOGER, "getSelectedTimeForUser");
+                            //Log.i(LOGER, "getSelectedTimeForUser");
                         }
                     }
                 });
@@ -259,10 +283,87 @@ public class AuthRepository {
     }
 
 
-    public void getTimeForUser(String userId) {
+    // TODO 170124
+    public LiveData<List<TimeModel>> getAllTimeModelsForAdminSQL(String userId)
+    {
+        Log.i("STRING UserID",userId);
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                Log.i("ITERACJA POCZĄTEK","Iteracja Początek");
+                List<TimeModel> value = timeModelDAO.getAllTimeModelsList(userId);
+                Log.i("value list: ",value.size()+"");
+                Log.i("ForAdminSQL user:", userId);
+
+                //TODO 250124 Tutaj daj dwie metody
+                getTimeForUserNewMethod(userId,countMethod(value));
+                getAllTimeModelsForAdminSQLLiveData.postValue(value);
+
+                readerList(value);
+                Log.i(ROOM_DB_LOGGER,"ROOM_DB"+" "+"getAllTimeModelsForAdminSQL");
+
+                Log.i("ITERACJA KONIEC","Iteracja KONIEC");
+            }
 
 
-        // PIERWOTNA FUNKCJA
+        });
+
+        return timeModelDAO.getAllTimeModels(userId);
+
+    }
+
+    public void readerList(List<TimeModel> value) {
+        for (TimeModel timeModel:value) {
+            Log.i("ForAdminSQL value name:",timeModel.getUserName()==null?"null USERNAME":timeModel.getUserName());
+            Log.i("ForAdminSQL value timeB",timeModel.getTimeBegin()==null?"null TIMEBEGIn":timeModel.getTimeBegin());
+            Log.i("ForAdminSQL timeE:",timeModel.getTimeEnd()==null?"null":timeModel.getTimeEnd());
+            Log.i("ForAdminSQL timestamp:",timeModel.getTimestamp().toDate()==null?"null":timeModel.getTimestamp().toDate()+"");
+            Log.i("ForAdminSQL documentId:",timeModel.getDocumentId()==null?"null":timeModel.getDocumentId()+"");
+            Log.i("---------","----------");
+        }
+    }
+
+    public void getTimeForUserNewMethod(String userId, Timestamp timestamp) {
+
+        collectionReferenceTime.whereEqualTo("id", userId).whereGreaterThan("timestamp",timestamp)
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            List<TimeModel> timeModelArrayList = new ArrayList<>();
+                            for (QueryDocumentSnapshot timeModels : queryDocumentSnapshots) {
+
+                                TimeModel timeModel = timeModels.toObject(TimeModel.class);
+
+                                timeModelArrayList.add(timeModel);
+                                Collections.sort(timeModelArrayList, new Comparator<TimeModel>() {
+                                    @Override
+                                    public int compare(TimeModel o1, TimeModel o2) {
+                                        return o1.getTimeAdded().compareTo(o2.getTimeAdded());
+                                    }
+                                });
+                                Log.i("getTimeForUser UserName", timeModel.getUserName());
+                                Log.i("getTimeForUser TimeAded", timeModel.getTimeAdded().toString());
+                                Log.i("getTimeForUser Id",timeModel.getDocumentId());
+                                Log.i("getTimeForUser timeStam",timestamp.toDate()+"");
+                            }
+                            saveAllCollectionToSQLite(timeModelArrayList);
+                            updateDataSQLite(timeModelArrayList);
+                            Log.i(FIREBASE_LOGGER," "+"getTimeForUserNewMethod");
+                        }
+
+
+
+                    }
+                });
+
+    }
+
+    // TODO 170124
+    public void getTimeForUserNewMethod(String userId) {
+
         collectionReferenceTime.whereEqualTo("id", userId)
                 .get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
@@ -283,52 +384,19 @@ public class AuthRepository {
                                     }
                                 });
 
-                                Log.i("getTimeForUser UserName", timeModel.getUserName());
-                                Log.i("getTimeForUser TimeAded", timeModel.getTimeAdded().toString());
-                                Log.i("getTimeForUser Id",timeModel.getDocumentId());
+                                //Log.i("getTimeForUser UserName", timeModel.getUserName());
+                                //Log.i("getTimeForUser TimeAded", timeModel.getTimeAdded().toString());
+                                //Log.i("getTimeForUser Id",timeModel.getDocumentId());
 
                             }
                             timeForUserListMutableLiveData.setValue(timeModelArrayList);
+                            Log.i(FIREBASE_LOGGER," "+"getTimeForUserNewMethod2");
                         }
 
-                        Log.i(LOGER, "getTimeForUser");
+
 
                     }
                 });
-
-/*
-        // DRUGA FUNKCJA ZE SNAPSHOT LISTNER
-        collectionReferenceTime.whereEqualTo("id", userId)
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                        if(!value.isEmpty())
-                        {
-                            List<TimeModel> timeModelArrayList = new ArrayList<>();
-                            for(QueryDocumentSnapshot timeModels: value)
-                            {
-
-                                TimeModel timeModel = timeModels.toObject(TimeModel.class);
-
-                                timeModelArrayList.add(timeModel);
-                                Collections.sort(timeModelArrayList, new Comparator<TimeModel>() {
-                                    @Override
-                                    public int compare(TimeModel o1, TimeModel o2) {
-                                        return o1.getTimeAdded().compareTo(o2.getTimeAdded());
-                                    }
-                                });
-
-                                Log.i("getTimeForUser UserName",timeModel.getUserName());
-                                Log.i("getTimeForUser TimeAded",timeModel.getTimeAdded().toString());
-
-                            }
-                            timeForUserListMutableLiveData.setValue(timeModelArrayList);
-                        }
-
-                        Log.i(LOGER,"getTimeForUser");
-                    }
-                });*/
-
 
     }
 
@@ -353,6 +421,7 @@ public class AuthRepository {
 
                             }
                             qrModelMutableLiveData.postValue(qrModelLink);
+                            Log.i(FIREBASE_LOGGER," "+"getDataQRCode");
                         }
 
                     }
@@ -361,9 +430,142 @@ public class AuthRepository {
         return qrModelMutableLiveData;
     }
 
-     public void getData() {
+    //TODO 250124
+    public  void getTimeForUserNewMethod()
+    {
+        collectionReferenceUser.whereEqualTo("userId",currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                if (!queryDocumentSnapshots.isEmpty()) {
 
-        collectionReferenceTime.whereEqualTo("id", currentUserId)
+                    for (QueryDocumentSnapshot users : queryDocumentSnapshots) {
+                        User user = users.toObject(User.class);
+                        //Log.i("GetTimeForUser",user.getHoursOverall()+"");
+                        user.getHoursToSettle();
+                    }
+                }
+            }
+        });
+
+    }
+    public LiveData<List<TimeModel>> getAllTimeModelsForUserSQL()
+    {
+/*
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                List<TimeModel> value = timeModelDAO.getAllTimeModelsList(currentUserId);
+                //TODO 250124 Tutaj daj dwie metody
+                // Ta metoda do ściagania hoursOverall dla Users
+                readLogcat(value);
+                Log.i(ROOM_DB_LOGGER,ROOM_DB_LOGGER+" "+"getAllTimeModelsForUserSQL");
+                getDataFirebase(countMethod(value));
+            }
+        });*/
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                List<TimeModel> value = timeModelDAO.getAllTimeModelsList(currentUserId);
+                //TODO 250124 Tutaj daj dwie metody
+                // Ta metoda do ściagania hoursOverall dla Users
+                //readLogcat(value);
+                Log.i(ROOM_DB_LOGGER,ROOM_DB_LOGGER+" "+"getAllTimeModelsForUserSQL");
+                getDataFirebase(countMethod(value));
+
+        //TODO 250124 nowa metoda
+
+                List<TimeModel> value2 = timeModelDAO.getAllTimeModelsList(currentUserId);
+        collectionReferenceUser.whereEqualTo("userId",currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                if (!queryDocumentSnapshots.isEmpty()) {
+                    for (QueryDocumentSnapshot users : queryDocumentSnapshots) {
+                        User user = users.toObject(User.class);
+                        long hoursToSettle = user.getHoursOverall();
+                        long timeModelSumForTimeOverall = sumUp(value2);
+                        Log.i("FROM USER VALUE",hoursToSettle+"");
+                        Log.i("FROM TimeModel VALUE",timeModelSumForTimeOverall+"");
+
+                        if(hoursToSettle!=timeModelSumForTimeOverall) {
+                            //Log.i("Second", "The sum control is the Difrent");
+                            executor.execute(new Runnable() {
+                                @Override
+                                public void run() {
+                                    timeModelDAO.deleteAllTimeModels();
+                                    getDataFirebase(new Timestamp(new Date(0)));
+                                    Log.i("Deleting and Adding","delete and add");
+                                }
+                            });
+                        }
+                        else {
+                            //Log.i("First","The sum control is the same");
+                        }
+
+                    }
+                }
+            }
+        });
+
+            }
+        });
+
+
+        return timeModelDAO.getAllTimeModels(currentUserId);
+    }
+
+    private long sumUp(List<TimeModel> value) {
+        long toReturn=0;
+        for(TimeModel timeModel:value)
+        {
+            toReturn+=timeModel.getTimeOverallInLong();
+        }
+
+        return toReturn;
+    }
+
+    private void readLogcat(List<TimeModel> value) {
+        long sum=0;
+        for(TimeModel timeModel: value)
+        {
+            sum+=timeModel.getTimeOverallInLong();
+            //Log.i("TimeModel",timeModel.getDocumentId());
+            //Log.i("TimeModel time",timeModel.getTimeOverallInLong()+"");
+        }
+
+        //Log.i("SZYMON SPÓJRZ",sum+"");
+    }
+
+    public Timestamp countMethod(List<TimeModel> timeModels) {
+        long max = 0;
+        if(!timeModels.isEmpty()) {
+            for (TimeModel timeModel : timeModels) {
+                if (timeModel.getTimestamp().toDate().getTime() >= max) {
+                    max = timeModel.getTimestamp().toDate().getTime();
+                     Log.i("Inside loop", max + "");
+                }
+            }
+            Log.i("USERNAME VALUE MAX", timeModels.get(0).getUserName());
+            Log.i("the value of max", max + "");
+            Log.i("What is the last date", new Date(max) + "");
+            Log.i("---------", "-----");
+        }
+
+        return new Timestamp(new Date(max));
+    }
+
+    public void deleteAllTimeModels()
+    {
+        executor.execute(()->timeModelDAO.deleteAllTimeModels());
+      //  Log.i("DELETE ALL","OVER HERE MAN");
+    }
+
+     public void getDataFirebase(Timestamp timestamp) {
+
+
+
+       // Log.i("getDataFirebase","invoked");
+         // TODO 170124 - Properly working downloadData
+         collectionReferenceTime.whereEqualTo("id", currentUserId).whereGreaterThan("timestamp",timestamp)
                 .get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -385,19 +587,34 @@ public class AuthRepository {
                                     }
                                 });
 
+                                Log.i("PRINT1: ", timeModel.getUserName());
+                                Log.i("PRINT2: ", timeModel.getTimeBegin());
+                                Log.i("PRINT3: ", timeModel.getTimeEnd());
+                                Log.i("PRINT4: ", timeModel.getTimeOverall());
+                                Log.i("PRINT5: ", timeModel.getTimeAdded().toDate()+"");
+                                Log.i("------", "--------");
+
+
                             }
                             timeModelArrayListMutableLiveData.postValue(timeModelArrayList);
+                            saveAllCollectionToSQLite(timeModelArrayList);
+                            updateDataSQLite(timeModelArrayList);
+                            Log.i(FIREBASE_LOGGER, " "+"getDataFirebase");
                         }
-                        Log.i(LOGER, "getData");
-                    }
-                });
 
-        //return timeModelArrayListMutableLiveData;
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                      @Override
+                      public void onFailure(@NonNull Exception e) {
+                          Log.i("Fail getData",e.getMessage());
+                      }
+                  });
+
     }
 
     // I tutaj
     public void updatedDataHoursToFirebaseUser(TimeModel timeModel) {
-        collectionReference.whereEqualTo("userId", timeModel.getId()).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+        collectionReferenceUser.whereEqualTo("userId", timeModel.getId()).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 if (!queryDocumentSnapshots.isEmpty()) {
@@ -416,18 +633,24 @@ public class AuthRepository {
 
                         result.put("hoursToSettle", user1.getHoursToSettle());
 
-                        Log.i(LOGER, "updatedDataHoursToFirebaseUser");
+                        Log.i("2 UU userName",user1.getUsername()+"");
+                        Log.i("2 UU hoursOverall",user1.getHoursOverall()+"");
+                        Log.i("2 UTM timeOverall ",timeModel.getTimeOverallInLong()+"");
+
+                        Log.i(FIREBASE_LOGGER, " "+"updatedDataHoursToFirebaseUser");
 
                         updateUserTime(result);
                     }
                 }
+
+
             }
         });
     }
 
     // Nie jest to używane można usunąć.
     public void getPaycheckAndHoursToSettleLong(String userId) {
-        collectionReference.whereEqualTo("userId", userId).addSnapshotListener(new EventListener<QuerySnapshot>() {
+        collectionReferenceUser.whereEqualTo("userId", userId).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 if (!value.isEmpty()) {
@@ -446,15 +669,17 @@ public class AuthRepository {
                         paycheckHoursToSettleMutableLiveData.postValue(result);
 
                     }
-
+                    Log.i(FIREBASE_LOGGER, " "+"getPaycheckAndHoursToSettleLong");
                 }
+
+
             }
         });
     }
 
     public void getDataToUpdatePayCheck(String currentUserId) {
 
-        collectionReference.whereEqualTo("userId", currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+        collectionReferenceUser.whereEqualTo("userId", currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 if (!queryDocumentSnapshots.isEmpty()) {
@@ -469,13 +694,13 @@ public class AuthRepository {
                         result.put("hoursToSettle", hoursToSettle);
                         result.put("email", email);
 
-                        Log.i(LOGER, "getDataToUpdatePayCheck");
 
                         paycheckHoursToSettleMutableLiveData.postValue(result);
 
                     }
-
+                    Log.i(FIREBASE_LOGGER, " "+"getDataToUpdatePayCheck");
                 }
+
             }
         });
     }
@@ -488,9 +713,10 @@ public class AuthRepository {
                 timeModelDAO.insertAllCollection(timeModelList);
             }
         });
+        Log.i(ROOM_DB_LOGGER, ROOM_DB_LOGGER+" "+"saveAllCollectionToSQLite");
+
     }
 
-    @SuppressLint("LongLogTag")
     public void saveDataToFireBase(TimeModel timeModel) {
         String idDocument = collectionReferenceTime.document().getId();
         timeModel.setDocumentId(idDocument);
@@ -498,21 +724,26 @@ public class AuthRepository {
 
         timeModel.getTimeOverallInLong();
 
-        Log.i("saveData TimeModel documentId", timeModel.getDocumentId());
         executor.execute(new Runnable() {
             @Override
             public void run() {
                 timeModelDAO.insert(timeModel);
 
                 Log.i("SUCCESFULLY ADDED", timeModel.toString());
+                Log.i(ROOM_DB_LOGGER, ROOM_DB_LOGGER+" "+"saveAllCollectionToSQLite");
             }
         });
 
-        collectionReferenceTime.document(idDocument).set(timeModel).addOnFailureListener(new OnFailureListener() {
+        collectionReferenceTime.document(idDocument).set(timeModel).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                Log.i("Succes on adding",timeModel.toString());
+            }
+        }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(application, "Fail on adding data", Toast.LENGTH_SHORT).show();
-                Log.i(LOGER,"saveDataToFireBase");
+                Log.i(FIREBASE_LOGGER, " "+"saveDataToFireBase");
             }
         });
     }
@@ -534,8 +765,9 @@ public class AuthRepository {
                         Log.i("TIME MODEL checkMethod", timeModel1.getTimeEnd());
                     }
 
-
+                    Log.i(FIREBASE_LOGGER, " "+"checkMethod");
                 }
+
             }
         });
      /*   collectionReferenceTime.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -585,17 +817,54 @@ public class AuthRepository {
                     }
                 });*/
     }
-    public void deleteDateFromFireBase(String documentID)
+    public void deleteDataFromRoomDB(TimeModel timeModel){
+        executor.execute(()->timeModelDAO.delete(timeModel));
+    }
+
+    public void deleteLastRecordsMETHODTODELTE()
     {
-        collectionReferenceTime.document(documentID).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+
+        collectionReferenceTime
+                .whereEqualTo("id",currentUserId)
+                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if(!queryDocumentSnapshots.isEmpty())
+                        {
+                            for(QueryDocumentSnapshot snapshot:queryDocumentSnapshots)
+                            {
+                                    TimeModel timeModel= snapshot.toObject(TimeModel.class);
+                                    collectionReferenceTime.document(timeModel.getDocumentId()).delete();
+//                                    Log.i("timeModel to Delte",timeModel.getTimestamp().toDate()+"");
+  //                                  Log.i("TIME STAMP DElte",new Timestamp(new Date(1706095680000L)).toDate()+"");
+
+                            }
+
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.i("SZYMON KURWA",e.getMessage());
+                    }
+                });
+    }
+    public void deleteDateFromFireBase(TimeModel timeModel)
+    {
+        deleteDataFromRoomDB(timeModel);
+      /*  Log.i("4 UU username",timeModel.getUserName());
+        Log.i("4 UU time begin",timeModel.getTimeBegin());
+        Log.i("4 UU time end",timeModel.getTimeEnd());
+        Log.i("4 UU time overall",timeModel.getTimeOverallInLong()+"");*/
+        collectionReferenceTime.document(timeModel.getDocumentId()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-                Log.i("Firebase","deleteDateFromFireBase");
+                Log.i(FIREBASE_LOGGER, " "+"deleteDateFromFireBase");
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-
+            Log.i(FIREBASE_LOGGER + "FAIl", e.getMessage());
             }
         });
     }
@@ -615,12 +884,14 @@ public class AuthRepository {
 
         resultToSend.put("hoursOverall",hoursOverallToSend);
         resultToSend.put("hoursToSettle",hoursToSettleToSend);
-        Log.i(LOGER,"updateUserTime");
-        collectionReference.document(userEmail).update(resultToSend).addOnSuccessListener(new OnSuccessListener<Void>() {
+
+        Log.i("3 UU hoursOverallToSend",hoursOverallToSend+"");
+        //Log.i(LOGER,"updateUserTime");
+        collectionReferenceUser.document(userEmail).update(resultToSend).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
 
-
+                Log.i(FIREBASE_LOGGER, " "+"updateUserTime");
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -630,16 +901,55 @@ public class AuthRepository {
         });
     }
 
-    public void updateDataToFirebase(String documentID,String beginTime,String endTime,String overall,long timeInLong)
+    public void updateDataSQLite(List<TimeModel> list)
     {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                timeModelDAO.updateList(list);
+            }
+        });
+    }
+
+    public void updateDataSQLite(TimeModel timeModel)
+    {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                timeModelDAO.updated(timeModel);
+            }
+        });
+    }
+
+    public void updateDataToFirebase(String documentID,String beginTime,String endTime,String overall,long timeInLong,TimeModel timeModel)
+    {
+
+        Timestamp timestamp = new Timestamp(new Date());
         Map<String,Object> result = new HashMap<>();
         result.put(KEY_TIME_BEGIN,beginTime);
         result.put(KEY_TIME_END,endTime);
         result.put(KEY_TIME_OVERALL,overall);
         result.put(KEY_TIME_OVERALL_IN_LONG,timeInLong);
+        //TODO 230124
+        result.put("timestamp",timestamp);
 
-        Log.i("Firebase","updateDataToFirebase");
+        //TODO 230124
+        timeModel.setTimeBegin(beginTime);
+        timeModel.setTimeEnd(endTime);
+        timeModel.setTimeOverall(overall);
+        timeModel.setTimeOverallInLong(timeInLong);
+        timeModel.setTimestamp(timestamp);
+        Log.i("TimeModel updated: " ,timeModel.toString());
 
+        Log.i(FIREBASE_LOGGER, " "+"updateDataToFirebase");
+
+        Log.i("3’ UTM username",timeModel.getUserName());
+        Log.i("3’ UTM username",timeModel.getTimeBegin());
+        Log.i("3’ UTM username",timeModel.getTimeEnd());
+        Log.i("3’ UTM username",timeModel.getTimeOverallInLong()+"");
+
+        //TODO 230124
+        updateDataSQLite(timeModel);
         collectionReferenceTime.document(documentID).update(result).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
@@ -648,15 +958,18 @@ public class AuthRepository {
 
     }
 
-    public void updateStatusOfPayment(String documentID,boolean isSettled,double withDrawnMoney)
+    public void updateStatusOfPayment(String documentID,boolean isSettled,double withDrawnMoney,Timestamp timestamp)
     {
         Map<String,Object> result = new HashMap<>();
         result.put(KEY_MONEYOVERALL,isSettled);
         result.put(WITH_DRAWN_MONEY,withDrawnMoney);
+        result.put(KEY_TIMESTAMP,timestamp);
 
         Log.i(LOGER,"updateStatusOfPayment");
 
         collectionReferenceTime.document(documentID).update(result);
+
+        Log.i(FIREBASE_LOGGER, " "+"updateStatusOfPayment");
     }
 
 
@@ -667,10 +980,10 @@ public class AuthRepository {
                             result.put("paycheck",payCheck);
                             result.put("hoursToSettle", settledTimeInMillis);
                             Log.i("Firebase","updateStatusOfTimeForUser");
-                        collectionReference.document(email).update(result).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        collectionReferenceUser.document(email).update(result).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
-
+                                Log.i(FIREBASE_LOGGER, " "+"updateStatusOfTimeForUser");
                             }
                         });
     }
@@ -684,8 +997,8 @@ public class AuthRepository {
 
     public void getUserDataAssignedToAdmin(String workerId)
     {
-        Log.i(LOGER,"getUsersDataAssignedToAdmin 2 method");
-        collectionReference.whereEqualTo("foreign_key",currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+
+        collectionReferenceUser.whereEqualTo("foreign_key",currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 if(!queryDocumentSnapshots.isEmpty())
@@ -702,21 +1015,21 @@ public class AuthRepository {
 
                             userArrayList.add(user);
 
-
                             userArrayListOfUserMutableLiveData.postValue(userArrayList);
                         }
 
                     }
-
+                    Log.i(FIREBASE_LOGGER, " "+"getUserDataAssignedToAdmin");
                 }
             }
         });
     }
 
     //  Było add snapshotListener zmieniam na add on SuccesListenr
+    //TODO 260124
     public void getUsersDataAssignedToAdmin()
     {
-        collectionReference.whereEqualTo("foreign_key",currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+        collectionReferenceUser.whereEqualTo("foreign_key",currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 if(!queryDocumentSnapshots.isEmpty())
@@ -736,12 +1049,17 @@ public class AuthRepository {
 
                             userArrayListOfUserMutableLiveData.postValue(userArrayList);
 
-                            Log.i(LOGER,"getUsersDataAssignedToAdmin");
+                            Log.i(FIREBASE_LOGGER, " "+"getUsersDataAssignedToAdmin");
+                            Log.i("User name:",user.getUsername());
+                            Log.i("User hoursOverall:",user.getHoursOverall()+"");
+                            Log.i("User hoursToSettle: ",user.getHoursToSettle()+"");
+                            Log.i("-----","-----");
+
                         }
 
                     }
-
                 }
+
             }
         });
       /*  collectionReference.whereEqualTo("foreign_key",currentUserId).addOnSuccessListener(new OnSuccessListener<>() {
@@ -805,9 +1123,7 @@ public class AuthRepository {
     public boolean checkIfAdmin ()
     {
 
-        Log.i(LOGER,"checkIfAdmin");
-
-        collectionReference.whereEqualTo("foreign_key",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
+        collectionReferenceUser.whereEqualTo("foreign_key",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
 
@@ -825,7 +1141,10 @@ public class AuthRepository {
                                   ifAdminMutableLiveData.postValue(false);
                               }
                         }
+                        Log.i(FIREBASE_LOGGER, " "+"checkIfAdmin");
                     }
+
+
             }
         });
 
@@ -837,9 +1156,7 @@ public class AuthRepository {
     public void register (String email, String password,String userName_send,String surName_send,String foreign_email)
     {
 
-        Log.i(LOGER,"register");
-
-        collectionReference.whereEqualTo("email",foreign_email).addSnapshotListener(new EventListener<QuerySnapshot>() {
+        collectionReferenceUser.whereEqualTo("email",foreign_email).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 if(!value.isEmpty())
@@ -848,7 +1165,10 @@ public class AuthRepository {
                     {
                         arrayListForAssigningEmail.add(snapshot.getString("userId"));
                     }
+                    Log.i(FIREBASE_LOGGER, " "+"register");
                 }
+
+
             }
         });
 
@@ -876,7 +1196,7 @@ public class AuthRepository {
 
                     Log.i("Hello five","five");
 
-                    collectionReference.document(email).set(userObj).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    collectionReferenceUser.document(email).set(userObj).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void unused) {
 
@@ -888,6 +1208,7 @@ public class AuthRepository {
 
                         }
                     });
+
 
                 }
                 else{
@@ -906,12 +1227,13 @@ public class AuthRepository {
             @Override
             public void onSuccess(AuthResult authResult) {
                 firebaseUserMutableLiveData.postValue(firebaseAuth.getCurrentUser());
-
+                Log.i(FIREBASE_LOGGER, " "+"signIn");
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(application, application.getString(R.string.no_user), Toast.LENGTH_SHORT).show();
+
             }
         });
     }
@@ -924,6 +1246,7 @@ public class AuthRepository {
             @Override
             public void onSuccess(Void unused) {
                 Toast.makeText(application, application.getString(R.string.reset_meesage), Toast.LENGTH_SHORT).show();
+                Log.i(FIREBASE_LOGGER, " "+"resetPassword");
 
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -934,13 +1257,12 @@ public class AuthRepository {
         });
     }
 
+    //TODO 290124
     public LiveData<TimeModel> getUsernameAndSurname()
     {
-        Log.i(LOGER,"getUsernameAndSurname");
-
         checkIfAdmin();
         TimeModel timeModel = new TimeModel();
-        collectionReference.whereEqualTo("userId",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
+        collectionReferenceUser.whereEqualTo("userId",currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 if(!value.isEmpty())
@@ -953,6 +1275,7 @@ public class AuthRepository {
                     }
 
                     getUsernameAndSurname.postValue(timeModel);
+                    Log.i(FIREBASE_LOGGER, " "+"getUsernameAndSurname");
                 }
                 else {
 
@@ -960,7 +1283,6 @@ public class AuthRepository {
                 }
             }
         });
-
 
         return getUsernameAndSurname;
     }
@@ -970,7 +1292,7 @@ public class AuthRepository {
     public void singOut(){
         firebaseAuth.signOut();
         userLoggedMutableLiveData.postValue(true);
-        Log.i(LOGER,"singOut");
+        Log.i(FIREBASE_LOGGER, " "+"singOut");
     }
 
 }

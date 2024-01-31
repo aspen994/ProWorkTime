@@ -31,7 +31,7 @@ public class FormattedTime {
         double minutes = seconds / 60;
         double hours = minutes / 60;
 
-        Log.i("FormattedDate",hours+"");
+        //Log.i("FormattedDate",hours+"");
 
      return  hours;
 
@@ -43,8 +43,8 @@ public class FormattedTime {
         long minutes = seconds / 60;
         long hours = minutes / 60;
 
-        Log.i("Minutes",minutes%60+"");
-        Log.i("ITS INOVKED","ITS INOVKED");
+       // Log.i("Minutes",minutes%60+"");
+        //Log.i("ITS INOVKED","ITS INOVKED");
 
        if(minutes%60>=31)
         {

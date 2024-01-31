@@ -76,7 +76,7 @@ public class QRCodeManagement extends AppCompatActivity {
                 if (inputValue.length() > 0) {
                     qrCodeEncode = new StringBuilder();
                     generateQR();
-                    Toast.makeText(QRCodeManagement.this, "generuje", Toast.LENGTH_SHORT).show();
+                   // Toast.makeText(QRCodeManagement.this, "generuje", Toast.LENGTH_SHORT).show();
                     WindowManager manager = (WindowManager) getSystemService(WINDOW_SERVICE);
                     Display display = manager.getDefaultDisplay();
                     Point point = new Point();
@@ -106,7 +106,7 @@ public class QRCodeManagement extends AppCompatActivity {
             public void onClick(View view) {
                 if(qrCodeEncode !=null)
                 {
-                    Toast.makeText(QRCodeManagement.this, "isNotNull", Toast.LENGTH_SHORT).show();
+                   // Toast.makeText(QRCodeManagement.this, "isNotNull", Toast.LENGTH_SHORT).show();
                     saveImage();
                     saveToDatabase(qrCodeEncode.toString(),Integer.parseInt(editText.getText().toString()));
 
@@ -129,7 +129,7 @@ public class QRCodeManagement extends AppCompatActivity {
             @Override
             public void onChanged(String s) {
                 adminId[0] =s;
-                Log.i("getAdminId",s);
+                //Log.i("getAdminId",s);
             }
         });
 
@@ -178,12 +178,12 @@ public class QRCodeManagement extends AppCompatActivity {
             bitmap1.compress(Bitmap.CompressFormat.JPEG,100,outputStream);
             Objects.requireNonNull(outputStream);
 
-            Toast.makeText(QRCodeManagement.this, "Please proive required permission", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(QRCodeManagement.this, "Please proive required permission", Toast.LENGTH_SHORT).show();
 
         }
         catch (Exception e)
         {
-            Toast.makeText(QRCodeManagement.this,   "Images not Saved", Toast.LENGTH_SHORT).show();
+           // Toast.makeText(QRCodeManagement.this,   "Images not Saved", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
 

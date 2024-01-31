@@ -11,7 +11,7 @@ import com.example.ogrdapp.converter.TimestampConverter;
 import com.example.ogrdapp.dao.TimeModelDAO;
 import com.example.ogrdapp.model.TimeModel;
 
-@Database(entities = {TimeModel.class}, version = 4)
+@Database(entities = {TimeModel.class}, version = 1)
 @TypeConverters({TimestampConverter.class})
 public abstract class TimeModelDatabase extends RoomDatabase {
     public abstract TimeModelDAO getTimeModelDao();

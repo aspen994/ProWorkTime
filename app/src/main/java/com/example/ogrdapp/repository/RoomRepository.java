@@ -42,7 +42,7 @@ public class RoomRepository {
             public void run() {
                 timeModelDAO.insert(timeModel);
 
-                Log.i("SUCCESFULLY ADDED",timeModel.toString());
+                //Log.i("SUCCESFULLY ADDED",timeModel.toString());
             }
         });
 
@@ -59,10 +59,10 @@ public class RoomRepository {
 
     }
 
-    public LiveData<List<TimeModel>> getAllTimeModels()
+    /*public LiveData<List<TimeModel>> getAllTimeModels()
     {
         return timeModelDAO.getAllTimeModels();
-    }
+    }*/
 
     public void deleteAllTimeModels()
     {

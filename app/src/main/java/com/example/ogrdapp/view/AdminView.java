@@ -6,10 +6,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.util.Pair;
@@ -79,7 +77,7 @@ public class AdminView extends AppCompatActivity {
         SharedPreferences sharedPreferences1 = getSharedPreferences("UserTimeTableSharedPreferences",MODE_PRIVATE);
         jsonString2 = sharedPreferences1.getString("timeModelArrayList",null);
 
-        Log.i("onRestart Jstrong",jsonString2==null?"true":"false");
+        //Log.i("onRestart Jstrong",jsonString2==null?"true":"false");
 
 
         if(jsonString2!=null)
@@ -118,10 +116,10 @@ public class AdminView extends AppCompatActivity {
 
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
+
         //WSTAW METODĘ KTÓRA BĘDZIE NASŁUCHIWAĆ ZMIANY
 
-        //TODO 08.01.2024r SPRWADZAM CZY WYŚWIETLI MI TYLKO JEDEN ELEMENT DODANY
-        authViewModel.checkMethod();
+
 
 
         Intent intent = getIntent();
@@ -137,36 +135,33 @@ public class AdminView extends AppCompatActivity {
         if(intent.hasExtra("USER_ID"))
         {
             String userId = intent.getStringExtra("USER_ID");
-            Log.i("userId",userId);
-            Toast.makeText(this, userId, Toast.LENGTH_SHORT).show();
+            //Log.i("userId",userId);
+            //Toast.makeText(this, userId, Toast.LENGTH_SHORT).show();
             //SharedPreferences - reading
             readTimeModelForDisplayToSharedPref();
 
             findTimeModelForDisplayToUpdateAndClearIt(userId);
 
-            // TO TUTAJ 10.01.2024
-            authViewModel.getTimeForUser(userId);
-            Log.i("USER_ID","Invoked");
+            assignTimeModelForUser(userId);
+            Log.i("assignTimeModelForUser","from Intent");
+            //Log.i("USER_ID","Invoked");
 
         }
         else {//(jsonString2==null)
 
-            Log.i("Download FB", "Firebase");
+            //Log.i("Download FB", "Firebase");
             authViewModel.getUsersDataAssignedToAdmin();
             authViewModel.getUserArrayListOfUserMutableLiveData().observe(this, new Observer<List<User>>() {
                 @Override
                 public void onChanged(List<User> user) {
                     userModelArrayList.addAll(user);
 
-                    Log.i("HOW MANY TIMES1","INVOKED1");
+                    Log.i("userModelArrayList",userModelArrayList.size()+"");
 
                     for(User users: userModelArrayList)
                     {
-                        //Log.i("HOW MANY TIMES",users.getUserId());
-
-                        // TO TUTAJ 10.01.2024
-                        assignUserToTimeModel(users.getUserId());
-
+                        assignTimeModelForUser(users.getUserId());
+                        Log.i("assignTimeModelForUser",users.getUsername());
                     }
 
                  /*   // TO TUTAJ 10.01.2024
@@ -176,8 +171,9 @@ public class AdminView extends AppCompatActivity {
             });
         }
 
-        // TO TUTAJ 10.01.2024
-        authViewModel.getTimeForUserListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
+        // TODO 170124
+        // TODO WYŁĄCZAM BAZĘ DANYCH ONLINE 180 -194
+      /*  authViewModel.getTimeForUserListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
             @Override
             public void onChanged(List<TimeModel> timeModels) {
 
@@ -191,7 +187,37 @@ public class AdminView extends AppCompatActivity {
                 writeTimeModelForDisplayToSharedPref();
                 setupRecyclerView();
             }
-        });
+        });*/
+
+
+
+        // TODO 170124
+/*        authViewModel.getGetAllTimeModelsForAdminSQLLiveData().observe(this, new Observer<List<TimeModel>>() {
+            @Override
+            public void onChanged(List<TimeModel> timeModels) {
+
+                if(timeModels.size()>0)
+                {
+                timeModelArrayListForAdmin.addAll(timeModels);
+                listOfAllRecordsForUser.addAll(timeModels);
+                Log.i("HERE COMES","THE SUN");
+                Log.i("TimeModelSize: ", timeModels.size()+"");
+                for(TimeModel timeModel: timeModels)
+                {
+                    Log.i("Username: ", timeModel.getUserName());
+                }
+
+                //2 //  ze względu na to ,że pobiera dużo list. Trzeba zrobić metodę ,która będzie porównawała listy i dodawała nowe bez dupilkatów.
+                // to działa tak że pobiera dla jednego użytkownika i potem dodaje. zrób Tak żeby nie dodawało tej samej listy.
+                timeModelForDisplayArrayList.addAll(summingTime((ArrayList<TimeModel>) timeModels));
+                readForLogcat(timeModels);
+                writeTimeModelForDisplayToSharedPref();
+                setupRecyclerView();
+                }
+            }
+        });*/
+
+
 
 
         MaterialDatePicker materialDatePicker = MaterialDatePicker.Builder.dateRangePicker()
@@ -240,9 +266,17 @@ public class AdminView extends AppCompatActivity {
 
     private void readForLogcat(List<TimeModel> timeModels) {
         for (TimeModel timeModel : timeModels) {
-            Log.i("For Logcat U",timeModel.getUserName());
-            Log.i("For Logcat S",timeModel.getTimeOverallInLong()+"");
-            Log.i("For Logcat DId",timeModel.getDocumentId());
+          //  Log.i("For Logcat U",timeModel.getUserName());
+           // Log.i("For Logcat S",timeModel.getTimeOverallInLong()+"");
+            //Log.i("For Logcat DId",timeModel.getDocumentId());
+        }
+    }
+
+    private void readForLogcatTimeModelForDisplay(List<TimeModelForDisplay> timeModels) {
+        for (TimeModelForDisplay timeModelForDisplay : timeModels) {
+          //  Log.i("TMFDisplay U",timeModelForDisplay.getUserName());
+           // Log.i("TMFDisplay S",timeModelForDisplay.getTimeOverallInLong()+"");
+            //Log.i("TMFDisplay DId",timeModelForDisplay.getDocumentId());
         }
     }
 
@@ -269,7 +303,7 @@ public class AdminView extends AppCompatActivity {
 
     private void findTimeModelForDisplayToUpdateAndClearIt(String userId) {
         for (int j = 0; j < timeModelForDisplayArrayList.size(); j++) {
-            Log.i("FIND_TIMEMODEL",timeModelForDisplayArrayList.get(j).getUserName());
+         //   Log.i("FIND_TIMEMODEL",timeModelForDisplayArrayList.get(j).getUserName());
             if(timeModelForDisplayArrayList.get(j).getId().equals(userId))
             {
                 timeModelForDisplayArrayList.remove(j);
@@ -322,7 +356,8 @@ public class AdminView extends AppCompatActivity {
             arrayListFromInsideSelectDateMethod.clear();
 
             // TEN ADAPTER JEST ZACZYTYWANY PRZY ZAWĘŻENIU DAT
-            Toast.makeText(this, "Przy zawężaniu dat", Toast.LENGTH_SHORT).show();
+          //  Toast.makeText(this, "Przy zawężaniu dat", Toast.LENGTH_SHORT).show();
+            readForLogcatTimeModelForDisplay(brandNewArrayList);
 
             adapterUserForAdmin = new AdapterUserForAdmin(AdminView.this, brandNewArrayList,this, listOfAllRecordsForUser);
             binding.recyclerViewCardy.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
@@ -348,7 +383,7 @@ public class AdminView extends AppCompatActivity {
             if((arrayListFromInsideSelectDateMethod.get(i).getId().equals(arrayListFromInsideSelectDateMethod.get(j).getId())))
             {
                 summedMoney +=arrayListFromInsideSelectDateMethod.get(i).getWithdrawnMoney();
-                Log.i("HERE CHECK","CHECK");
+              //  Log.i("HERE CHECK","CHECK");
                 summedTime += arrayListFromInsideSelectDateMethod.get(i).getTimeOverallInLong();
                 if(arrayListFromInsideSelectDateMethod.get(i).getMoneyOverall()==false)
                 {
@@ -372,7 +407,7 @@ public class AdminView extends AppCompatActivity {
                     }
 
                     summedMoney +=arrayListFromInsideSelectDateMethod.get(j).getWithdrawnMoney();
-                    Log.i("Summed Money", summedMoney+"");
+                //    Log.i("Summed Money", summedMoney+"");
 
                     summedTime += arrayListFromInsideSelectDateMethod.get(j).getTimeOverallInLong();
                     TimeModelForDisplay timeModel = new TimeModelForDisplay();
@@ -477,7 +512,8 @@ public class AdminView extends AppCompatActivity {
 
     private void setupRecyclerView() {
         // TEN ADAPTER JEST ZACZYTYWANY PRZY PIERWSZYM URUCHOMIENIU
-
+      //  Log.i("SetUp","whateverMethod");
+        readForLogcatTimeModelForDisplay(timeModelForDisplayArrayList);
         adapterUserForAdmin = new AdapterUserForAdmin(AdminView.this, timeModelForDisplayArrayList,this, listOfAllRecordsForUser);
         binding.recyclerViewCardy.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         binding.recyclerViewCardy.setAdapter(adapterUserForAdmin);
@@ -534,11 +570,11 @@ public class AdminView extends AppCompatActivity {
             /*Log.i("HERE","Should be here");
             Log.i("LeftHours", leftHours+"");*/
         }
-        /*Log.i("Counter from Summing",i+"");
+        Log.i("Counter from Summing",i+"");
+        Log.i("Username from Sum ",timeModelArrayList.get(i).getUserName()+"");
         Log.i("Value of time ",timeModelArrayList.get(i).getTimeOverallInLong()+"");
-        Log.i("Username ",timeModelArrayList.get(i).getUserName()+"");
         Log.i("Document ID ",timeModelArrayList.get(i).getDocumentId()+"");
-        Log.i("-----","----");*/
+        Log.i("-----","----");
         }
         /*Log.i("Sum of Time",sumTime+"");
         Log.i("/////","/////");*/
@@ -550,6 +586,12 @@ public class AdminView extends AppCompatActivity {
         timeModel.setTimeOverallInLong(sumTime);
         timeModel.setWithdrawnMoney(summedMoney);
         timeModel.setTimeOverallInLongLefToSettle(leftHours);
+
+        Log.i("TMFD Counter from Sum",i+"");
+        Log.i("TMFD Username from Sum ",timeModelArrayList.get(i).getUserName()+"");
+        Log.i("TMFD Value of time ",timeModelArrayList.get(i).getTimeOverallInLong()+"");
+        Log.i("TMFD Document ID ",timeModelArrayList.get(i).getDocumentId()+"");
+        Log.i("-----","----");
 
         timeModels.add(timeModel);
         return timeModels;
@@ -579,5 +621,61 @@ public class AdminView extends AppCompatActivity {
             });
 
         }*/
+    }
+
+    public void assignTimeModelForUser(String userId)
+    {
+        /*timeModelArrayListForAdmin.clear();
+        listOfAllRecordsForUser.clear();
+        timeModelForDisplayArrayList.clear();*/
+        authViewModel.getAllTimeModelsForAdminSQL(userId).observe(AdminView.this, new Observer<List<TimeModel>>() {
+            @Override
+            public void onChanged(List<TimeModel> timeModels) {
+                long sumValue= 0;
+                for (TimeModel timeModel:timeModels)
+                {
+                    Log.i("Dla którego: ",timeModel.getUserName());
+
+                    if(timeModel.getId().equals("rhd0fBTtOShoxmJbEaZpYCRONXI2"))
+                    {
+                        sumValue+=timeModel.getTimeOverallInLong();
+                    }
+                }
+
+                if(sumValue!=0)
+                {
+                    Log.i("THE SUM VALUE",sumValue+"");
+                }
+
+
+                if(!timeModelArrayListForAdmin.isEmpty() && !timeModels.isEmpty())
+                {
+                    for(TimeModel timeModel: timeModelArrayListForAdmin) {
+                        if(timeModels.get(0).getDocumentId().equals(timeModel.getDocumentId()))
+                        {
+                            Log.i("I ENTER HERE",timeModelArrayListForAdmin.get(0).getUserName());
+                            timeModelArrayListForAdmin.clear();
+                            listOfAllRecordsForUser.clear();
+                            timeModelForDisplayArrayList.clear();
+
+                            break;
+                        }
+                    }
+                }
+                if(timeModels.size()>0) {
+                    timeModelArrayListForAdmin.addAll(timeModels);
+                    listOfAllRecordsForUser.addAll(timeModels);
+                    Log.i("Z TEGO LECI","..........");
+                    //2 //  ze względu na to ,że pobiera dużo list. Trzeba zrobić metodę ,która będzie porównawała listy i dodawała nowe bez dupilkatów.
+                    // to działa tak że pobiera dla jednego użytkownika i potem dodaje. zrób Tak żeby nie dodawało tej samej listy.
+                    timeModelForDisplayArrayList.addAll(summingTime(timeModels));
+                    readForLogcat(timeModels);
+                    writeTimeModelForDisplayToSharedPref();
+                    //binding.recyclerViewCardy.setAdapter(adapterUserForAdmin);
+                    adapterUserForAdmin.notifyDataSetChanged();
+                }
+            }
+        });
+        setupRecyclerView();
     }
 }

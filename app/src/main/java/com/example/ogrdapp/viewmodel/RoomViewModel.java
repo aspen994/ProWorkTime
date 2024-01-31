@@ -19,10 +19,10 @@ public class RoomViewModel extends AndroidViewModel {
         this.roomRepository = new RoomRepository(application);
     }
 
-    public LiveData<List<TimeModel>> getAllContacts()
+/*    public LiveData<List<TimeModel>> getAllContacts()
     {
         return roomRepository.getAllTimeModels();
-    }
+    }*/
 
     public void deleteAllCollection()
     {

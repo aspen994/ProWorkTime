@@ -38,7 +38,7 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
     private List<TimeModelForDisplay> list;
     private View.OnClickListener onClickListener;
     private AuthViewModel authViewModel;
-    List<TimeModel> listOfAllRecordsForUser;
+    private List<TimeModel> listOfAllRecordsForUser;
 //    List<User> userModelArrayList;
 
 
@@ -48,6 +48,15 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
         this.list = list;
         this.fragmentActivity = fragmentActivity;
         this.listOfAllRecordsForUser = listOfAllRecordsForUser;
+
+    }
+
+    private void readAllList(List<TimeModelForDisplay> list) {
+       // Log.i("LIST SIZE ADAPTER",list.size()+"");
+        for(TimeModelForDisplay timeModelForDisplay: list)
+        {
+            //Log.i("Username Adapter",timeModelForDisplay.getUserName());
+        }
     }
 
     @NonNull
@@ -56,6 +65,7 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         View inflate = layoutInflater.inflate(R.layout.adapter_user_for_admin,parent,false);
 
+
         return new AdapterUserForAdmin.MyViewHolder(inflate);
     }
 
@@ -63,6 +73,7 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
     public void onBindViewHolder(@NonNull AdapterUserForAdmin.MyViewHolder holder, int position) {
 
         TimeModelForDisplay timeModel = list.get(position);
+        readAllList(list);
 
         if(holder.getAdapterPosition()%2==0)
         {
@@ -83,7 +94,7 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(context, timeModel.getUserName(), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(context, timeModel.getUserName(), Toast.LENGTH_SHORT).show();
                 SelectPath selectPath = new SelectPath(context);
                 //startUserOverallActivity(context,fragmentActivity,timeModel.getUserName(),timeModel.getId(),authViewModel,listOfAllRecordsForUser);
                 //SettleForWork settleForWork  = new SettleForWork(context,fragmentActivity,timeModel.getUserName(),timeModel.getId(),authViewModel,listOfAllRecordsForUser);
@@ -93,12 +104,6 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
                 selectPath.viewById.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        // TUTAJ zamienń jak w settleForWork
-                        /*Intent intent = new Intent(context, UserTimeTable.class);
-                        intent.putExtra("Id",timeModel.getId());
-                        context.startActivity(intent);*/
-                        Toast.makeText(context, timeModel.getUserName()+"here", Toast.LENGTH_SHORT).show();
-
                         Intent intent = new Intent(context, UserTimeTable.class);
                         intent.putExtra("Id",timeModel.getId());
                         intent.putExtra("listOfAllRecordsForUser",(Serializable) listOfAllRecordsForUser);
@@ -138,7 +143,7 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
             if(id.equals(user.getUserId()))
             {
                 paycheck = user.getPaycheck();
-                Log.i("PayCheck", user.getPaycheck()+"");
+                //Log.i("PayCheck", user.getPaycheck()+"");
             }
         }
 
