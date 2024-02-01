@@ -153,7 +153,8 @@ public class UserOverall extends AppCompatActivity {
             double i1 = bidEnterValue * FormattedTime.formattedTimeInDoubleToSave(timeModel.getTimeOverallInLong());
             double round = round(i1, 2);
             //Log.i("FormateTime",FormattedTime.formattedTimeInDoubleToSave(timeModel.getTimeOverallInLong())+"");
-            authViewModel.updateStatusOfSettled(timeModel.getDocumentId(),true,round,new Timestamp(new Date()));
+            // TODO 310124 - Tu wyłączyłem metodę
+            authViewModel.updateStatusOfSettled(timeModel.getDocumentId(),true,round,new Timestamp(new Date()),timeModel);
          //   Log.i("withdrawOperation",timeModel.getTimeAdded().toDate().toString());
             isWithdrawn= true;
 
@@ -185,11 +186,15 @@ public class UserOverall extends AppCompatActivity {
                     // tutaj updateuje się dane dla Usera.
                     authViewModel.updateStatusOfTimeForUser(email1, hoursToSettle1, paycheck1);
 
+                    // TODO 310124
+
+
                     String updateUserID= selectedTimeModelList.get(0).getId();
 
                     finish();
                     Intent intent =  new Intent(UserOverall.this, AdminView.class);
-                    intent.putExtra("USER_ID",updateUserID);
+                    // TODO 310124
+                    //intent.putExtra("USER_ID",updateUserID);
                     startActivity(intent);
                 }
             }

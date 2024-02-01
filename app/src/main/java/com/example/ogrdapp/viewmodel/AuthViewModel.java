@@ -158,9 +158,9 @@ public class AuthViewModel extends AndroidViewModel {
         authRepository.updateDataToFirebase(documentID,beginTime,endTime,overall,timeInLong,timeModel);
     }
 
-    public void updateStatusOfSettled(String documentID, boolean isSettled, double withDrawnMoney, Timestamp timestamp)
+    public void updateStatusOfSettled(String documentID, boolean isSettled, double withDrawnMoney, Timestamp timestamp,TimeModel timeModel)
     {
-        authRepository.updateStatusOfPayment(documentID,isSettled,withDrawnMoney,timestamp);
+        authRepository.updateStatusOfPayment(documentID,isSettled,withDrawnMoney,timestamp,timeModel);
     }
 
     public void updateStatusOfTimeForUser(String userId,long settletedTimeInMillis, double payCheck )

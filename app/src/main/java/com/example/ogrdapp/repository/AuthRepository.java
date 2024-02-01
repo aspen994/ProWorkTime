@@ -958,7 +958,7 @@ public class AuthRepository {
 
     }
 
-    public void updateStatusOfPayment(String documentID,boolean isSettled,double withDrawnMoney,Timestamp timestamp)
+    public void updateStatusOfPayment(String documentID,boolean isSettled,double withDrawnMoney,Timestamp timestamp,TimeModel timeModel)
     {
         Map<String,Object> result = new HashMap<>();
         result.put(KEY_MONEYOVERALL,isSettled);
@@ -966,6 +966,8 @@ public class AuthRepository {
         result.put(KEY_TIMESTAMP,timestamp);
 
         Log.i(LOGER,"updateStatusOfPayment");
+        //TODO 3101204
+        updateDataSQLite(timeModel);
 
         collectionReferenceTime.document(documentID).update(result);
 

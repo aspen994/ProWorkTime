@@ -56,7 +56,6 @@ public class UserTimeTable extends AppCompatActivity {
     private CollectionReference collectionReference = db.collection("Time");
     private Spinner spinnerMonth, spinnerYear;
     private RecyclerView recyclerView;
-    private TextView sumTextView;
     private ArrayList<TimeModel> timeModelArrayList = new ArrayList<>();
 
     boolean flag = true;
@@ -105,7 +104,6 @@ public class UserTimeTable extends AppCompatActivity {
         spinnerMonth = findViewById(R.id.spinner_month);
         spinnerYear = findViewById(R.id.spinner_year);
         recyclerView = findViewById(R.id.recyclerView);
-        sumTextView = findViewById(R.id.sum);
 
 
 
@@ -690,7 +688,6 @@ public class UserTimeTable extends AppCompatActivity {
         for (int i = 0; i < arrayList.size(); i++) {
             sum += arrayList.get(i).getTimeOverallInLong();
         }
-        sumTextView.setText((sum/3600000)*moneyMultiplier+" zł");
     }
 
     private void writeTimeModelForDisplayToSharedPref() {

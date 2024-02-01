@@ -59,15 +59,15 @@ public class AdminView extends AppCompatActivity {
     String jsonString2;
 
 
-    @Override
+ /*   @Override
     protected void onPause() {
         SharedPreferences preferences = getSharedPreferences("UserTimeTableSharedPreferences", MODE_PRIVATE);
         preferences.edit().remove("timeModelArrayList").commit();
 
         super.onPause();
-    }
+    }*/
 
-    @Override
+    /*@Override
     protected void onRestart() {
         super.onRestart();
         if(isWithdrawn)
@@ -93,7 +93,7 @@ public class AdminView extends AppCompatActivity {
         }
 
 
-    }
+    }*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,11 +103,8 @@ public class AdminView extends AppCompatActivity {
         setContentView(view);
 
         timeModelForDisplayArrayList = new LinkedList<>();
-        //Czyszczę bo każda kolejne zmiany potem dodają wiecej użytkowników w ADMIN VIEW
-        //timeModelArrayList.clear();
 
         userModelArrayList = new LinkedList<>();
-        //userModelArrayList.clear();
 
         timeModelArrayListForAdmin = new LinkedList<>();
         brandNewArrayList= new LinkedList<>();
@@ -116,40 +113,26 @@ public class AdminView extends AppCompatActivity {
 
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
+        //Intent intent = getIntent();
 
-        //WSTAW METODĘ KTÓRA BĘDZIE NASŁUCHIWAĆ ZMIANY
+        //TODO 310124 wyłączam shared dla LIST_KEY
+        //// TODO 310124 wyłączam intent
 
-
-
-
-        Intent intent = getIntent();
-
-        SharedPreferences sharedPreferences1 = getSharedPreferences("MySharedPrefForList",MODE_PRIVATE);
-        jsonString2 = sharedPreferences1.getString("LIST_KEY","");
-
-        // tak żeby czytało listę z SharedPref
-      /*  if(jsonString2 !=null)
-        {
-            readTimeModelForDisplayToSharedPref();
-        }*/
-        if(intent.hasExtra("USER_ID"))
+        /*if(intent.hasExtra("USER_ID"))
         {
             String userId = intent.getStringExtra("USER_ID");
-            //Log.i("userId",userId);
-            //Toast.makeText(this, userId, Toast.LENGTH_SHORT).show();
-            //SharedPreferences - reading
-            readTimeModelForDisplayToSharedPref();
+
+            //TODO 310124 wyłączam shared dla LIST_KEY
+            //readTimeModelForDisplayToSharedPref();
 
             findTimeModelForDisplayToUpdateAndClearIt(userId);
 
             assignTimeModelForUser(userId);
             Log.i("assignTimeModelForUser","from Intent");
-            //Log.i("USER_ID","Invoked");
 
-        }
-        else {//(jsonString2==null)
-
-            //Log.i("Download FB", "Firebase");
+        }*/
+        //else
+        //{
             authViewModel.getUsersDataAssignedToAdmin();
             authViewModel.getUserArrayListOfUserMutableLiveData().observe(this, new Observer<List<User>>() {
                 @Override
@@ -164,60 +147,9 @@ public class AdminView extends AppCompatActivity {
                         Log.i("assignTimeModelForUser",users.getUsername());
                     }
 
-                 /*   // TO TUTAJ 10.01.2024
-                    assignUserToTimeModel(user.get(0).getUserId());
-                    assignUserToTimeModel(user.get(2).getUserId());*/
                 }
             });
-        }
-
-        // TODO 170124
-        // TODO WYŁĄCZAM BAZĘ DANYCH ONLINE 180 -194
-      /*  authViewModel.getTimeForUserListMutableLiveData().observe(this, new Observer<List<TimeModel>>() {
-            @Override
-            public void onChanged(List<TimeModel> timeModels) {
-
-                timeModelArrayListForAdmin.addAll(timeModels);
-                listOfAllRecordsForUser.addAll(timeModels);
-
-                //2 //  ze względu na to ,że pobiera dużo list. Trzeba zrobić metodę ,która będzie porównawała listy i dodawała nowe bez dupilkatów.
-                // to działa tak że pobiera dla jednego użytkownika i potem dodaje. zrób Tak żeby nie dodawało tej samej listy.
-                timeModelForDisplayArrayList.addAll(summingTime((ArrayList<TimeModel>) timeModels));
-                readForLogcat(timeModels);
-                writeTimeModelForDisplayToSharedPref();
-                setupRecyclerView();
-            }
-        });*/
-
-
-
-        // TODO 170124
-/*        authViewModel.getGetAllTimeModelsForAdminSQLLiveData().observe(this, new Observer<List<TimeModel>>() {
-            @Override
-            public void onChanged(List<TimeModel> timeModels) {
-
-                if(timeModels.size()>0)
-                {
-                timeModelArrayListForAdmin.addAll(timeModels);
-                listOfAllRecordsForUser.addAll(timeModels);
-                Log.i("HERE COMES","THE SUN");
-                Log.i("TimeModelSize: ", timeModels.size()+"");
-                for(TimeModel timeModel: timeModels)
-                {
-                    Log.i("Username: ", timeModel.getUserName());
-                }
-
-                //2 //  ze względu na to ,że pobiera dużo list. Trzeba zrobić metodę ,która będzie porównawała listy i dodawała nowe bez dupilkatów.
-                // to działa tak że pobiera dla jednego użytkownika i potem dodaje. zrób Tak żeby nie dodawało tej samej listy.
-                timeModelForDisplayArrayList.addAll(summingTime((ArrayList<TimeModel>) timeModels));
-                readForLogcat(timeModels);
-                writeTimeModelForDisplayToSharedPref();
-                setupRecyclerView();
-                }
-            }
-        });*/
-
-
+        //}
 
 
         MaterialDatePicker materialDatePicker = MaterialDatePicker.Builder.dateRangePicker()
@@ -242,9 +174,6 @@ public class AdminView extends AppCompatActivity {
 
                 setDataForSelectDate(stringBuilder.toString());
 
-
-                //1
-                //checkArrayListMethod();
             }
         });
 
@@ -263,23 +192,6 @@ public class AdminView extends AppCompatActivity {
         });
 
     }
-
-    private void readForLogcat(List<TimeModel> timeModels) {
-        for (TimeModel timeModel : timeModels) {
-          //  Log.i("For Logcat U",timeModel.getUserName());
-           // Log.i("For Logcat S",timeModel.getTimeOverallInLong()+"");
-            //Log.i("For Logcat DId",timeModel.getDocumentId());
-        }
-    }
-
-    private void readForLogcatTimeModelForDisplay(List<TimeModelForDisplay> timeModels) {
-        for (TimeModelForDisplay timeModelForDisplay : timeModels) {
-          //  Log.i("TMFDisplay U",timeModelForDisplay.getUserName());
-           // Log.i("TMFDisplay S",timeModelForDisplay.getTimeOverallInLong()+"");
-            //Log.i("TMFDisplay DId",timeModelForDisplay.getDocumentId());
-        }
-    }
-
     private void readTimeModelForDisplayToSharedPref() {
         SharedPreferences sharedPreferences1 = getSharedPreferences("MySharedPrefForList",MODE_PRIVATE);
         jsonString2 = sharedPreferences1.getString("LIST_KEY","");
@@ -348,17 +260,11 @@ public class AdminView extends AppCompatActivity {
                     }
                 }
             }
-
-            // albo nowa metoda albo tutaj warunkuj i bedzie git.
-
             brandNewArrayList.clear();
             brandNewArrayList.addAll(summingTimeFromDatePicker(arrayListFromInsideSelectDateMethod));
             arrayListFromInsideSelectDateMethod.clear();
 
             // TEN ADAPTER JEST ZACZYTYWANY PRZY ZAWĘŻENIU DAT
-          //  Toast.makeText(this, "Przy zawężaniu dat", Toast.LENGTH_SHORT).show();
-            readForLogcatTimeModelForDisplay(brandNewArrayList);
-
             adapterUserForAdmin = new AdapterUserForAdmin(AdminView.this, brandNewArrayList,this, listOfAllRecordsForUser);
             binding.recyclerViewCardy.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
             binding.recyclerViewCardy.setAdapter(adapterUserForAdmin);
@@ -512,8 +418,6 @@ public class AdminView extends AppCompatActivity {
 
     private void setupRecyclerView() {
         // TEN ADAPTER JEST ZACZYTYWANY PRZY PIERWSZYM URUCHOMIENIU
-      //  Log.i("SetUp","whateverMethod");
-        readForLogcatTimeModelForDisplay(timeModelForDisplayArrayList);
         adapterUserForAdmin = new AdapterUserForAdmin(AdminView.this, timeModelForDisplayArrayList,this, listOfAllRecordsForUser);
         binding.recyclerViewCardy.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         binding.recyclerViewCardy.setAdapter(adapterUserForAdmin);
@@ -570,14 +474,13 @@ public class AdminView extends AppCompatActivity {
             /*Log.i("HERE","Should be here");
             Log.i("LeftHours", leftHours+"");*/
         }
-        Log.i("Counter from Summing",i+"");
+/*        Log.i("Counter from Summing",i+"");
         Log.i("Username from Sum ",timeModelArrayList.get(i).getUserName()+"");
         Log.i("Value of time ",timeModelArrayList.get(i).getTimeOverallInLong()+"");
         Log.i("Document ID ",timeModelArrayList.get(i).getDocumentId()+"");
-        Log.i("-----","----");
+        Log.i("-----","----");*/
         }
-        /*Log.i("Sum of Time",sumTime+"");
-        Log.i("/////","/////");*/
+
 
 
         TimeModelForDisplay timeModel = new TimeModelForDisplay();
@@ -587,41 +490,19 @@ public class AdminView extends AppCompatActivity {
         timeModel.setWithdrawnMoney(summedMoney);
         timeModel.setTimeOverallInLongLefToSettle(leftHours);
 
+/*
         Log.i("TMFD Counter from Sum",i+"");
         Log.i("TMFD Username from Sum ",timeModelArrayList.get(i).getUserName()+"");
         Log.i("TMFD Value of time ",timeModelArrayList.get(i).getTimeOverallInLong()+"");
         Log.i("TMFD Document ID ",timeModelArrayList.get(i).getDocumentId()+"");
         Log.i("-----","----");
+*/
 
         timeModels.add(timeModel);
         return timeModels;
     }
 
 
-
-    // TODO 10.01.2024 Tutaj coś się rozducpyło, pobiera te same dane 8 razy, zaimplementuj z githuba starą metodę i podejrzyj jak działa stara metoda
-    // TODO a jak działa nowa tutaj.
-    private void assignUserToTimeModel(String userId) {
-        authViewModel.getTimeForUser(userId);
-
-     /*   for (User user1 : user) {
-            authViewModel.getTimeForUser(user1.getUserId()).observe(this, new Observer<List<TimeModel>>() {
-                @Override
-                public void onChanged(List<TimeModel> timeModels) {
-                    Log.i("UserID", user1.getUserId());
-                    timeModelArrayListForAdmin.addAll(timeModels);
-                    listOfAllRecordsForUser.addAll(timeModels);
-                    //2 //  ze względu na to ,że pobiera dużo list. Trzeba zrobić metodę ,która będzie porównawała listy i dodawała nowe bez dupilkatów.
-                    // to działa tak że pobiera dla jednego użytkownika i potem dodaje. zrób Tak żeby nie dodawało tej samej listy.
-                    timeModelForDisplayArrayList.addAll(summingTime(timeModels));
-                    readForLogcat(timeModels);
-                    writeTimeModelForDisplayToSharedPref();
-                    setupRecyclerView();
-                }
-            });
-
-        }*/
-    }
 
     public void assignTimeModelForUser(String userId)
     {
@@ -631,23 +512,18 @@ public class AdminView extends AppCompatActivity {
         authViewModel.getAllTimeModelsForAdminSQL(userId).observe(AdminView.this, new Observer<List<TimeModel>>() {
             @Override
             public void onChanged(List<TimeModel> timeModels) {
-                long sumValue= 0;
                 for (TimeModel timeModel:timeModels)
                 {
-                    Log.i("Dla którego: ",timeModel.getUserName());
-
-                    if(timeModel.getId().equals("rhd0fBTtOShoxmJbEaZpYCRONXI2"))
-                    {
-                        sumValue+=timeModel.getTimeOverallInLong();
-                    }
+                    Log.i("gATMLV name: ",timeModel.getUserName()==null?"Null username":timeModel.getUserName());
+                    Log.i("gATMLV documentId: ",timeModel.getDocumentId()==null?"Null documentId":timeModel.getDocumentId());
+                    Log.i("gATMLV timeBegin: ",timeModel.getTimeBegin()==null?"Null timeBegin":timeModel.getTimeBegin());
+                    Log.i("gATMLV timeEnd: ",timeModel.getTimeEnd()==null?"Null timeEnd":timeModel.getTimeEnd());
+                    Log.i("gATMLV timeAdded: ",timeModel.getTimeAdded().toDate()==null?"Null timeAdded":timeModel.getTimeAdded().toDate()+"");
+                    Log.i("gATMLV TimeStamp: ",timeModel.getTimestamp().toDate()==null?"Null TimeStamp":timeModel.getTimestamp().toDate()+"");
+                    Log.i("-----------------","-----------------");
                 }
 
-                if(sumValue!=0)
-                {
-                    Log.i("THE SUM VALUE",sumValue+"");
-                }
-
-
+                // Czyści wszystkie wpisy jeśli się powtórzą.
                 if(!timeModelArrayListForAdmin.isEmpty() && !timeModels.isEmpty())
                 {
                     for(TimeModel timeModel: timeModelArrayListForAdmin) {
@@ -662,15 +538,16 @@ public class AdminView extends AppCompatActivity {
                         }
                     }
                 }
-                if(timeModels.size()>0) {
+
+                if(!timeModels.isEmpty()) {
                     timeModelArrayListForAdmin.addAll(timeModels);
                     listOfAllRecordsForUser.addAll(timeModels);
-                    Log.i("Z TEGO LECI","..........");
                     //2 //  ze względu na to ,że pobiera dużo list. Trzeba zrobić metodę ,która będzie porównawała listy i dodawała nowe bez dupilkatów.
                     // to działa tak że pobiera dla jednego użytkownika i potem dodaje. zrób Tak żeby nie dodawało tej samej listy.
                     timeModelForDisplayArrayList.addAll(summingTime(timeModels));
-                    readForLogcat(timeModels);
-                    writeTimeModelForDisplayToSharedPref();
+
+                    //TODO 310124
+                   writeTimeModelForDisplayToSharedPref();
                     //binding.recyclerViewCardy.setAdapter(adapterUserForAdmin);
                     adapterUserForAdmin.notifyDataSetChanged();
                 }
