@@ -29,15 +29,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Widgets
     private Button loginBtn;
     private TextView textViewRegister,textViewZresetuj;
-    private EditText editText;
     private AutoCompleteTextView email, password;
 
     private AuthViewModel authViewModel;
-
-
 
 
     @Override
@@ -59,8 +55,6 @@ public class MainActivity extends AppCompatActivity {
 
         email = findViewById(R.id.autoCompleteTextView_email_main);
         password = findViewById(R.id.autoCompleteTextView_password_main);
-
-
 
         //! ! ! ! ! ! ! ! ! ! ! !-FOR NEXT IMPROVEMENT LEAVE IT ! ! ! ! ! ! ! ! ! ! ! !
 
@@ -109,15 +103,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });*/
 
-
-
         textViewZresetuj.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this,ForgotPassword.class));
             }
         });
-
 
         textViewRegister.setOnClickListener(new View.OnClickListener() {
             @Override

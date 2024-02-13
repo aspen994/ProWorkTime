@@ -30,6 +30,7 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
     public TimeOverallAdapter(Context context, ArrayList<TimeModel> list) {
         this.context = context;
         this.list = list;
+
         Collections.sort(list, new Comparator<TimeModel>() {
             @Override
             public int compare(TimeModel o1, TimeModel o2) {
@@ -44,20 +45,11 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
     public TimeOverallAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         View inflate = layoutInflater.inflate(R.layout.adapter_user_time,parent,false);
-        readerOfList(list);
 
 
         return new MyViewHolder(inflate);
     }
 
-    private void readerOfList(ArrayList<TimeModel> list) {
-        for(TimeModel timeModel: list)
-        {
-            Log.i("Time Model name: ",timeModel.getUserName());
-            Log.i("TimeModel added: ",timeModel.getTimeAdded().toDate()+"");
-            Log.i("-----------","------");
-        }
-    }
 
     @Override
     public void onBindViewHolder(@NonNull TimeOverallAdapter.MyViewHolder holder, int position) {
@@ -105,8 +97,6 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
             if(dateLastRecordDate.equals(s))
             {
                 holder.linearLayoutLastRecord.setVisibility(View.GONE);
-                Log.i("S",s);
-                Log.i("dateLastRecordDate",dateLastRecordDate);
 
             }
 
@@ -192,8 +182,6 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
 
     public  MyViewHolder (@NonNull View itemView) {
         super(itemView);
-
-
 
         // for each time
         date = itemView.findViewById(R.id.date);

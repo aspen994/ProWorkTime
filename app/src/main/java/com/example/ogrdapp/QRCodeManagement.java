@@ -25,11 +25,15 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.example.ogrdapp.model.QRModel;
+import com.example.ogrdapp.model.User;
 import com.example.ogrdapp.viewmodel.AuthViewModel;
 
 import java.io.File;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -39,22 +43,27 @@ import androidmads.library.qrgenearator.QRGEncoder;
 public class QRCodeManagement extends AppCompatActivity {
 
 
-    private String inputValue;
+    private int inputValue;
 
     private QRGEncoder qrgEncoder;
     private Bitmap bitmap;
 
     EditText editText;
-    Button generatedQR,saveQR;
+    Button generatedQR, saveQR;
     ImageView qrImage;
     int min = 33;
-    int max =126;
+    int max = 126;
 
-    int lengthPassword =73;
+    int lengthPassword = 73;
     private StringBuilder qrCodeEncode;
 
     private AuthViewModel authViewModel;
+    private List<QRModel> arrayListQRModel;
+    private List<Integer> arrayListDelayInteger;
     String name;
+    String adminId;
+    private boolean flag=true;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,78 +75,117 @@ public class QRCodeManagement extends AppCompatActivity {
         saveQR = findViewById(R.id.saveBtn);
         qrImage = findViewById(R.id.qr_image);
 
-        authViewModel= new ViewModelProvider(this).get(AuthViewModel.class);
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        arrayListQRModel = new ArrayList<>();
+        arrayListDelayInteger = new ArrayList<>();
+
+
+        authViewModel.getAdminIdMutableLiveData().observe(QRCodeManagement.this, new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                adminId=s;
+                authViewModel.getDataQRCode(s).observe(QRCodeManagement.this, new Observer<List<QRModel>>() {
+                    @Override
+                    public void onChanged(List<QRModel> qrModels) {
+                        arrayListQRModel.addAll(qrModels);
+                    }
+                });
+            }
+        });
 
 
         generatedQR.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                inputValue = editText.getText().toString().trim();
-                if (inputValue.length() > 0) {
-                    qrCodeEncode = new StringBuilder();
-                    generateQR();
-                   // Toast.makeText(QRCodeManagement.this, "generuje", Toast.LENGTH_SHORT).show();
-                    WindowManager manager = (WindowManager) getSystemService(WINDOW_SERVICE);
-                    Display display = manager.getDefaultDisplay();
-                    Point point = new Point();
-                    display.getSize(point);
-                    int width = point.x;
-                    int height = point.y;
-                    int smallerDimension = Math.min(width, height);
-                    smallerDimension = smallerDimension * 3 / 4;
 
-                    qrgEncoder = new QRGEncoder(qrCodeEncode.toString(), null, QRGContents.Type.TEXT, smallerDimension);
-                    qrgEncoder.setColorWhite(Color.parseColor("#000000"));
-                    qrgEncoder.setColorBlack(Color.parseColor("#ffffff"));
-                    try {
-                        bitmap = qrgEncoder.getBitmap();
-                        qrImage.setImageBitmap(bitmap);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                inputValue = Integer.parseInt(editText.getText().toString().trim().equals("")?("-1"):editText.getText().toString().trim());
+
+                for (QRModel qrModel : arrayListQRModel) {
+                    if (inputValue == qrModel.getDelay()) {
+                        flag = false;
+                        Toast.makeText(QRCodeManagement.this, "Retrive Old one", Toast.LENGTH_SHORT).show();
+                        qrCodeEncode = new StringBuilder();
+                        qrCodeEncode.append(qrModel.getQRCode());
+                        WindowManager manager = (WindowManager) getSystemService(WINDOW_SERVICE);
+                        Display display = manager.getDefaultDisplay();
+                        Point point = new Point();
+                        display.getSize(point);
+                        int width = point.x;
+                        int height = point.y;
+                        int smallerDimension = Math.min(width, height);
+                        smallerDimension = smallerDimension * 3 / 4;
+
+                        qrgEncoder = new QRGEncoder(qrCodeEncode.toString(), null, QRGContents.Type.TEXT, smallerDimension);
+                        qrgEncoder.setColorWhite(Color.parseColor("#000000"));
+                        qrgEncoder.setColorBlack(Color.parseColor("#ffffff"));
+                        try {
+                            bitmap = qrgEncoder.getBitmap();
+                            qrImage.setImageBitmap(bitmap);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
-                } else {
-                    editText.setError("ERROR");
                 }
+                    if (flag) {
+                        Toast.makeText(QRCodeManagement.this, "Generate new one", Toast.LENGTH_SHORT).show();
+                        qrCodeEncode = new StringBuilder();
+                        generateQR();
+                        // Toast.makeText(QRCodeManagement.this, "generuje", Toast.LENGTH_SHORT).show();
+                        WindowManager manager = (WindowManager) getSystemService(WINDOW_SERVICE);
+                        Display display = manager.getDefaultDisplay();
+                        Point point = new Point();
+                        display.getSize(point);
+                        int width = point.x;
+                        int height = point.y;
+                        int smallerDimension = Math.min(width, height);
+                        smallerDimension = smallerDimension * 3 / 4;
+
+                        qrgEncoder = new QRGEncoder(qrCodeEncode.toString(), null, QRGContents.Type.TEXT, smallerDimension);
+                        qrgEncoder.setColorWhite(Color.parseColor("#000000"));
+                        qrgEncoder.setColorBlack(Color.parseColor("#ffffff"));
+                        try {
+                            bitmap = qrgEncoder.getBitmap();
+                            qrImage.setImageBitmap(bitmap);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+
+
             }
+
         });
 
         saveQR.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(qrCodeEncode !=null)
-                {
-                   // Toast.makeText(QRCodeManagement.this, "isNotNull", Toast.LENGTH_SHORT).show();
+                if (qrCodeEncode != null) {
+                    // Toast.makeText(QRCodeManagement.this, "isNotNull", Toast.LENGTH_SHORT).show();
                     saveImage();
-                    saveToDatabase(qrCodeEncode.toString(),Integer.parseInt(editText.getText().toString()));
-
+                    if(flag) {
+                        saveToDatabase(qrCodeEncode.toString(), Integer.parseInt(editText.getText().toString()));
+                        Toast.makeText(QRCodeManagement.this, "SAVING: "+flag, Toast.LENGTH_SHORT).show();
+                    }
                     Intent intent = new Intent();
                     intent.setAction(android.content.Intent.ACTION_VIEW);
                     intent.setType("image/*");
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
 
-                    qrCodeEncode =null;
+                    qrCodeEncode = null;
                 }
             }
         });
     }
 
-    private void saveToDatabase(String qrCode,int delayInMinutes) {
+    private void saveToDatabase(String qrCode, int delayInMinutes) {
 
-        final String[] adminId = {""};
-        authViewModel.getAdminIdMutableLiveData().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(String s) {
-                adminId[0] =s;
-                //Log.i("getAdminId",s);
-            }
-        });
+        Map<String, Object> qrCodeMap = new HashMap<>();
 
-        Map<String,Object> qrCodeMap = new HashMap<>();
-
-        qrCodeMap.put("idAdmin",adminId[0]);
-        qrCodeMap.put("QRCode",qrCode);
-        qrCodeMap.put("delay",delayInMinutes);
+        qrCodeMap.put("idAdmin", adminId);
+        qrCodeMap.put("QRCode", qrCode);
+        qrCodeMap.put("delay", delayInMinutes);
 
         authViewModel.setNewQrCode(qrCodeMap);
     }
@@ -145,7 +193,7 @@ public class QRCodeManagement extends AppCompatActivity {
     private void generateQR() {
 
         for (int i = 0; i < lengthPassword; i++) {
-            int i1 = (int)(Math.random() * (max - min + 1) + min);
+            int i1 = (int) (Math.random() * (max - min + 1) + min);
             char generatedASCIIChar = (char) i1;
             qrCodeEncode.append(generatedASCIIChar);
         }
@@ -155,35 +203,29 @@ public class QRCodeManagement extends AppCompatActivity {
         Uri images;
         ContentResolver contentResolver = getContentResolver();
 
-        if(Build.VERSION.SDK_INT >=Build.VERSION_CODES.Q)
-        {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             images = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-        }else {
+        } else {
             images = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         }
 
-        name = System.currentTimeMillis()+".jpg";
+        name = System.currentTimeMillis() + ".jpg";
 
         ContentValues contentValues = new ContentValues();
-        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME,System.currentTimeMillis()+".jpg");
-        contentValues.put(MediaStore.Images.Media.MIME_TYPE,"images/*");
+        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, System.currentTimeMillis() + ".jpg");
+        contentValues.put(MediaStore.Images.Media.MIME_TYPE, "images/*");
 
-        Uri uri = contentResolver.insert(images,contentValues);
+        Uri uri = contentResolver.insert(images, contentValues);
 
         try {
             BitmapDrawable bitmapDrawable = (BitmapDrawable) qrImage.getDrawable();
             Bitmap bitmap1 = bitmapDrawable.getBitmap();
 
             OutputStream outputStream = contentResolver.openOutputStream(Objects.requireNonNull(uri));
-            bitmap1.compress(Bitmap.CompressFormat.JPEG,100,outputStream);
+            bitmap1.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
             Objects.requireNonNull(outputStream);
 
-            //Toast.makeText(QRCodeManagement.this, "Please proive required permission", Toast.LENGTH_SHORT).show();
-
-        }
-        catch (Exception e)
-        {
-           // Toast.makeText(QRCodeManagement.this,   "Images not Saved", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

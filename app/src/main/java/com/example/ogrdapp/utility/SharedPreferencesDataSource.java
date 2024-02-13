@@ -1,18 +1,11 @@
 package com.example.ogrdapp.utility;
 
-import static com.example.ogrdapp.services.ForegroundServices.isPaused;
-
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
-import android.widget.Toast;
 
 public class SharedPreferencesDataSource {
 
     public static final String SHARED_PREFS_OGROD_APP = "sharedPrefsOgrodAPPv2";
-    public static final String SHARED_PREFS_FOR_TIME_CREATION_ONLY = "sharedPrefsOgrodAPPv2";
-
-
     public static final String PAUSED_TIME = "pausedTime";
     public static final String PAUSED_TIME_BOOLEAN = "booleanIsPaused";
 
@@ -22,14 +15,11 @@ public class SharedPreferencesDataSource {
     public static final String TMP_BEGIN_TIME = "tmp_Begin_Time";
     public static final String KEY_TIMER_STARTED ="isTimerStarted";
     public static final String KEY_IS_PAUSED ="keyIsPaused";
-    public static final String SECONDS_STOPWATCH= "secondsStopWatch";
     public static final String TEXT = "text";
-    public static final String KEY_CHECKING_HOW_MANY_TIMES_SERVICE_RUN ="KEYCHECKINGHOWMANYTIMESSERVICERUN";
 
     public static SharedPreferencesDataSource instance;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
-
 
 
     public static SharedPreferencesDataSource getInstance()
@@ -72,9 +62,6 @@ public class SharedPreferencesDataSource {
 
     public boolean getIsTimerStartedFromSharedPreferences() {
         return sharedPreferences.getBoolean(KEY_TIMER_STARTED,false);
-
-                /*SharedPreferences sharedPreferencesTimeModel = getSharedPreferences(SHARED_PREFS_OGROD_APP,MODE_PRIVATE);
-        return sharedPreferencesTimeModel.getBoolean(KEY_TIMER_STARTED, false);*/
     }
 
     public void saveTimeModelToSharedPreferences(String currentTime) {

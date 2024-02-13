@@ -6,10 +6,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -17,8 +14,6 @@ import com.example.ogrdapp.R;
 import com.journeyapps.barcodescanner.CaptureManager;
 import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 import com.journeyapps.barcodescanner.ViewfinderView;
-
-import java.util.Random;
 
 /**
  * Custom Scannner Activity extending from Activity to display a custom layout form scanner view.

@@ -22,8 +22,6 @@ public class ForgotPassword extends AppCompatActivity {
 
     private AutoCompleteTextView email;
     private Button button;
-
-    private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
     private AuthViewModel authViewModel;
 
     @Override

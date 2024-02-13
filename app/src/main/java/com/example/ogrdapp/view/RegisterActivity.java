@@ -3,7 +3,6 @@ package com.example.ogrdapp.view;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -22,14 +21,12 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class RegisterActivity extends AppCompatActivity {
 
-
     private Button buttonRegister;
     private AutoCompleteTextView email,userName,surName,emailOfAdmin;
     private TextInputEditText password;
     private RadioGroup radioGroup;
     private RadioButton radioButtonAdministrator,radioButtonUser;
 
-    // MVVM
     private AuthViewModel authViewModel;
 
     @Override

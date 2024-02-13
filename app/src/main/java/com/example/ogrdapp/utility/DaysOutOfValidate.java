@@ -2,14 +2,12 @@ package com.example.ogrdapp.utility;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.google.android.material.datepicker.CalendarConstraints;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 

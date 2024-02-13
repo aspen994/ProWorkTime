@@ -22,7 +22,7 @@ public class AuthViewModel extends AndroidViewModel {
     private AuthRepository authRepository;
     private MutableLiveData<FirebaseUser> userData;
     private MutableLiveData<Boolean> loggedStatus;
-    private MutableLiveData<TimeModel> timeModelMutableLiveData;
+    private MutableLiveData<User> timeModelMutableLiveData;
     private MutableLiveData<Boolean> ifAdminMutableLiveData;
     private MutableLiveData<List<User>> userArrayListOfUserMutableLiveData;
     private MutableLiveData<List<TimeModel>> timeForUserListMutableLiveData;
@@ -51,39 +51,16 @@ public class AuthViewModel extends AndroidViewModel {
         adminIdMutableLiveData =authRepository.getAdminIdMutableLiveData();
         timeModelListMutableLiveData=authRepository.getTimeModelArrayListMutableLiveData();
         getAllTimeModelsForAdminSQLLiveData = authRepository.getGetAllTimeModelsForAdminSQLLiveData();
-        this.getIntegerHelps = authRepository.getGetIntegerHelps();
     }
 
-    public MutableLiveData<Integer> getGetIntegerHelps() {
-        return getIntegerHelps;
-    }
-
-    public MutableLiveData<List<TimeModel>> getGetAllTimeModelsForAdminSQLLiveData() {
-        return getAllTimeModelsForAdminSQLLiveData;
-    }
-
-
-
-    public MutableLiveData<List<TimeModel>> getTimeModelListMutableLiveData() {
-        return timeModelListMutableLiveData;
-    }
 
     public MutableLiveData<String> getAdminIdMutableLiveData() {
         return adminIdMutableLiveData;
     }
 
-    public MutableLiveData<String> getEmailMutableLiveData() {
-        return emailMutableLiveData;
-    }
-
     public MutableLiveData<Map<String, Object>> getPaycheckHoursToSettleMutableLiveData() {
         return paycheckHoursToSettleMutableLiveData;
     }
-
-    public MutableLiveData<List<TimeModel>> getTimeForUserListMutableLiveData() {
-        return timeForUserListMutableLiveData;
-    }
-
 
     public MutableLiveData<List<User>> getUserArrayListOfUserMutableLiveData() {
         return userArrayListOfUserMutableLiveData;
@@ -96,7 +73,8 @@ public class AuthViewModel extends AndroidViewModel {
         return loggedStatus;
     }
 
-    public MutableLiveData<TimeModel> getUsernameAndSurnameMB()
+    public MutableLiveData<User> getUsernameAndSurnameMB()
+
     {
         return timeModelMutableLiveData;
     }
@@ -105,10 +83,6 @@ public class AuthViewModel extends AndroidViewModel {
         return ifAdminMutableLiveData;
     }
 
-    public void getTimeForUser(String userId)
-    {
-        authRepository.getTimeForUserNewMethod(userId);
-    }
     public void getUsersDataAssignedToAdmin()
     {
         authRepository.getUsersDataAssignedToAdmin();
@@ -128,24 +102,15 @@ public class AuthViewModel extends AndroidViewModel {
         authRepository.saveDataToFireBase(timeModel);
     }
 
-    public void saveAllCollectionToSQLite(List<TimeModel>timeModelList)
-    {
-        authRepository.saveAllCollectionToSQLite(timeModelList);
-    }
-
-    // zwróć liveData
-    public LiveData<TimeModel> getUsernameAndSurname()
+    public LiveData<User> getUsernameAndSurname()
     {
         return authRepository.getUsernameAndSurname();
     }
+
+
     public void registerUser(String email, String password,String userName_send,String surName_send,String foreign_email)
     {
         authRepository.register(email, password,userName_send,surName_send,foreign_email);
-    }
-
-    public void getSelectedTimeForUser(String userId, String dateRange)
-    {
-        authRepository.getSelectedTimeForUser(userId,dateRange);
     }
 
 
@@ -168,23 +133,11 @@ public class AuthViewModel extends AndroidViewModel {
         authRepository.updateStatusOfTimeForUser(userId,settletedTimeInMillis,payCheck);
     }
 
-    public void getPaycheckAndHoursToSettleLong(String userId)
-    {
-        authRepository.getPaycheckAndHoursToSettleLong(userId);
-    }
 
     public void getDataToUpdatePayCheck(String userId)
     {
         authRepository.getDataToUpdatePayCheck(userId);
     }
-
-  /*  public void getAllIdDocumentFromTimeModel()
-    {
-        authRepository.getAllIdDocumentFromTimeModel();
-    }
-*/
-
-
 
     public LiveData<List<TimeModel>> getAllTimeModelsForUserSQL()
     {
@@ -206,11 +159,6 @@ public class AuthViewModel extends AndroidViewModel {
         authRepository.resetPassword(email);
     }
 
-    public void getData()
-    {
-        //TODO 170124
-       // authRepository.getDataFirebase();
-    }
     public void signOut()
     {
         authRepository.singOut();
@@ -225,18 +173,8 @@ public class AuthViewModel extends AndroidViewModel {
     {
         return authRepository.getDataQRCode(adminId);
     }
-
-    public void checkMethod(){
-        authRepository.checkMethod();
-    }
-
-    public void deleteLastRecordsMETHODTODELTE()
+    public LiveData<QRModel> getDataQrCode2(String admin)
     {
-       // authRepository.deleteLastRecordsMETHODTODELTE();
-        authRepository.deleteAllTimeModels();
+        return authRepository.getDataQRCode2(admin);
     }
-
-
-
-
 }

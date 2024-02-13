@@ -27,7 +27,7 @@ public interface TimeModelDAO {
 
     @Update
     void updated(TimeModel timeModel);
-    @Update
+    @Update(onConflict = OnConflictStrategy.IGNORE)
     void updateList(List<TimeModel>list);
 
     @Query("SELECT * FROM TimeModel_table WHERE id =:currentUser")
@@ -37,6 +37,6 @@ public interface TimeModelDAO {
     List<TimeModel> getAllTimeModelsList(String currentUser);
 
 
-    @Query("delete from TimeModel_table ")
-    void deleteAllTimeModels();
+    @Query("delete from TimeModel_table WHERE id=:userId")
+    void deleteListForTimeModel(String userId);
 }

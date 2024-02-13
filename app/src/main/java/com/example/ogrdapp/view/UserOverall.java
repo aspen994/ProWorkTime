@@ -48,7 +48,6 @@ public class UserOverall extends AppCompatActivity {
 
     private long timeToSettlement;
     private int bidEnterValue;
-    //private FragmentActivity fragmentActivity;
 
     private AuthViewModel authViewModel;
 
@@ -79,7 +78,6 @@ public class UserOverall extends AppCompatActivity {
         listOfAllRecordsForUser = (List<TimeModel>) intent.getSerializableExtra("List");
         this.userName = intent.getStringExtra("UserName");
         this.id = intent.getStringExtra("Id");
-        //this.fragmentActivity = (FragmentActivity) intent.getSerializableExtra("fragmentActivity");
 
         username.setText(userName);
 
@@ -97,7 +95,6 @@ public class UserOverall extends AppCompatActivity {
         confirmBidButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Toast.makeText(UserOverall.this, "", Toast.LENGTH_SHORT).show();
                 bidEnterValue = Integer.parseInt(bidEnter.getText().toString());
                 toPay.setText(round((bidEnterValue * FormattedTime.formattedTimeInDoubleToSave(timeToSettlement)),2)+"zł");
             }
@@ -107,7 +104,6 @@ public class UserOverall extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 withdrawnOperation();
-
             }
         });
 
@@ -115,8 +111,6 @@ public class UserOverall extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 finish();
-               /* Intent intent =  new Intent(UserOverall.this, AdminView.class);
-                startActivity(intent);*/
             }
         });
 
@@ -149,77 +143,51 @@ public class UserOverall extends AppCompatActivity {
         // To dla pętli działa
         for(TimeModel timeModel: selectedTimeModelList)
         {
-            //TODO zrób tak żeby do ostaniego wpisu dawało resztę kwoty
             double i1 = bidEnterValue * FormattedTime.formattedTimeInDoubleToSave(timeModel.getTimeOverallInLong());
             double round = round(i1, 2);
-            //Log.i("FormateTime",FormattedTime.formattedTimeInDoubleToSave(timeModel.getTimeOverallInLong())+"");
-            // TODO 310124 - Tu wyłączyłem metodę
+
             authViewModel.updateStatusOfSettled(timeModel.getDocumentId(),true,round,new Timestamp(new Date()),timeModel);
-         //   Log.i("withdrawOperation",timeModel.getTimeAdded().toDate().toString());
             isWithdrawn= true;
 
         }
             authViewModel.getDataToUpdatePayCheck(selectedTimeModelList.get(0).getId());
+
+            double finalIrrational = i;
+            authViewModel.getPaycheckHoursToSettleMutableLiveData().observe(this,new Observer<Map<String, Object>>() {
+                @Override
+                public void onChanged(Map<String, Object> stringObjectMap) {
+                    if(!stringObjectMap.isEmpty())
+                    {
+                        double paycheck1 = (double) stringObjectMap.get("paycheck");
+                        long hoursToSettle1 = (long)stringObjectMap.get("hoursToSettle");
+                        String email1 = (String) stringObjectMap.get("email");
+
+                        paycheck1 += finalIrrational;
+                        paycheck1=round(paycheck1,2);
+                        hoursToSettle1-=timeToSettlement;
+
+                        // tutaj updateuje się dane dla Usera.
+                        authViewModel.updateStatusOfTimeForUser(email1, hoursToSettle1, paycheck1);
+
+                        finish();
+                        Intent intent =  new Intent(UserOverall.this, AdminView.class);
+                        startActivity(intent);
+                    }
+                }
+            });
+
         }
         else{
             Toast.makeText(this, "Nie zatwierdziłeś stawki albo nie wybrałeś godzin", Toast.LENGTH_SHORT).show();
         }
 
-        double finalIrrational = i;
-        authViewModel.getPaycheckHoursToSettleMutableLiveData().observe(this,new Observer<Map<String, Object>>() {
-            @Override
-            public void onChanged(Map<String, Object> stringObjectMap) {
-                if(!stringObjectMap.isEmpty())
-                {
-                    double paycheck1 = (double) stringObjectMap.get("paycheck");
-                    long hoursToSettle1 = (long)stringObjectMap.get("hoursToSettle");
-                    String email1 = (String) stringObjectMap.get("email");
-
-                    paycheck1 += finalIrrational;
-                    paycheck1=round(paycheck1,2);
-                    hoursToSettle1-=timeToSettlement;
-
-             //       Log.i("Paycheck value",paycheck1+"");
-
-                 //   Log.i("Update User","Update User");
-
-                    // tutaj updateuje się dane dla Usera.
-                    authViewModel.updateStatusOfTimeForUser(email1, hoursToSettle1, paycheck1);
-
-                    // TODO 310124
-
-
-                    String updateUserID= selectedTimeModelList.get(0).getId();
-
-                    finish();
-                    Intent intent =  new Intent(UserOverall.this, AdminView.class);
-                    // TODO 310124
-                    //intent.putExtra("USER_ID",updateUserID);
-                    startActivity(intent);
-                }
-            }
-        });
 
     }
-
-    private void updateListOfAllRecord(List<TimeModel> selectedTimeModelList, List<TimeModel> listOfAllRecordsForUser) {
-        for (int i = 0;i< selectedTimeModelList.size();i++) {
-            for (int j = 0; j <listOfAllRecordsForUser.size(); j++) {
-                if(selectedTimeModelList.get(i).getDocumentId().equals(listOfAllRecordsForUser.get(j).getDocumentId()))
-                {
-                    //listOfAllRecordsForUser.get(j).setMoneyOverall(true);
-                }
-            }
-        }
-    }
-
-
 
     private void invokedCalendar() {
         MaterialDatePicker materialDatePicker = MaterialDatePicker.Builder.dateRangePicker()
                 .setCalendarConstraints(DaysOutOfValidate().build())
                 .setSelection(Pair.create(MaterialDatePicker.thisMonthInUtcMilliseconds(),MaterialDatePicker.todayInUtcMilliseconds()))
-                //.setTheme(R.style.ThemeOverlay_App_MaterialCalendar)
                 .build();
         materialDatePicker.show(getSupportFragmentManager(), "S");
 
@@ -261,7 +229,6 @@ public class UserOverall extends AppCompatActivity {
         {
             if(x.getId().equals(id) && x.getMoneyOverall()==false) {
 
-
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTimeInMillis(x.getTimeAdded().toDate().toInstant().toEpochMilli());
 
@@ -269,36 +236,17 @@ public class UserOverall extends AppCompatActivity {
                         calendar1.get(Calendar.DAY_OF_YEAR) <= calendar.get(Calendar.DAY_OF_YEAR) &&
                         calendar2.get(Calendar.DAY_OF_YEAR) >= calendar.get(Calendar.DAY_OF_YEAR))
                 {
-
                     time += x.getTimeOverallInLong();
                     selectedTimeModelList.add(x);
-                //    Log.i("DOCUMENT ID",x.getDocumentId());
                 }
             }
-            // Daty z listy
         }
 
         timeToSettlement=time;
 
-       // Log.i("TIME",time+"");
-
         return time;
     }
 
-
-
-    private List<TimeModel> selectDataForGivenUser(String id, List<TimeModel> timeModelsList) {
-        List<TimeModel> listToReturn = new ArrayList<>();
-        for(TimeModel x: timeModelsList)
-        {
-            if(id.equals(x.getId()))
-            {
-                listToReturn.add(x);
-            }
-        }
-
-        return listToReturn;
-    }
     private CalendarConstraints.Builder DaysOutOfValidate() {
 
         CalendarConstraints.Builder constraintsBuilderRange = new CalendarConstraints.Builder();
@@ -333,7 +281,6 @@ public class UserOverall extends AppCompatActivity {
                         blockedDates.add(calendar1);
                     }
                 }
-               // Log.i("add Validate",listOfAllRecordsForUser.get(i).getTimeAdded().toDate().toString());
             }
             else if (listOfAllRecordsForUser.get(i).getId().equals(id) && !listOfAllRecordsForUser.get(i).getMoneyOverall()){
                 long time = listOfAllRecordsForUser.get(i).getTimeAdded().toDate().getTime();
@@ -346,12 +293,7 @@ public class UserOverall extends AppCompatActivity {
 
                 blockedDates.remove(calendar1);
 
-              //  Log.i("Remove validate",listOfAllRecordsForUser.get(i).getTimeAdded().toDate().toString());
             }
-        }
-
-        for (Calendar blockedDate : blockedDates) {
-           // Log.i("THE BLOCKED DATES",blockedDate.get(Calendar.DAY_OF_YEAR)+" "+blockedDate.get(Calendar.YEAR)+"");
         }
 
         return blockedDates;
