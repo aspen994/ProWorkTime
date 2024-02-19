@@ -4,6 +4,7 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -107,6 +108,11 @@ public class AuthViewModel extends AndroidViewModel {
         return authRepository.getUsernameAndSurname();
     }
 
+   /* public LiveData<User> getUsernameAndSurname2(LifecycleOwner lifecycleOwner)
+    {
+        return authRepository.getUsernameAndSurname2(lifecycleOwner);
+    }
+*/
 
     public void registerUser(String email, String password,String userName_send,String surName_send,String foreign_email)
     {

@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,6 +34,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.work.BackoffPolicy;
@@ -43,6 +46,7 @@ import androidx.work.WorkManager;
 
 import com.example.ogrdapp.model.QRModel;
 import com.example.ogrdapp.model.TimeModel;
+import com.example.ogrdapp.model.User;
 import com.example.ogrdapp.scanner.CustomScannerActivity;
 import com.example.ogrdapp.services.ForegroundServices;
 import com.example.ogrdapp.utility.SharedPreferencesDataSource;
@@ -103,6 +107,7 @@ public class UserMainActivity extends AppCompatActivity {
 
     String foreginKey;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -122,7 +127,6 @@ public class UserMainActivity extends AppCompatActivity {
         timerOverall = findViewById(R.id.timeOverall);
 
 
-        
         QRCodeList = new ArrayList<>();
 
 
@@ -248,8 +252,8 @@ public class UserMainActivity extends AppCompatActivity {
         }
 
 
+        // TODO 150224
         // Assignment user name and surname to textView from collectionReferences
-
         authViewModel.getUsernameAndSurname().observe(this, user -> {
             String username = user.getUsername();
             String userSurname = user.getSurName();
@@ -298,7 +302,7 @@ public class UserMainActivity extends AppCompatActivity {
 
             }
         });
-        
+
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -697,7 +701,7 @@ public class UserMainActivity extends AppCompatActivity {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
         }
-       
+
     }
 
     @Override
@@ -725,10 +729,11 @@ public class UserMainActivity extends AppCompatActivity {
         stopWork.setVisibility(View.VISIBLE);
         holdResumeWork.setVisibility(View.VISIBLE);
         holdResumeWork.setBackgroundColor(Color.parseColor("#A214D5"));
-        
+
     }
 
     public void stopCountingTime() {
+
         timeModel = new TimeModel();
         timerStarted = false;
         textMain.setText(getString(R.string.begin_work));
@@ -746,18 +751,32 @@ public class UserMainActivity extends AppCompatActivity {
         timeModel.setTimeOverall(timeDisplay.getText().toString().contains("-") ? "00:00:00" : timeDisplay.getText().toString().replaceAll(" ", ""));
         timeModel.setTimeOverallInLong((new Date().getTime() - timeOfCreation) > 0 ? new Date().getTime() - timeOfCreation : 0);
         timeModel.setId(authViewModel.getUserId());
-        timeModel.setUserName(userName.getText().toString());
+
+        try {
+            Thread.sleep(400);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        if(userName.getText().toString().equals("Użytkownik nr 1"))
+        {
+            timeModel.setUserName("Użytkownik nr 1");
+        }else{
+            timeModel.setUserName(userName.getText().toString());
+        }
+
+
+
+
         timeModel.setTimeAdded(new Timestamp(new Date()));
         timeModel.setTimestamp(new Timestamp(new Date()));
 
 
         if (timeModel.getTimeOverallInLong() > 0) {
-
             authViewModel.saveTimeModelToFirebase(timeModel);
             authViewModel.updatedDataHoursToFirebaseUser(timeModel);
 
         }
-
 
     }
 

@@ -40,6 +40,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.TimeZone;
 
+import javax.security.auth.login.LoginException;
+
 public class AdminView extends AppCompatActivity {
 
     private AuthViewModel authViewModel;
@@ -79,8 +81,6 @@ public class AdminView extends AppCompatActivity {
             @Override
             public void onChanged(List<User> user) {
                 userModelArrayList.addAll(user);
-
-
 
                 for (User users : userModelArrayList) {
                     assignTimeModelForUser(users.getUserId());
@@ -319,6 +319,10 @@ public class AdminView extends AppCompatActivity {
         // INVOKED FOR EACH INDIVIDUAL USER, NOT FOR ALL USER
         List<TimeModelForDisplay> timeModels = new ArrayList<>();
 
+        for (TimeModel timeModel:timeModelArrayList) {
+//            Log.i("summing name",timeModel.getUserName());
+            Log.i("summing documentId",timeModel.getDocumentId());
+        }
         long sumTime = 0;
         double summedMoney = 0;
         long leftHours = 0;
@@ -327,7 +331,6 @@ public class AdminView extends AppCompatActivity {
         for (int i = 0; i < timeModelArrayList.size(); i++) {
             sumTime += timeModelArrayList.get(i).getTimeOverallInLong();
             summedMoney += timeModelArrayList.get(i).getWithdrawnMoney();
-
             summedMoney = UserOverall.round(summedMoney, 2);
 
             if (timeModelArrayList.get(i).getMoneyOverall() == false) {
@@ -337,14 +340,35 @@ public class AdminView extends AppCompatActivity {
         }
 
 
-        TimeModelForDisplay timeModel = new TimeModelForDisplay();
-        timeModel.setUserName(timeModelArrayList.get(timeModelArrayList.size() - 1).getUserName());
-        timeModel.setId(timeModelArrayList.get(timeModelArrayList.size() - 1).getId());
-        timeModel.setTimeOverallInLong(sumTime);
-        timeModel.setWithdrawnMoney(summedMoney);
-        timeModel.setTimeOverallInLongLefToSettle(leftHours);
+        TimeModelForDisplay timeModelForDisplay = new TimeModelForDisplay();
+        if(timeModelArrayList.get(timeModelArrayList.size() - 1).getUserName().equals("Użytkownik nr 1"))
+        {
+            for (TimeModel timeModel:timeModelArrayList) {
+                if(!timeModel.getUserName().equals("Użytkownik nr 1"))
+                {
+                    timeModelForDisplay.setUserName(timeModel.getUserName());
+                    break;
+                }
+            }
+        }else{
+            timeModelForDisplay.setUserName(timeModelArrayList.get(timeModelArrayList.size() - 1).getUserName());
+        }
 
-        timeModels.add(timeModel);
+        //Log.i("USERNAME FOR ADMIN",timeModelArrayList.get(timeModelArrayList.size() - 1).getUserName());
+        //Log.i("------","-------");
+        timeModelForDisplay.setId(timeModelArrayList.get(timeModelArrayList.size() - 1).getId());
+        timeModelForDisplay.setTimeOverallInLong(sumTime);
+        timeModelForDisplay.setWithdrawnMoney(summedMoney);
+        timeModelForDisplay.setTimeOverallInLongLefToSettle(leftHours);
+
+        Log.i("timeModelForDisplay",timeModelForDisplay.getUserName());
+        Log.i("SummedMoney",summedMoney+"");
+        Log.i("SummedTime",sumTime+"");
+        Log.i("SummedLeftHours",leftHours+"");
+
+
+
+        timeModels.add(timeModelForDisplay);
         return timeModels;
     }
 

@@ -6,6 +6,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -47,6 +48,7 @@ public class AuthRepository {
     private final MutableLiveData<FirebaseUser> firebaseUserMutableLiveData;
     private final MutableLiveData<Boolean> userLoggedMutableLiveData;
     private final MutableLiveData<User> getUsernameAndSurname;
+    private final MutableLiveData<User> getUsernameAndSurname2;
     private final MutableLiveData<List<TimeModel>> timeModelArrayListMutableLiveData;
     private final MutableLiveData<Boolean> ifAdminMutableLiveData;
     private final MutableLiveData<List<User>> userArrayListOfUserMutableLiveData;
@@ -94,6 +96,8 @@ public class AuthRepository {
         this.getAllTimeModelsForAdminSQLLiveData = new MutableLiveData<>();
         this.qrModelMutableLiveData2 = new MutableLiveData<>();
 
+        this.getUsernameAndSurname2= new MutableLiveData<>();
+
 
 
         firebaseAuth = FirebaseAuth.getInstance();
@@ -108,7 +112,6 @@ public class AuthRepository {
 
         // Used for Background Database Operations
         executor = Executors.newSingleThreadExecutor();
-
 
         if (firebaseAuth.getCurrentUser() != null) {
             fireBaseUser = firebaseAuth.getCurrentUser();
@@ -158,6 +161,10 @@ public class AuthRepository {
 
     public MutableLiveData<User> getGetUsernameAndSurname() {
         return getUsernameAndSurname;
+    }
+
+    public MutableLiveData<User> getGetUsernameAndSurname2() {
+        return getUsernameAndSurname2;
     }
 
     public MutableLiveData<Map<String, Object>> getPaycheckHoursToSettleMutableLiveData() {
@@ -387,6 +394,7 @@ public class AuthRepository {
 
 
                                     Log.i(FIREBASE_LOGGER, " " + "getTimeForUserNewMethod");
+                                }
 
                                     collectionReferenceUser.whereEqualTo("userId", userId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                                         @Override
@@ -422,7 +430,7 @@ public class AuthRepository {
                                         }
                                     });
 
-                                }
+                                //}
 
                             }
                         }).addOnFailureListener(new OnFailureListener() {
@@ -435,11 +443,8 @@ public class AuthRepository {
                 ////
                 //List<TimeModel> value2 = timeModelDAO.getAllTimeModelsList(userId);
 
-
                 //readerList(value2);
                 Log.i(ROOM_DB_LOGGER, "ROOM_DB" + " " + "getAllTimeModelsForAdminSQL");
-
-
 
             }
         });
@@ -495,6 +500,7 @@ public class AuthRepository {
 
                                 }
 
+                                //TODO 150224
                                 collectionReferenceUser.whereEqualTo("userId", currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                                     @Override
                                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
@@ -882,7 +888,6 @@ public class AuthRepository {
 
     public boolean checkIfAdmin() {
 
-
         collectionReferenceUser.whereEqualTo("foreign_key", currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
@@ -1003,9 +1008,11 @@ public class AuthRepository {
         });
     }
 
+
+
     public LiveData<User> getUsernameAndSurname() {
         checkIfAdmin();
-        TimeModel timeModel = new TimeModel();
+
         User user = new User();
 
         collectionReferenceUser.whereEqualTo("userId", currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
@@ -1013,9 +1020,6 @@ public class AuthRepository {
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 if (!queryDocumentSnapshots.isEmpty()) {
                     for (QueryDocumentSnapshot snapshot : queryDocumentSnapshots) {
-                  /*      timeModel.setUserName(snapshot.getString("username"));
-                        timeModel.setUserSurname(snapshot.getString("surName"));
-                        timeModel.setId(snapshot.getString("foreign_key"));*/
 
                         user.setUsername(snapshot.getString("username"));
                         user.setSurName(snapshot.getString("surName"));
