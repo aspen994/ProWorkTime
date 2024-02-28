@@ -124,7 +124,7 @@ public class ForegroundServices extends Service {
                     .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.osin_logo_foreground))
                     .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
                     .setContentIntent(pendingIntent)
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
                     .setColor(Color.rgb(63, 120, 76))
                     .setColorized(true)
                     .build();

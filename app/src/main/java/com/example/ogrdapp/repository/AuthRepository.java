@@ -500,7 +500,7 @@ public class AuthRepository {
 
                                 }
 
-                                //TODO 150224
+
                                 collectionReferenceUser.whereEqualTo("userId", currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                                     @Override
                                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {

@@ -15,7 +15,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,8 +33,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.work.BackoffPolicy;
@@ -46,7 +43,6 @@ import androidx.work.WorkManager;
 
 import com.example.ogrdapp.model.QRModel;
 import com.example.ogrdapp.model.TimeModel;
-import com.example.ogrdapp.model.User;
 import com.example.ogrdapp.scanner.CustomScannerActivity;
 import com.example.ogrdapp.services.ForegroundServices;
 import com.example.ogrdapp.utility.SharedPreferencesDataSource;
@@ -252,7 +248,6 @@ public class UserMainActivity extends AppCompatActivity {
         }
 
 
-        // TODO 150224
         // Assignment user name and surname to textView from collectionReferences
         authViewModel.getUsernameAndSurname().observe(this, user -> {
             String username = user.getUsername();
@@ -434,10 +429,7 @@ public class UserMainActivity extends AppCompatActivity {
     }
 
     public void saveDataToSharedPreferences() {
-        sharedPreferencesDataSource.saveDataToSharedPreferences(
-                begingTime.getText().toString()
-                , timerStarted
-                , tmpBeginTime);
+        sharedPreferencesDataSource.saveDataToSharedPreferences(begingTime.getText().toString(), timerStarted, tmpBeginTime);
     }
 
     public void savePausedTimeToSharedPreferences(long pausedTime) {
@@ -538,14 +530,13 @@ public class UserMainActivity extends AppCompatActivity {
                     }
                 } else if (isPaused) {
                     if (toPost <= 8 * HOUR_IN_SECONDS) {
-
                         holdResumeWork.setText(getString(R.string.end_pause) + getTimerText(toPost));
                         handler1.postDelayed(this, 1000);
                     } else {
-                        stopTime();
                         stopWork.setVisibility(View.INVISIBLE);
                         holdResumeWork.setVisibility(View.INVISIBLE);
                         qr.setVisibility(View.VISIBLE);
+                        stopTime();
                         isPaused = false;
                         saveIsPausedToSharedPreferences(isPaused);
                         handler1.removeCallbacksAndMessages(null);
@@ -585,7 +576,6 @@ public class UserMainActivity extends AppCompatActivity {
         public void onActivityResult(ScanIntentResult result) {
 
 
-            //TODO 240124
             if (!QRCodeList.isEmpty()) {
                 for (QRModel qrModel : QRCodeList) {
                     //Log.i("QRCodeLinkedList SIZE", QRCodeList.size()+"");
@@ -657,20 +647,11 @@ public class UserMainActivity extends AppCompatActivity {
     }
 
     private void startWorker() {
-        Constraints constraints = new Constraints.Builder()
-                .setRequiresBatteryNotLow(true)
-                .build();
+        Constraints constraints = new Constraints.Builder().setRequiresBatteryNotLow(true).build();
 
-        PeriodicWorkRequest saveRequest =
-                new PeriodicWorkRequest.Builder(StopWatchWorker.class, 16, TimeUnit.MINUTES)
-                        .setBackoffCriteria(
-                                BackoffPolicy.LINEAR,
-                                OneTimeWorkRequest.MIN_BACKOFF_MILLIS,
-                                TimeUnit.MILLISECONDS)
-                        .setConstraints(constraints)
-                        .addTag("cleanup")
-                        // Constraints
-                        .build();
+        PeriodicWorkRequest saveRequest = new PeriodicWorkRequest.Builder(StopWatchWorker.class, 16, TimeUnit.MINUTES).setBackoffCriteria(BackoffPolicy.LINEAR, OneTimeWorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS).setConstraints(constraints).addTag("cleanup")
+                // Constraints
+                .build();
 
         WorkManager.getInstance(UserMainActivity.this).enqueue(saveRequest);
     }
@@ -758,14 +739,11 @@ public class UserMainActivity extends AppCompatActivity {
             throw new RuntimeException(e);
         }
 
-        if(userName.getText().toString().equals("Użytkownik nr 1"))
-        {
+        if (userName.getText().toString().equals("Użytkownik nr 1")) {
             timeModel.setUserName("Użytkownik nr 1");
-        }else{
+        } else {
             timeModel.setUserName(userName.getText().toString());
         }
-
-
 
 
         timeModel.setTimeAdded(new Timestamp(new Date()));
