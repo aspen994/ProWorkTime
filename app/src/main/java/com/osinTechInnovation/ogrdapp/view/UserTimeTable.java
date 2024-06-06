@@ -5,6 +5,7 @@ import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -43,6 +44,7 @@ public class UserTimeTable extends AppCompatActivity {
     private Spinner spinnerMonth, spinnerYear;
     private RecyclerView recyclerView;
     private ArrayList<TimeModel> timeModelArrayList = new ArrayList<>();
+    public TextView editTextBeginTime,editTextEndTime,editTextTimeOverall,lack_data;
 
     private TimeOverallAdapter timeOverallAdapter = new TimeOverallAdapter(this, timeModelArrayList);
     String selectedSpinnerOnYear = "";
@@ -50,11 +52,11 @@ public class UserTimeTable extends AppCompatActivity {
     public String idUserSelectedByAdmin;
     SwipeController swipeController = null;
     ArrayList<TimeModel> arrayListTmp;
-    public TextView editTextBeginTime;
-    public TextView editTextEndTime;
-    public TextView editTextTimeOverall;
+
     public int hour, minute;
     long overall;
+
+
 
 
 
@@ -65,13 +67,15 @@ public class UserTimeTable extends AppCompatActivity {
         spinnerMonth = findViewById(R.id.spinner_month);
         spinnerYear = findViewById(R.id.spinner_year);
         recyclerView = findViewById(R.id.recyclerView);
-
+        lack_data = findViewById(R.id.lack_data);
 
         arrayListTmp = new ArrayList<>();
 
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
         idUserSelectedByAdmin = getIntent().getStringExtra("Id");
+
+
 
         if (idUserSelectedByAdmin != null) {
 
@@ -80,6 +84,11 @@ public class UserTimeTable extends AppCompatActivity {
                 public void onChanged(List<TimeModel> timeModelList) {
                     timeModelArrayList.clear();
                     timeModelArrayList.addAll(timeModelList);
+                    if(!timeModelArrayList.isEmpty()){
+                        lack_data.setVisibility(View.INVISIBLE);
+                    }else {
+                        lack_data.setVisibility(View.VISIBLE);
+                    }
                     activateSpinner();
                     activateSpinnerYear();
                     timeOverallAdapter.notifyDataSetChanged();
@@ -93,6 +102,12 @@ public class UserTimeTable extends AppCompatActivity {
                 public void onChanged(List<TimeModel> timeModelList) {
                     timeModelArrayList.clear();
                     timeModelArrayList.addAll(timeModelList);
+                    if(!timeModelArrayList.isEmpty()){
+                        lack_data.setVisibility(View.INVISIBLE);
+                    }
+                    else {
+                        lack_data.setVisibility(View.VISIBLE);
+                    }
                     activateSpinner();
                     activateSpinnerYear();
                     timeOverallAdapter.notifyDataSetChanged();
@@ -125,7 +140,14 @@ public class UserTimeTable extends AppCompatActivity {
                     timeOverallAdapter = new TimeOverallAdapter(UserTimeTable.this, arrayListTmp);
                     recyclerView.setLayoutManager(new LinearLayoutManager(UserTimeTable.this, LinearLayoutManager.VERTICAL, false));
                     recyclerView.setAdapter(timeOverallAdapter);
+                    if(arrayListTmp.isEmpty()) {
+                        lack_data.setVisibility(View.VISIBLE);
+                    } else {
+                        lack_data.setVisibility(View.INVISIBLE);
+                    }
                 }
+
+
 
             }
 
@@ -157,6 +179,14 @@ public class UserTimeTable extends AppCompatActivity {
                     timeOverallAdapter = new TimeOverallAdapter(UserTimeTable.this, arrayListTmp);
                     recyclerView.setLayoutManager(new LinearLayoutManager(UserTimeTable.this, LinearLayoutManager.VERTICAL, false));
                     recyclerView.setAdapter(timeOverallAdapter);
+                    if(arrayListTmp.isEmpty()) {
+                        lack_data.setVisibility(View.VISIBLE);
+                        Log.i("SIZE ARRAY",arrayListTmp.size()+"");
+                    }
+                    else {
+                        lack_data.setVisibility(View.INVISIBLE);
+                    }
+
                 }
 
             }
@@ -192,7 +222,6 @@ public class UserTimeTable extends AppCompatActivity {
                             // Delete for the user
                             timeModel.setTimeOverallInLong(-timeModel.getTimeOverallInLong());
                             authViewModel.updatedDataHoursToFirebaseUser(timeModel);
-
 
                             timeOverallAdapter.notifyDataSetChanged();
                         }
@@ -405,5 +434,9 @@ public class UserTimeTable extends AppCompatActivity {
         return dateFormat.format(date);
     }
 
+    @Override
+    protected void onStart() {
 
+        super.onStart();
+    }
 }

@@ -30,6 +30,7 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
         this.context = context;
         this.list = list;
 
+
         Collections.sort(list, new Comparator<TimeModel>() {
             @Override
             public int compare(TimeModel o1, TimeModel o2) {
@@ -45,13 +46,13 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         View inflate = layoutInflater.inflate(R.layout.adapter_user_time,parent,false);
 
-
         return new MyViewHolder(inflate);
     }
 
 
     @Override
     public void onBindViewHolder(@NonNull TimeOverallAdapter.MyViewHolder holder, int position) {
+
 
         //Hiding the LinearLayout for last record of the day
         holder.linearLayoutLastRecord.setVisibility(View.VISIBLE);

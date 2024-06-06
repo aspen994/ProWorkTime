@@ -1,6 +1,7 @@
 package com.osinTechInnovation.ogrdapp.viewmodel;
 
 import android.app.Application;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -8,7 +9,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
-import com.google.protobuf.ByteString;
 import com.osinTechInnovation.ogrdapp.model.QRModel;
 import com.osinTechInnovation.ogrdapp.model.TimeModel;
 import com.osinTechInnovation.ogrdapp.model.User;
@@ -57,6 +57,18 @@ public class AuthViewModel extends AndroidViewModel {
         adminIdMutableLiveData =authRepository.getAdminIdMutableLiveData();
         timeModelListMutableLiveData=authRepository.getTimeModelArrayListMutableLiveData();
         getAllTimeModelsForAdminSQLLiveData = authRepository.getGetAllTimeModelsForAdminSQLLiveData();
+    }
+
+    public MutableLiveData<Boolean> getIsAdminExist(){
+        return authRepository.getIsAdminExist();
+    }
+
+    public MutableLiveData<Map<String,Object>> getAmountEntries(String id){
+        return authRepository.getAmountEntries(id);
+    }
+
+    public void updateAmountEntries(String updateAmountEntries) {
+        authRepository.updateAmountEntries(updateAmountEntries);
     }
 
 
@@ -118,6 +130,11 @@ public class AuthViewModel extends AndroidViewModel {
         return authRepository.getUsernameAndSurname2(lifecycleOwner);
     }
 */
+
+    public void registerUser(String email, String password,String userName_send,String surName_send)
+    {
+        authRepository.register(email, password,userName_send,surName_send);
+    }
 
     public void registerUser(String email, String password,String userName_send,String surName_send,String foreign_email)
     {
@@ -210,6 +227,11 @@ public class AuthViewModel extends AndroidViewModel {
                 String s = (String) stringObjectMap.get("entriesAmount");
                 String email = (String)stringObjectMap.get("email");
 
+                Log.i("daysSinceUnixTimeModel",daysSinceUnixTimeModel+"");
+                Log.i("daysSinceUnixCurrent",daysSinceUnixCurrent+"");
+
+
+
                 if(daysSinceUnixTimeModel==daysSinceUnixCurrent) {
 
                     int amountEntriesDecoded = decodeDaysAndEntries.decodeToAmountEntries(s);
@@ -222,8 +244,10 @@ public class AuthViewModel extends AndroidViewModel {
             }
         };
 
-         authRepository.getAmountEntries(timeModel.getId()).observeForever(observer);
+        authRepository.getAmountEntries(timeModel.getId()).observeForever(observer);
     }
+
+
 
     @Override
     protected void onCleared() {

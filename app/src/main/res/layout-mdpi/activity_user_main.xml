@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/black">
 
 
         <androidx.drawerlayout.widget.DrawerLayout
@@ -40,6 +41,7 @@
                     android:id="@+id/usernameTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/white"
                     android:text="@string/user"
                     app:layout_constraintStart_toStartOf="@id/guidelineLeft"
                     app:layout_constraintTop_toTopOf="@id/guidelineTop" />
@@ -49,6 +51,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
+                    android:textColor="@color/white"
                     android:text="Użytkownik nr 1"
                     app:layout_constraintStart_toEndOf="@+id/usernameTitle"
                     app:layout_constraintTop_toTopOf="@id/guidelineTop" />
@@ -58,6 +61,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
+                    android:textColor="@color/white"
                     android:text="@string/begin_work"
                     android:textSize="20sp"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -85,6 +89,7 @@
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="20dp"
                     android:textSize="8dp"
+                    android:textColor="@color/white"
                     android:text="@string/time"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView_date" />
@@ -96,6 +101,7 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="20dp"
                     android:textSize="8dp"
+                    android:textColor="@color/white"
                     android:text="00 : 00 : 00"
                     app:layout_constraintStart_toEndOf="@+id/textView6"
                     app:layout_constraintTop_toBottomOf="@+id/textview_dateToInsert" />
@@ -106,6 +112,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="50dp"
+                    android:textColor="@color/white"
                     android:text="18.05.2023 r."
                     android:textSize="8dp"
                     app:layout_constraintStart_toEndOf="@+id/textView_date"
@@ -118,6 +125,7 @@
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="50dp"
                     android:textSize="8dp"
+                    android:textColor="@color/white"
                     android:text="@string/date"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/buttonQR" />
@@ -128,6 +136,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="14dp"
+                    android:textColor="@color/white"
                     android:text=""
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView6" />
@@ -138,6 +147,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="20dp"
+                    android:textColor="@color/white"
                     android:text=""
                     app:layout_constraintBaseline_toBaselineOf="@+id/textView_pausa"
                     app:layout_constraintStart_toEndOf="@+id/textView_pausa" />
@@ -146,6 +156,7 @@
                     android:id="@+id/begining_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/white"
                     android:text=""
                     android:textSize="8dp"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -157,6 +168,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dp"
+                    android:textColor="@color/white"
                     android:textSize="8dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -168,6 +180,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:gravity="center"
+                    android:textColor="@color/white"
                     android:textSize="8dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"

@@ -27,6 +27,10 @@
         android:title="@string/logout_menu"
         android:icon="@drawable/baseline_logout_24"
         app:showAsAction="never"/>
-
+    <item
+        android:id="@+id/action_buy_subs"
+        android:title="Subskrybuj"
+        android:icon="@drawable/baseline_workspace_premium_24"
+        app:showAsAction="never"/>
 
 </menu>

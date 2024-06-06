@@ -42,30 +42,50 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
-import com.osinTechInnovation.ogrdapp.model.QRModel;
-import com.osinTechInnovation.ogrdapp.model.TimeModel;
-import com.osinTechInnovation.ogrdapp.scanner.CustomScannerActivity;
-import com.osinTechInnovation.ogrdapp.services.ForegroundServices;
-import com.osinTechInnovation.ogrdapp.utility.SharedPreferencesDataSource;
-import com.osinTechInnovation.ogrdapp.view.AdminView;
-import com.osinTechInnovation.ogrdapp.view.MainActivity;
-import com.osinTechInnovation.ogrdapp.view.UserTimeTable;
-import com.osinTechInnovation.ogrdapp.viewmodel.AuthViewModel;
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingClientStateListener;
+import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.PurchasesUpdatedListener;
+import com.android.billingclient.api.QueryPurchasesParams;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.Timestamp;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanIntentResult;
 import com.journeyapps.barcodescanner.ScanOptions;
+import com.osinTechInnovation.ogrdapp.model.QRModel;
+import com.osinTechInnovation.ogrdapp.model.TimeModel;
+import com.osinTechInnovation.ogrdapp.scanner.CustomScannerActivity;
+import com.osinTechInnovation.ogrdapp.services.ForegroundServices;
+import com.osinTechInnovation.ogrdapp.utility.ConnectionClass;
+import com.osinTechInnovation.ogrdapp.utility.DecodeDaysAndEntries;
+import com.osinTechInnovation.ogrdapp.utility.SharedPreferencesDataSource;
+import com.osinTechInnovation.ogrdapp.view.AdminView;
+import com.osinTechInnovation.ogrdapp.view.MainActivity;
+import com.osinTechInnovation.ogrdapp.view.Subs;
+import com.osinTechInnovation.ogrdapp.view.UserTimeTable;
+import com.osinTechInnovation.ogrdapp.viewmodel.AuthViewModel;
 
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class UserMainActivity extends AppCompatActivity {
+
+    /*In App products */
+    //public static final String PRODUCT_ID = "com.osintechinnovation.ogrdapp";
+    //public static final String SUBSCRIBTION ID =  ""
+
+    private BillingClient billingClient;
+    private boolean isPremium = false;
 
     public List<QRModel> QRCodeList;
     public static final long MINUTE_IN_SECONDS = 60;
@@ -110,6 +130,7 @@ public class UserMainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_main);
 
+
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.nav_View);
         qr = findViewById(R.id.buttonQR);
@@ -123,8 +144,20 @@ public class UserMainActivity extends AppCompatActivity {
         endingTime = findViewById(R.id.ending_time);
         timerOverall = findViewById(R.id.timeOverall);
 
+        hideItem();
+
 
         QRCodeList = new ArrayList<>();
+
+        // ------ Billing - SUBSCRIBE-----
+
+        billingClient = BillingClient.newBuilder(this)
+                .enablePendingPurchases()
+                .setListener(purchasesUpdatedListener)
+                .build();
+
+        query_purchase();
+
 
         //Toast.makeText(this, "on Create", Toast.LENGTH_SHORT).show();
 
@@ -291,12 +324,14 @@ public class UserMainActivity extends AppCompatActivity {
         toogle.syncState();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        hideItem();
+        //hideItem();
         authViewModel.getIfAdminMutableLiveData().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
+                Log.i("MY TAG05",aBoolean+"");
+                Menu menu = navigationView.getMenu();
                 if (aBoolean == true) {
-                    showItem();
+                    menu.findItem(R.id.action_buy_subs).setVisible(true);
                 }
 
             }
@@ -320,7 +355,11 @@ public class UserMainActivity extends AppCompatActivity {
                 } else if (R.id.action_qrCode_management == item.getItemId()) {
                     Intent i = new Intent(UserMainActivity.this, QRCodeManagement.class);
                     startActivity(i);
+                } else if (R.id.action_buy_subs == item.getItemId()) {
+                    Intent i = new Intent(UserMainActivity.this, Subs.class);
+                    startActivity(i);
                 }
+
 
                 return true;
             }
@@ -341,10 +380,78 @@ public class UserMainActivity extends AppCompatActivity {
         intentFilter = new IntentFilter();
         intentFilter.addAction("Counter");
 
-        //TODO 21.03.24 - Dodałem to poniżej wcześniej tego nie było.
-        startCountingTimeWithHandler(delayToAssign);
+        if(isPremium){
+            showItem();
+        }
+
+
+
 
     }
+
+    private void query_purchase(){
+        billingClient.startConnection(new BillingClientStateListener() {
+            @Override
+            public void onBillingSetupFinished(BillingResult billingResult) {
+                if (billingResult.getResponseCode() ==  BillingClient.BillingResponseCode.OK) {
+                    ExecutorService executorService = Executors.newSingleThreadExecutor();
+                    executorService.execute(()->{
+                        try{
+                            billingClient.queryPurchasesAsync(
+                                    QueryPurchasesParams.newBuilder()
+                                            .setProductType(BillingClient.ProductType.SUBS)
+                                            .build(),
+                                    (billingResult1, purchaseList) ->{
+                                        for(Purchase purchase: purchaseList){
+                                            if(purchase!=null && purchase.isAcknowledged()){
+                                                isPremium = true;
+                                            }
+                                        }
+                                    }
+
+                            );
+                        }
+                        catch(Exception e){
+                            isPremium = false;
+                        }
+
+                        runOnUiThread(()->{
+                            try{
+                                Thread.sleep(1000);
+                            }
+                            catch (InterruptedException e){
+                                e.printStackTrace();
+                            }
+
+                            if(isPremium){
+                                ConnectionClass.premium = true;
+                                ConnectionClass.locked = false;
+                                showItem();
+                            }
+                            else {
+                                ConnectionClass.premium = false;
+                                hideItem();
+                            }
+
+                        });
+                    });
+                }
+            }
+            @Override
+            public void onBillingServiceDisconnected() {
+
+            }
+        });
+    }
+
+
+    // ------ BILLING CLIENT -- SUBS
+    private PurchasesUpdatedListener purchasesUpdatedListener = new PurchasesUpdatedListener() {
+        @Override
+        public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases) {
+
+        }
+    };
 
     private void alertDialogLConfirmation() {
         AlertDialog.Builder builder = new AlertDialog.Builder(UserMainActivity.this);
@@ -378,6 +485,7 @@ public class UserMainActivity extends AppCompatActivity {
         Menu menu = navigationView.getMenu();
         menu.findItem(R.id.action_admin_panel).setVisible(false);
         menu.findItem(R.id.action_qrCode_management).setVisible(false);
+        menu.findItem(R.id.action_buy_subs).setVisible(false);
     }
 
     private void openDialog(Context context) {
@@ -539,9 +647,9 @@ public class UserMainActivity extends AppCompatActivity {
                     if (toPost <= 8 * HOUR_IN_SECONDS) {
                         holdResumeWork.setText(getString(R.string.end_pause) + getTimerText(toPost));
                         handler1.postDelayed(this, 1000);
-                        Log.d("Ogrod toPost", toPost+"");
+                        //Log.d("Ogrod toPost", toPost+"");
                     } else {
-                        Log.d("Ogrod else", toPost+"");
+                        //Log.d("Ogrod else", toPost+"");
                         stopWork.setVisibility(View.INVISIBLE);
                         holdResumeWork.setVisibility(View.INVISIBLE);
                         qr.setVisibility(View.VISIBLE);
@@ -688,6 +796,7 @@ public class UserMainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        super.onBackPressed();
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
         }
@@ -721,8 +830,85 @@ public class UserMainActivity extends AppCompatActivity {
         holdResumeWork.setBackgroundColor(Color.parseColor("#A214D5"));
 
     }
-
+    //TODO 29.04.2024r zamieniłem z stopCountingTime2()
     public void stopCountingTime() {
+
+        timeModel = new TimeModel();
+        timerStarted = false;
+        textMain.setText(getString(R.string.begin_work));
+
+        timeModel.setTimeEnd(getCurrentTime());
+        tmpEndTime = getCurrentTimeInSimpleFormat();
+
+        endingTime.setText(getString(R.string.end_work_at) + getCurrentTime());
+        timeModel.setTimeBegin(loadAndUpdatedTimeModelFromSharedPreferences());
+
+        timerOverall.setText(getString(R.string.overworked) + timeDisplay.getText().toString());
+
+        endingTime.setText(getString(R.string.end_work_at) + getCurrentTime());
+
+        timeModel.setTimeOverall(timeDisplay.getText().toString().contains("-") ? "00:00:00" : timeDisplay.getText().toString().replaceAll(" ", ""));
+        timeModel.setTimeOverallInLong((new Date().getTime() - timeOfCreation) > 0 ? new Date().getTime() - timeOfCreation : 0);
+        timeModel.setId(authViewModel.getUserId());
+
+        try {
+            Thread.sleep(400);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (userName.getText().toString().equals("Użytkownik nr 1")) {
+            timeModel.setUserName("Użytkownik nr 1");
+        } else {
+            timeModel.setUserName(userName.getText().toString());
+        }
+
+
+        timeModel.setTimeAdded(new Timestamp(new Date()));
+        timeModel.setTimestamp(new Timestamp(new Date()));
+
+
+        if (timeModel.getTimeOverallInLong() > 0) {
+
+            //Aktualny dzień
+            long time = new Date().getTime();
+
+            Duration duration = Duration.ofMillis(time);
+            int daysSinceUnixCurrent = (int) duration.toDays();
+
+            final String[] amountEntriesWithDays = {""};
+
+            DecodeDaysAndEntries decodeDaysAndEntries = new DecodeDaysAndEntries();
+
+            authViewModel.getAmountEntries(timeModel.getId()).observe(this, new Observer<Map<String,Object>>() {
+                @Override
+                public void onChanged(Map<String,Object> s) {
+                    amountEntriesWithDays[0] = (String) s.get("entriesAmount");
+                    Log.i("TUTAJ SPRW", amountEntriesWithDays[0]);
+
+                    Log.d("daysSinceUnixCurrent",daysSinceUnixCurrent+"");
+
+                    if (decodeDaysAndEntries.decodeToAmountEntries(amountEntriesWithDays[0]) < 7
+                            && daysSinceUnixCurrent == decodeDaysAndEntries.decodeDays(amountEntriesWithDays[0])
+                    ) {
+                        authViewModel.saveTimeModelToFirebase(timeModel);
+                        authViewModel.updatedDataHoursToFirebaseUser(timeModel);
+                        authViewModel.updateAmountEntries(toUpdateAmountEntries(daysSinceUnixCurrent, amountEntriesWithDays[0], decodeDaysAndEntries));
+                    } else if (daysSinceUnixCurrent != decodeDaysAndEntries.decodeDays(amountEntriesWithDays[0])) {
+                        authViewModel.saveTimeModelToFirebase(timeModel);
+                        authViewModel.updatedDataHoursToFirebaseUser(timeModel);
+                        authViewModel.updateAmountEntries(toUpdateAmountEntries(daysSinceUnixCurrent,  amountEntriesWithDays[0], decodeDaysAndEntries));
+
+                    } else
+                        Toast.makeText(UserMainActivity.this, "Za dużo wpisów skontaktuj się z adminem", Toast.LENGTH_LONG).show();
+
+                }
+            });
+
+        }
+
+    }
+    /*public void stopCountingTime() {
 
         timeModel = new TimeModel();
         timerStarted = false;
@@ -765,8 +951,28 @@ public class UserMainActivity extends AppCompatActivity {
 
         }
 
+    }*/
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        startCountingTimeWithHandler(delayToAssign);
+        query_purchase();
+
     }
 
+    private String toUpdateAmountEntries(int daysSinceUnixCurrent, String amountEntriesWithDays, DecodeDaysAndEntries decodeDaysAndEntries) {
+
+        int daysFromDB = decodeDaysAndEntries.decodeDays(amountEntriesWithDays);
+        int amountEntries = decodeDaysAndEntries.decodeToAmountEntries(amountEntriesWithDays);
+        int daysCurrent = daysSinceUnixCurrent;
+        if (daysFromDB == daysCurrent) {
+            amountEntries++;
+            return daysCurrent + "_" + amountEntries;
+        } else return daysSinceUnixCurrent + "_" + "1";
+
+    }
 
     @Override
     protected void onStart() {

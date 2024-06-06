@@ -33,6 +33,7 @@ import com.osinTechInnovation.ogrdapp.model.QRModel;
 import com.osinTechInnovation.ogrdapp.model.TimeModel;
 import com.osinTechInnovation.ogrdapp.model.User;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -62,7 +63,12 @@ public class AuthRepository {
     private final MutableLiveData<List<QRModel>> qrModelMutableLiveData;
     private final MutableLiveData<QRModel> qrModelMutableLiveData2;
     private final MutableLiveData<List<TimeModel>> getAllTimeModelsForAdminSQLLiveData;
+
+    //TODO 29.04.2024 r - Podmieniłem
     private  MutableLiveData<Map<String,Object>> getAmountEntriesLiveData;
+    private  MutableLiveData<Boolean> isAdminExist;
+
+    //private MutableLiveData<String> getAmountEntriesLiveData;
 
     private final FirebaseAuth firebaseAuth;
     private FirebaseUser fireBaseUser;
@@ -100,6 +106,7 @@ public class AuthRepository {
         this.qrModelMutableLiveData2 = new MutableLiveData<>();
         this.getUsernameAndSurname2= new MutableLiveData<>();
         this.getAmountEntriesLiveData = new MutableLiveData<>();
+        this.isAdminExist = new MutableLiveData<>();
 
 
 
@@ -125,12 +132,34 @@ public class AuthRepository {
 
     }
 
+    public MutableLiveData<Boolean> getIsAdminExist() {
+        return isAdminExist;
+    }
+
     public MutableLiveData<Map<String, Object>> getGetAmountEntriesLiveData() {
         return getAmountEntriesLiveData;
     }
+ /*   public MutableLiveData<String> getGetAmountEntriesLiveData() {
+        return getAmountEntriesLiveData;
+    }*/
 
-    public void setGetAmountEntriesLiveData(MutableLiveData<Map<String, Object>> getAmountEntriesLiveData) {
+   /* public void setGetAmountEntriesLiveData(MutableLiveData<Map<String, Object>> getAmountEntriesLiveData) {
         this.getAmountEntriesLiveData = getAmountEntriesLiveData;
+    }*/
+
+    public void updateAmountEntries(String updateAmountEntries){
+        Map<String,Object> mapa = new HashMap<>();
+
+        mapa.put("entriesAmount",updateAmountEntries);
+
+        Log.i("entriesAmount",updateAmountEntries);
+
+        collectionReferenceUser.document(fireBaseUser.getEmail()).update(mapa).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+
+            }
+        });
     }
 
     public String getUserId() {
@@ -197,13 +226,45 @@ public class AuthRepository {
 
         mapa.put("entriesAmount",updatedtedValue);
 
+        Log.i("entriesAmount",updatedtedValue);
+
         collectionReferenceUser.document(email).update(mapa);
     }
 
-    public MutableLiveData<Map<String,Object>> getAmountEntries(String userId){
+    //TODO 29.04.2024 r  - podmieniłem
+ /*   public MutableLiveData<String> getAmountEntries(String id){
         System.gc();
         getAmountEntriesLiveData = new MutableLiveData<>();
-        collectionReferenceUser.whereEqualTo("userId",userId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+        collectionReferenceUser.whereEqualTo("userId",id).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                if (!queryDocumentSnapshots.isEmpty()) {
+
+                    for (QueryDocumentSnapshot user : queryDocumentSnapshots) {
+
+                        User user1 = user.toObject(User.class);
+
+                        String entriesAmount = user1.getEntriesAmount();
+                        Log.i("Tutaj Hel",entriesAmount);
+
+                        getAmountEntriesLiveData.setValue(entriesAmount);
+
+                    }
+
+                    Log.i(FIREBASE_LOGGER, " " + "getDataFirebase");
+                }
+            }
+        });
+
+        return getAmountEntriesLiveData;
+
+    }*/
+
+    public MutableLiveData<Map<String,Object>> getAmountEntries(String id){
+        System.gc();
+        getAmountEntriesLiveData = new MutableLiveData<>();
+        collectionReferenceUser.whereEqualTo("userId",id).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
 
@@ -965,10 +1026,97 @@ public class AuthRepository {
         return ifAdmin;
     }
 
-
     public void register(String email, String password, String userName_send, String surName_send, String foreign_email) {
 
         collectionReferenceUser.whereEqualTo("email", foreign_email).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                if (!value.isEmpty()) {
+                    for (QueryDocumentSnapshot snapshot : value) {
+                        arrayListForAssigningEmail.add(snapshot.getString("userId"));
+                    }
+
+                    Log.i(FIREBASE_LOGGER, " " + "register");
+
+
+        if(arrayListForAssigningEmail.size()>0) {
+
+            firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if (task.isSuccessful()) {
+
+                        firebaseUserMutableLiveData.postValue(firebaseAuth.getCurrentUser());
+
+                        fireBaseUser = firebaseAuth.getCurrentUser();
+                        assert fireBaseUser != null;
+                        final String currentUserId = fireBaseUser.getUid();
+
+                        //Aktualny dzień
+                        long time = new Date().getTime();
+                        //long days = TimeUnit.MILLISECONDS.toDays(time);
+
+                        Duration duration = Duration.ofMillis(time);
+                        long daysSinceUnix = duration.toDays();
+
+
+                        // Create a userMap so we can create user in the User Collection in FireStore
+                        Map<String, Object> userObj = new HashMap<>();
+                        userObj.put("userId", currentUserId);
+                        userObj.put("email", email);
+                        userObj.put("username", userName_send);
+                        userObj.put("surName", surName_send);
+                        userObj.put("foreign_key", arrayListForAssigningEmail.get(0));
+                        userObj.put("hoursOverall", 0);
+                        userObj.put("hoursToSettle", 0);
+                        userObj.put("paycheck", 0);
+                        userObj.put("entriesAmount", daysSinceUnix + "_" + "0");
+
+                        isAdminExist.postValue(true);
+
+                        Log.i("isAdmin05","true");
+
+                        Log.i("Hello five", "five");
+
+                        collectionReferenceUser.document(email).set(userObj).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+
+                                arrayListForAssigningEmail.clear();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+
+                            }
+                        });
+
+
+                    } else {
+                        Toast.makeText(application, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+
+        }
+        else
+        {
+            isAdminExist.postValue(false);
+            Log.i("isAdmin05","false");
+        }
+
+                }
+
+
+            }
+        });
+
+    }
+
+
+    public void register(String email, String password, String userName_send, String surName_send/*, String foreign_email*/) {
+
+    /*    collectionReferenceUser.whereEqualTo("email", foreign_email).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 if (!value.isEmpty()) {
@@ -980,7 +1128,7 @@ public class AuthRepository {
 
 
             }
-        });
+        });*/
 
         firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
@@ -992,18 +1140,25 @@ public class AuthRepository {
                     assert fireBaseUser != null;
                     final String currentUserId = fireBaseUser.getUid();
 
+                    //Aktualny dzień
+                    long time = new Date().getTime();
+                    //long days = TimeUnit.MILLISECONDS.toDays(time);
+
+                    Duration duration = Duration.ofMillis(time);
+                    long daysSinceUnix = duration.toDays();
+
                     // Create a userMap so we can create user in the User Collection in FireStore
                     Map<String, Object> userObj = new HashMap<>();
                     userObj.put("userId", currentUserId);
                     userObj.put("email", email);
                     userObj.put("username", userName_send);
                     userObj.put("surName", surName_send);
-                    userObj.put("foreign_key", arrayListForAssigningEmail.get(0));
+                    userObj.put("foreign_key", currentUserId /*arrayListForAssigningEmail.get(0)*/);
                     userObj.put("hoursOverall", 0);
                     userObj.put("hoursToSettle", 0);
                     userObj.put("paycheck", 0);
+                    userObj.put("entriesAmount", daysSinceUnix+"_"+"0");
 
-                    Log.i("Hello five", "five");
 
                     collectionReferenceUser.document(email).set(userObj).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override

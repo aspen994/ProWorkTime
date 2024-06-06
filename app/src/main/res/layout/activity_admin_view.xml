@@ -16,7 +16,7 @@
         android:id="@+id/btn_data_picker"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Wybierz datę"
+        android:hint="@string/pick_date"
         android:backgroundTint="@color/teal_700"
         android:padding="10dp"/>
         <TextView
@@ -27,6 +27,10 @@
             android:padding="10dp"/>
     </LinearLayout>
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewCardy"
         android:layout_width="match_parent"
@@ -36,15 +40,29 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"/>
 
-   <!-- <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewAdmin"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />-->
+        <TextView
+            android:id="@+id/lack_data"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textAlignment="center"
+            android:gravity="center"
+            android:text="@string/lack_data_for"
+            android:textSize="70sp"/>
+
+    </FrameLayout>
+
+
+
+
+    <!-- <androidx.recyclerview.widget.RecyclerView
+         android:id="@+id/recyclerViewAdmin"
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+         app:layout_constraintBottom_toBottomOf="parent"
+         app:layout_constraintEnd_toEndOf="parent"
+         app:layout_constraintStart_toStartOf="parent"
+         app:layout_constraintTop_toTopOf="parent" />-->
     </LinearLayout>
 

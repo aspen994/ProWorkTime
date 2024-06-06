@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">OgródApp</string>
+    <string name="app_name" translatable="false">OgródApp</string>
     <string name="open">Open</string>
     <string name="close">Close</string>
     <string name="enter_password">Wprowadź hasło</string>
@@ -44,6 +44,9 @@
     <string name="no_user">Nie ma takiego użytkownika</string>
     <string name="admin_panel">Zarządzaj pracownikami</string>
     <string name="money_paid">Wypłacone pieniądze :\u0020 </string>
+    <string name="pick_date">Wybierz datę </string>
+
+
     <string-array name="language">
         <item>Wybierz język</item>
         <item>polski</item>
@@ -94,4 +97,7 @@
     <string name="title_activity_tabbed_scanning">Tabbed Scanning</string>
     <string name="tabs">Tabs</string>
     <string name="about">About</string>
+    <string name="lack_data_for">NO DATA FOR \n</string>
+    <string name="lack_data">NO DATA</string>
+
 </resources>

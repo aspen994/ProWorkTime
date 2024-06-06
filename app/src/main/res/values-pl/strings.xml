@@ -93,5 +93,8 @@
     <string name="title_activity_tabbed_scanning">Tabbed Scanning</string>
     <string name="tabs">Tabs</string>
     <string name="about">About</string>
+    <string name="lack_data_for">BRAK DANYCH DLA \n</string>
+    <string name="lack_data">BRAK DANYCH</string>
+    <string name="pick_date">Wybierz datę </string>
 
 </resources>

@@ -43,6 +43,8 @@
     <string name="complete_the_fields">Заповніть поля правильно</string>
     <string name="no_user">Такого користувача немає</string>
     <string name="admin_panel">Керуйте співробітниками</string>
+    <string name="lack_data_for">НЕМАЄ ДАНИХ ДЛЯ \n</string>
+    <string name="pick_date">Wybierz datę </string>
     <string-array name="language">
         <item>вибрати мову</item>
         <item>polski</item>
@@ -92,4 +94,5 @@
     <string name="title_activity_tabbed_scanning">Tabbed Scanning</string>
     <string name="tabs">Tabs</string>
     <string name="about">About</string>
+    <string name="lack_data">BRAK DANYCH DLA \n</string>
 </resources>

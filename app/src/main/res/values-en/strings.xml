@@ -6,9 +6,9 @@
     <string name="select_language">Select language</string>
     <string name="login">Login</string>
     <string name="login_in">Log in</string>
-    <string name="lack_of_account">You do not have an account ? \nRegister</string>
+    <string name="lack_of_account">You do not have \n an account ? Register</string>
     <string name="enter_email">Enter email</string>
-    <string name="forget_password">You forgot your password.\n Reset</string>
+    <string name="forget_password">You forgot your\n password. Reset</string>
     <string name="register">Register</string>
     <string name="enter_name">Enter name</string>
     <string name="enter_surname">Enter surname</string>
@@ -92,4 +92,7 @@
     <string name="title_activity_tabbed_scanning">Tabbed Scanning</string>
     <string name="tabs">Tabs</string>
     <string name="about">About</string>
+    <string name="lack_data_for">NO DATA FOR \n</string>
+    <string name="lack_data">NO DATA</string>
+    <string name="pick_date">Pick Date </string>
 </resources>

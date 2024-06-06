@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.75" />
+        app:layout_constraintGuide_begin="400dp" />
 
     <TextView
         android:id="@+id/textView_login_title"
@@ -28,46 +28,20 @@
         app:layout_constraintStart_toStartOf="@+id/guideline"
         app:layout_constraintTop_toTopOf="@id/guideline3" />
 
-    <TextView
-        android:id="@+id/textViewZresetuj"
+    <AutoCompleteTextView
+        android:id="@+id/autoCompleteTextView_email_main"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="#5B05DC5B"
-        android:text="@string/forget_password"
-        android:textColor="@color/black"
-        android:maxLines="4"
-        android:textSize="16dp"
-        app:layout_constraintStart_toStartOf="@id/guideline"
-        app:layout_constraintTop_toBottomOf="@+id/button_login"
-        app:layout_constraintEnd_toEndOf="@id/guideline4"/>
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.40" />
-
-
-    <TextView
-        android:id="@+id/textViewRegister"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="#5B05DC5B"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/rounded_corner"
         android:gravity="center"
-        android:text="@string/lack_of_account"
-        android:textColor="@color/black"
-        android:textSize="16dp"
-        app:layout_constraintEnd_toEndOf="@id/guideline2"
-        app:layout_constraintStart_toStartOf="@id/guideline5"
-        app:layout_constraintTop_toBottomOf="@+id/button_login"
-        />
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.60" />
+        android:hint="@string/enter_email"
+        android:textColorHint="#C8000000"
+        android:textSize="20dp"
+        app:layout_constraintEnd_toEndOf="@+id/guideline2"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline"
+        app:layout_constraintTop_toBottomOf="@id/textView_login_title" />
 
     <AutoCompleteTextView
         android:id="@+id/autoCompleteTextView_password_main"
@@ -85,6 +59,20 @@
         app:layout_constraintStart_toStartOf="@id/guideline"
         app:layout_constraintTop_toBottomOf="@+id/autoCompleteTextView_email_main" />
 
+    <TextView
+        android:id="@+id/textViewRegister"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="#5B05DC5B"
+        android:gravity="center"
+        android:text="@string/lack_of_account"
+        android:textColor="@color/black"
+        android:textSize="16dp"
+        app:layout_constraintEnd_toEndOf="@id/guideline2"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@id/guideline5"
+        app:layout_constraintTop_toBottomOf="@+id/button_login" />
+
     <Button
         android:id="@+id/button_login"
         android:layout_width="wrap_content"
@@ -94,24 +82,38 @@
         android:gravity="center"
         android:text="@string/login_in"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.481"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/autoCompleteTextView_password_main" />
 
-    <AutoCompleteTextView
-        android:id="@+id/autoCompleteTextView_email_main"
+    <TextView
+        android:id="@+id/textViewZresetuj"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:background="@drawable/rounded_corner"
-        android:gravity="center"
-        android:hint="@string/enter_email"
-        android:textColorHint="#C8000000"
-        android:textSize="20dp"
-        app:layout_constraintEnd_toEndOf="@+id/guideline2"
+        android:background="#5B05DC5B"
+        android:maxLines="4"
+        android:text="@string/forget_password"
+        android:textColor="@color/black"
+        android:textSize="16dp"
+        app:layout_constraintEnd_toEndOf="@id/guideline4"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/guideline"
-        app:layout_constraintTop_toBottomOf="@id/textView_login_title" />
+        app:layout_constraintStart_toStartOf="@id/guideline"
+        app:layout_constraintTop_toBottomOf="@+id/button_login" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.40" />
+
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.60" />
 
 
     <androidx.constraintlayout.widget.Guideline

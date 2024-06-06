@@ -7,8 +7,10 @@
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove"/>
-
+    <uses-permission android:name="com.android.vending.BILLING" />
+    <uses-permission
+        android:name="com.google.android.gms.permission.AD_ID"
+        tools:node="remove" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
@@ -33,6 +35,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.OgródApp"
         tools:targetApi="31">
+        <activity
+            android:name=".view.Subs"
+            android:exported="false" />
+        <activity
+            android:name=".subscription.Subscription"
+            android:exported="false" />
         <activity
             android:name=".QRCodeManagement"
             android:exported="false" />

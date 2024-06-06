@@ -42,6 +42,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+        <TextView
+            android:id="@+id/lack_data"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textAlignment="center"
+            android:gravity="center"
+            android:text="@string/lack_data"
+            android:textSize="70sp"/>
+
     </FrameLayout>
+
+
+
 
 </LinearLayout>

@@ -4,6 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:background="@color/black"
     android:layout_height="match_parent">
 
     <androidx.drawerlayout.widget.DrawerLayout
@@ -35,6 +36,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="20dp"
+                android:textColor="@color/white"
                 android:text="@string/time"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView_date" />
@@ -45,6 +47,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="20dp"
+                android:textColor="@color/white"
                 android:text="00 : 00 : 00"
                 app:layout_constraintStart_toEndOf="@+id/textView6"
                 app:layout_constraintTop_toBottomOf="@+id/textview_dateToInsert" />
@@ -55,6 +58,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="80dp"
+                android:textColor="@color/white"
                 android:text="18.05.2023 r."
                 app:layout_constraintStart_toEndOf="@+id/textView_date"
                 app:layout_constraintTop_toBottomOf="@+id/buttonQR"
@@ -64,6 +68,7 @@
                 android:id="@+id/textView_begin_work"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/white"
                 android:text="@string/begin_work"
                 android:textSize="20sp"
                 android:layout_marginTop="20dp"
@@ -77,6 +82,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:layout_marginStart="20dp"
+                android:textColor="@color/white"
                 android:text="Użytkownik nr 1"
                 app:layout_constraintStart_toEndOf="@+id/usernameTitle"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -87,6 +93,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="20dp"
+                android:textColor="@color/white"
                 android:text="@string/user"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -97,6 +104,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="80dp"
+                android:textColor="@color/white"
                 android:text="@string/date"
                 app:layout_constraintStart_toStartOf="parent"
                 tools:layout_editor_absoluteY="332dp"
@@ -108,6 +116,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="14dp"
+                android:textColor="@color/white"
                 android:text=""
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView6" />
@@ -118,6 +127,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="20dp"
+                android:textColor="@color/white"
                 android:text=""
                 app:layout_constraintBaseline_toBaselineOf="@+id/textView_pausa"
                 app:layout_constraintStart_toEndOf="@+id/textView_pausa" />
@@ -127,6 +137,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="52dp"
+                android:textColor="@color/white"
                 android:text=""
                 android:textSize="20sp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -139,6 +150,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
+                android:textColor="@color/white"
                 android:textSize="20sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -149,6 +161,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:textColor="@color/white"
                 android:gravity="center"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
