@@ -7,6 +7,7 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
+import com.osinTechInnovation.ogrdapp.R;
 import com.osinTechInnovation.ogrdapp.converter.TimestampConverter;
 import com.osinTechInnovation.ogrdapp.dao.TimeModelDAO;
 import com.osinTechInnovation.ogrdapp.model.TimeModel;
@@ -24,7 +25,7 @@ public abstract class TimeModelDatabase extends RoomDatabase {
             dbInstance = Room.databaseBuilder(
                     context.getApplicationContext(),
                     TimeModelDatabase.class,
-                    "timeModel_db").
+                    context.getString(R.string.name_of_db)).
                     fallbackToDestructiveMigration()
                     .build();
 

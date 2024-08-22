@@ -1,8 +1,11 @@
 package com.osinTechInnovation.ogrdapp.repository;
 
 
+import static com.osinTechInnovation.ogrdapp.view.UserOverall.round;
 
 import android.app.Application;
+import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -10,12 +13,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
+import com.google.android.gms.tasks.OnCanceledListener;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -25,13 +31,16 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-
+import com.osinTechInnovation.ogrdapp.App;
 import com.osinTechInnovation.ogrdapp.R;
+import com.osinTechInnovation.ogrdapp.UserMainActivity;
 import com.osinTechInnovation.ogrdapp.dao.TimeModelDAO;
 import com.osinTechInnovation.ogrdapp.db.TimeModelDatabase;
 import com.osinTechInnovation.ogrdapp.model.QRModel;
 import com.osinTechInnovation.ogrdapp.model.TimeModel;
 import com.osinTechInnovation.ogrdapp.model.User;
+import com.osinTechInnovation.ogrdapp.utility.DecodeDaysAndEntries;
+import com.osinTechInnovation.ogrdapp.utility.SingleLiveEvent;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -50,25 +59,29 @@ public class AuthRepository {
     private final Application application;
     private final MutableLiveData<FirebaseUser> firebaseUserMutableLiveData;
     private final MutableLiveData<Boolean> userLoggedMutableLiveData;
-    private final MutableLiveData<User> getUsernameAndSurname;
-    private final MutableLiveData<User> getUsernameAndSurname2;
+    private final MutableLiveData<User> getUsernameAndSurnameLiveData;
+    private final MutableLiveData<User> getUsernameAndSurname2LiveData;
     private final MutableLiveData<List<TimeModel>> timeModelArrayListMutableLiveData;
     private final MutableLiveData<Boolean> ifAdminMutableLiveData;
     private final MutableLiveData<List<User>> userArrayListOfUserMutableLiveData;
     private final MutableLiveData<List<TimeModel>> timeForUserListMutableLiveData;
 
+
     private final MutableLiveData<Map<String, Object>> paycheckHoursToSettleMutableLiveData;
     private final MutableLiveData<String> emailMutableLiveData;
     private final MutableLiveData<String> adminIdMutableLiveData;
     private final MutableLiveData<List<QRModel>> qrModelMutableLiveData;
-    private final MutableLiveData<QRModel> qrModelMutableLiveData2;
     private final MutableLiveData<List<TimeModel>> getAllTimeModelsForAdminSQLLiveData;
+    private final SingleLiveEvent<Map<String, Object>> singleLiveEvent;
+    private final SingleLiveEvent<Map<String, Object>> singleLiveEventStart;
 
-    //TODO 29.04.2024 r - Podmieniłem
-    private  MutableLiveData<Map<String,Object>> getAmountEntriesLiveData;
-    private  MutableLiveData<Boolean> isAdminExist;
-
-    //private MutableLiveData<String> getAmountEntriesLiveData;
+    private MutableLiveData<String> getAmountEntriesSnapshotListenerLiveData;
+    private MutableLiveData<Boolean> isAdminExistLiveData;
+    private MutableLiveData<String> getDeviceIdLiveData;
+    private MutableLiveData<Boolean> youCanCheckNowLiveData;
+    private MutableLiveData<String> checkSubscriptionLiveData;
+    private MutableLiveData<Boolean> valueToOpenDialogLiveData;
+    private MutableLiveData<Boolean> isUserInDBLiveDataLiveData;
 
     private final FirebaseAuth firebaseAuth;
     private FirebaseUser fireBaseUser;
@@ -77,14 +90,21 @@ public class AuthRepository {
     private final CollectionReference collectionReferenceQrCode;
     private String currentUserId;
     private final List<String> arrayListForAssigningEmail;
-    boolean ifAdmin = false;
-    private final String LOGER = "FirebaseRepository";
+    private final String LOGGER = "FirebaseRepository";
 
     private final TimeModelDAO timeModelDAO;
     private final ExecutorService executor;
 
     private final String ROOM_DB_LOGGER = "ROOM_DB";
     private final String FIREBASE_LOGGER = "FIREBASE_DB";
+    private User user;
+    public String email;
+    public String orderIdField = "Nothing";
+    public Observer<String> observer;
+    private long sumOfTime = 0;
+    private long sumOfTimeSettle = 0;
+    private double sumOfPaidMoney = 0;
+    private String currentUserEmail = "";
 
 
     public AuthRepository(Application application) {
@@ -92,7 +112,7 @@ public class AuthRepository {
         this.application = application;
         this.firebaseUserMutableLiveData = new MutableLiveData<>();
         this.userLoggedMutableLiveData = new MutableLiveData<>();
-        this.getUsernameAndSurname = new MutableLiveData<>();
+        this.getUsernameAndSurnameLiveData = new MutableLiveData<>();
         this.timeModelArrayListMutableLiveData = new MutableLiveData<>();
         this.arrayListForAssigningEmail = new ArrayList<>();
         this.ifAdminMutableLiveData = new MutableLiveData<>();
@@ -103,12 +123,16 @@ public class AuthRepository {
         this.adminIdMutableLiveData = new MutableLiveData<>();
         this.qrModelMutableLiveData = new MutableLiveData<>();
         this.getAllTimeModelsForAdminSQLLiveData = new MutableLiveData<>();
-        this.qrModelMutableLiveData2 = new MutableLiveData<>();
-        this.getUsernameAndSurname2= new MutableLiveData<>();
-        this.getAmountEntriesLiveData = new MutableLiveData<>();
-        this.isAdminExist = new MutableLiveData<>();
-
-
+        this.getUsernameAndSurname2LiveData = new MutableLiveData<>();
+        this.isAdminExistLiveData = new MutableLiveData<>();
+        this.getDeviceIdLiveData = new MutableLiveData<>();
+        this.youCanCheckNowLiveData = new MutableLiveData<>();
+        this.checkSubscriptionLiveData = new MutableLiveData<>();
+        this.valueToOpenDialogLiveData = new MutableLiveData<>();
+        this.isUserInDBLiveDataLiveData = new MutableLiveData<>();
+        this.getAmountEntriesSnapshotListenerLiveData = new MutableLiveData<>();
+        this.singleLiveEvent = new SingleLiveEvent<>();
+        this.singleLiveEventStart = new SingleLiveEvent<>();
 
         firebaseAuth = FirebaseAuth.getInstance();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -123,50 +147,53 @@ public class AuthRepository {
         // Used for Background Database Operations
         executor = Executors.newSingleThreadExecutor();
 
+
         if (firebaseAuth.getCurrentUser() != null) {
             fireBaseUser = firebaseAuth.getCurrentUser();
+            isUserInDB(fireBaseUser.getEmail());
             firebaseUserMutableLiveData.postValue(firebaseAuth.getCurrentUser());
             currentUserId = fireBaseUser.getUid();
             adminIdMutableLiveData.postValue(currentUserId);
+            getEmail();
         }
 
+        user = new User();
+
+
     }
 
-    public MutableLiveData<Boolean> getIsAdminExist() {
-        return isAdminExist;
+    public MutableLiveData<String> getGetAmountEntriesSnapshotListenerLiveData() {
+        return getAmountEntriesSnapshotListenerLiveData;
     }
 
-    public MutableLiveData<Map<String, Object>> getGetAmountEntriesLiveData() {
-        return getAmountEntriesLiveData;
-    }
- /*   public MutableLiveData<String> getGetAmountEntriesLiveData() {
-        return getAmountEntriesLiveData;
-    }*/
-
-   /* public void setGetAmountEntriesLiveData(MutableLiveData<Map<String, Object>> getAmountEntriesLiveData) {
-        this.getAmountEntriesLiveData = getAmountEntriesLiveData;
-    }*/
-
-    public void updateAmountEntries(String updateAmountEntries){
-        Map<String,Object> mapa = new HashMap<>();
-
-        mapa.put("entriesAmount",updateAmountEntries);
-
-        Log.i("entriesAmount",updateAmountEntries);
-
-        collectionReferenceUser.document(fireBaseUser.getEmail()).update(mapa).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void unused) {
-
-            }
-        });
+    public SingleLiveEvent<Map<String, Object>> getSingleLiveEventStart() {
+        return singleLiveEventStart;
     }
 
-    public String getUserId() {
-        fireBaseUser = firebaseAuth.getCurrentUser();
-        assert fireBaseUser != null;
-        return fireBaseUser.getUid();
+    public SingleLiveEvent<Map<String, Object>> getSingleLiveEvent() {
+        return singleLiveEvent;
     }
+
+    public MutableLiveData<Boolean> getIsUserInDBLiveDataLiveData() {
+        return isUserInDBLiveDataLiveData;
+    }
+
+    public MutableLiveData<Boolean> getValueToOpenDialogLiveData() {
+        return valueToOpenDialogLiveData;
+    }
+
+    public MutableLiveData<String> getCheckSubscriptionLiveData() {
+        return checkSubscriptionLiveData;
+    }
+
+    public MutableLiveData<Boolean> getYouCanCheckNowLiveData() {
+        return youCanCheckNowLiveData;
+    }
+
+    public MutableLiveData<Boolean> getIsAdminExistLiveData() {
+        return isAdminExistLiveData;
+    }
+
 
     public MutableLiveData<List<TimeModel>> getGetAllTimeModelsForAdminSQLLiveData() {
         return getAllTimeModelsForAdminSQLLiveData;
@@ -199,12 +226,8 @@ public class AuthRepository {
         return userLoggedMutableLiveData;
     }
 
-    public MutableLiveData<User> getGetUsernameAndSurname() {
-        return getUsernameAndSurname;
-    }
-
-    public MutableLiveData<User> getGetUsernameAndSurname2() {
-        return getUsernameAndSurname2;
+    public MutableLiveData<User> getGetUsernameAndSurnameLiveData() {
+        return getUsernameAndSurnameLiveData;
     }
 
     public MutableLiveData<Map<String, Object>> getPaycheckHoursToSettleMutableLiveData() {
@@ -220,80 +243,394 @@ public class AuthRepository {
         return adminIdMutableLiveData;
     }
 
-    public void updateEntriesAmount(String updatedtedValue,String email)
-    {
-        Map<String,Object> mapa = new HashMap<>();
-
-        mapa.put("entriesAmount",updatedtedValue);
-
-        Log.i("entriesAmount",updatedtedValue);
-
-        collectionReferenceUser.document(email).update(mapa);
-    }
-
-    //TODO 29.04.2024 r  - podmieniłem
- /*   public MutableLiveData<String> getAmountEntries(String id){
-        System.gc();
-        getAmountEntriesLiveData = new MutableLiveData<>();
-        collectionReferenceUser.whereEqualTo("userId",id).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+    public void isUserInDB(String email) {
+        collectionReferenceUser.whereEqualTo("email", email).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
 
                 if (!queryDocumentSnapshots.isEmpty()) {
+                    isUserInDBLiveDataLiveData.postValue(true);
+                } else {
+                    isUserInDBLiveDataLiveData.postValue(false);
+                }
+            }
+        });
+    }
 
+    public void updateAmountEntries(String updateAmountEntries) {
+        Map<String, Object> mapa = new HashMap<>();
+
+        mapa.put("entriesAmount", updateAmountEntries);
+
+        collectionReferenceUser.document(fireBaseUser.getEmail()).update(mapa);
+    }
+
+    public MutableLiveData<String> getEmail() {
+        collectionReferenceUser.whereEqualTo("userId", currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                if (!queryDocumentSnapshots.isEmpty()) {
                     for (QueryDocumentSnapshot user : queryDocumentSnapshots) {
-
                         User user1 = user.toObject(User.class);
-
-                        String entriesAmount = user1.getEntriesAmount();
-                        Log.i("Tutaj Hel",entriesAmount);
-
-                        getAmountEntriesLiveData.setValue(entriesAmount);
-
+                        emailMutableLiveData.postValue(user1.getEmail());
+                        email = user1.getEmail();
                     }
-
-                    Log.i(FIREBASE_LOGGER, " " + "getDataFirebase");
                 }
             }
         });
 
-        return getAmountEntriesLiveData;
+        return emailMutableLiveData;
+    }
 
-    }*/
 
-    public MutableLiveData<Map<String,Object>> getAmountEntries(String id){
-        System.gc();
-        getAmountEntriesLiveData = new MutableLiveData<>();
-        collectionReferenceUser.whereEqualTo("userId",id).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+    public String getUserId() {
+        fireBaseUser = firebaseAuth.getCurrentUser();
+        assert fireBaseUser != null;
+        return fireBaseUser.getUid();
+    }
+
+
+
+    public void updateEntriesAmount(TimeModel timeModel) {
+        long time1 = timeModel.getTimeAdded().toDate().getTime();
+
+        Duration duration1 = Duration.ofMillis(time1);
+        int daysSinceUnixTimeModel = (int) duration1.toDays();
+
+        long time = new Date().getTime();
+
+        Duration duration = Duration.ofMillis(time);
+        int daysSinceUnixCurrent = (int) duration.toDays();
+
+        DecodeDaysAndEntries decodeDaysAndEntries = new DecodeDaysAndEntries();
+
+        collectionReferenceUser.whereEqualTo("email", email).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                if (!queryDocumentSnapshots.isEmpty()) {
+                    for (QueryDocumentSnapshot user : queryDocumentSnapshots) {
+
+                        User user1 = user.toObject(User.class);
+                        String entriesAmount = user1.getEntriesAmount();
+
+                        if (daysSinceUnixTimeModel == daysSinceUnixCurrent) {
+
+                            int amountEntriesDecoded = decodeDaysAndEntries.decodeToAmountEntries(entriesAmount);
+                            int dayDecoded = decodeDaysAndEntries.decodeDays(entriesAmount);
+
+                            amountEntriesDecoded--;
+
+                            Map<String, Object> mapa = new HashMap<>();
+
+                            mapa.put("entriesAmount", dayDecoded + "_" + amountEntriesDecoded);
+
+                            collectionReferenceUser.document(email).update(mapa);
+                        }
+                    }
+                }
+            }
+        });
+
+
+    }
+
+    public void updateUserWithSubs(String orderId) {
+        Map<String, Object> resultToSend = new HashMap<>();
+        resultToSend.put("subsOrderId", orderId);
+        collectionReferenceUser.document(email).update(resultToSend);
+    }
+
+
+    public void isSubscriptionAlreadyExist(String orderId) {
+        collectionReferenceUser.whereEqualTo("subsOrderId", orderId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                for (QueryDocumentSnapshot user : queryDocumentSnapshots) {
+
+                    User user1 = user.toObject(User.class);
+                    Map<String, Object> mapa = new HashMap<>();
+                    orderIdField = orderId;
+
+                    if (!queryDocumentSnapshots.isEmpty()) {
+
+                        checkSubscriptionLiveData.postValue(user1.getEmail());
+/*
+                        if(email.equals(user1.getEmail())){
+                            Log.i("Show me the user",user1.getEmail());
+
+                            String subsOrderId = user1.getSubsOrderId();
+
+                            mapa.put("subsOrderId",subsOrderId);
+
+
+                            checkSubscribtion.postValue(true);
+                        }else {
+                            checkSubscribtion.postValue(false);
+                        }
+*/
+
+
+                        Log.i(FIREBASE_LOGGER, " " + "getDataFirebase");
+                    } else {
+                        checkSubscriptionLiveData.postValue("Null");
+
+                    /*    emailMutableLiveData.observeForever( new Observer<String>() {
+                            @Override
+                            public void onChanged(String s) {
+
+                                Log.i("Ssss check",s);
+                                Log.i("user1.getEmail()",user1.getEmail());
+
+                                if (s.equals(user1.getEmail()) && user1.getSubsOrderId().isEmpty()) {
+
+
+                                    Log.i("Show me the user", user1.getEmail());
+
+                                    String subsOrderId = user1.getSubsOrderId();
+
+                                    mapa.put("subsOrderId", subsOrderId);
+
+                                    collectionReferenceUser.document(email).update(mapa).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void unused) {
+
+                                        }
+                                    });
+
+                                }
+                            }
+                        });*/
+
+
+                    }
+                }
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+
+            }
+        }).addOnCanceledListener(new OnCanceledListener() {
+            @Override
+            public void onCanceled() {
+
+            }
+        }).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+
+
+                if (orderIdField.equals("Nothing")) {
+
+
+                    collectionReferenceUser.whereEqualTo("userId", currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                        @Override
+                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                          /*  checkSubscribtion.observeForever(new Observer<Boolean>() {
+                                @Override
+                                public void onChanged(Boolean aBoolean) {
+
+                                }
+                            });*/
+
+                            for (QueryDocumentSnapshot user : queryDocumentSnapshots) {
+
+
+                                User user1 = user.toObject(User.class);
+                                Map<String, Object> mapa = new HashMap<>();
+
+                                observer = new Observer<String>() {
+                                    @Override
+                                    public void onChanged(String s) {
+                                        Log.i("Ssss check", s);
+                                        Log.i("user1.getEmail()", user1.getEmail());
+
+                                        if (s.equals(user1.getEmail())) {
+
+
+                                            Log.i("Show me the user", user1.getEmail());
+
+
+                                            checkSubscriptionLiveData.postValue(user1.getEmail());
+                                            mapa.put("subsOrderId", orderId);
+
+                                            collectionReferenceUser.document(email).update(mapa).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void unused) {
+
+                                                }
+                                            });
+
+                                        }
+                                    }
+                                };
+
+                                if (!queryDocumentSnapshots.isEmpty()) {
+                                    emailMutableLiveData.observeForever(observer);
+                                }
+                            }
+
+                            emailMutableLiveData.removeObserver(observer);
+
+                            // checkSubscribtion= null;
+                        }
+                    });
+                    Log.i("Tutaj małpo", orderIdField);
+                } else {
+                    Log.i("Tutaj małpo 2 ", orderIdField);
+                }
+                orderIdField = "Nothing";
+
+            }
+
+
+        });
+
+
+
+
+
+
+
+      /*  collectionReferenceUser.whereEqualTo("userId",currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                checkSubscribtion.observeForever(new Observer<Boolean>() {
+                    @Override
+                    public void onChanged(Boolean aBoolean) {
+
+                    }
+                });
+
+                for (QueryDocumentSnapshot user : queryDocumentSnapshots) {
+
+                    Log.i("kurwo jego","kurwo jego");
+
+                    User user1 = user.toObject(User.class);
+                    Log.i("Pokaż jaja",user1.getEmail());
+                    Map<String, Object> mapa = new HashMap<>();
+
+
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        emailMutableLiveData.observeForever( new Observer<String>() {
+                            @Override
+                            public void onChanged(String s) {
+
+                                Log.i("Ssss check",s);
+                                Log.i("user1.getEmail()",user1.getEmail());
+
+                                if (s.equals(user1.getEmail()) && *//*user1.getSubsOrderId().isEmpty()||*//*user1.getSubsOrderId()==null ) {
+
+
+                                    Log.i("Show me the user", user1.getEmail());
+
+
+                                    mapa.put("subsOrderId", orderId);
+
+                                    collectionReferenceUser.document(email).update(mapa).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void unused) {
+
+                                        }
+                                    });
+
+                                }
+                            }
+                        });
+
+                    }
+                }
+
+            }
+        });*/
+
+
+    }
+
+    public SingleLiveEvent<Map<String, Object>> getAmountEntriesStart(String id) {
+
+        collectionReferenceUser.whereEqualTo("userId", id).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
 
                 if (!queryDocumentSnapshots.isEmpty()) {
-
+                    Map<String, Object> mapa = new HashMap<>();
                     for (QueryDocumentSnapshot user : queryDocumentSnapshots) {
 
                         User user1 = user.toObject(User.class);
-                        Map<String,Object> mapa = new HashMap<>();
-
 
                         String entriesAmount = user1.getEntriesAmount();
                         String email = user1.getEmail();
 
-                        mapa.put("entriesAmount",entriesAmount);
-                        mapa.put("email",email);
+                        mapa.put("entriesAmount", entriesAmount);
+                        mapa.put("email", email);
 
-
-                        getAmountEntriesLiveData.setValue(mapa);
+                        Log.i("entriesAmount", entriesAmount);
+                        Log.i("email", email);
 
                     }
 
-                    Log.i(FIREBASE_LOGGER, " " + "getDataFirebase");
+                    singleLiveEventStart.postValue(mapa);
+
                 }
             }
         });
 
-        return getAmountEntriesLiveData;
+        return singleLiveEventStart;
 
+    }
+
+
+    public SingleLiveEvent<Map<String, Object>> getAmountEntries(String id) {
+
+        collectionReferenceUser.whereEqualTo("userId", id).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                if (!queryDocumentSnapshots.isEmpty()) {
+                    Map<String, Object> mapa = new HashMap<>();
+                    for (QueryDocumentSnapshot user : queryDocumentSnapshots) {
+
+                        User user1 = user.toObject(User.class);
+
+                        String entriesAmount = user1.getEntriesAmount();
+                        String email = user1.getEmail();
+
+                        mapa.put("entriesAmount", entriesAmount);
+                        mapa.put("email", email);
+
+                        Log.i("entriesAmount", entriesAmount);
+                        Log.i("email", email);
+
+                    }
+
+                    singleLiveEvent.postValue(mapa);
+
+                }
+            }
+        });
+
+        return singleLiveEvent;
+
+    }
+
+    public LiveData<String> getDeviceId() {
+        collectionReferenceUser.whereEqualTo("userId", currentUserId).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                if (!value.isEmpty()) {
+                    for (QueryDocumentSnapshot snapshot : value) {
+                        getDeviceIdLiveData.postValue(snapshot.getString("deviceId"));
+
+                    }
+                }
+
+            }
+        });
+        return getDeviceIdLiveData;
     }
 
     //FOR QRCODE
@@ -313,7 +650,7 @@ public class AuthRepository {
                 qrModelMutableLiveData.postValue(qrModelLinkedList);
             }
         }).addOnFailureListener((Exception e) ->
-                Log.i("Fail setNewCodeQR", Optional.ofNullable(e.getMessage())+""));
+                Log.i("Fail setNewCodeQR", Optional.ofNullable(e.getMessage()) + ""));
 
     }
 
@@ -327,6 +664,9 @@ public class AuthRepository {
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
 
                         if (!queryDocumentSnapshots.isEmpty()) {
+                            sumOfTime = 0;
+                            sumOfPaidMoney = 0;
+                            sumOfTimeSettle = 0;
 
                             List<TimeModel> timeModelArrayList = new ArrayList<>();
                             for (QueryDocumentSnapshot timeModels : queryDocumentSnapshots) {
@@ -340,19 +680,36 @@ public class AuthRepository {
                                         return o1.getTimeAdded().compareTo(o2.getTimeAdded());
                                     }
                                 });
+                                sumOfTime += timeModel.getTimeOverallInLong();
+                                if (timeModel.getMoneyOverall()) {
+                                    sumOfTimeSettle += timeModel.getTimeOverallInLong();
+                                    sumOfPaidMoney += timeModel.getWithdrawnMoney();
+                                }
+                                Log.i("getTimeForUser UserName", timeModel.getUserName());
+                                Log.i("getTimeForUser TimeAded", timeModel.getTimeAdded().toString());
+                                Log.i("getTimeForUser Id", timeModel.getDocumentId());
+                                Log.i("getTimeForUser timeStam", timeModel.getTimestamp().toDate() + "");
+                                Log.i("------------", "--------------");
 
                             }
+                            Log.i("Sum of time USER", sumOfTime + "");
                             timeModelArrayListMutableLiveData.postValue(timeModelArrayList);
                             saveAllCollectionToSQLite(timeModelArrayList);
                             updateDataSQLite(timeModelArrayList);
                             Log.i(FIREBASE_LOGGER, " " + "getDataFirebase");
+                            Map<String, Object> result = new HashMap<>();
+                            result.put("hoursOverall", sumOfTime);
+                            result.put("hoursToSettle", sumOfTime - sumOfTimeSettle);
+                            result.put("paycheck", round(sumOfPaidMoney, 2));
+
+                            collectionReferenceUser.document(email).update(result);
                         }
 
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.i("Fail getData", Optional.ofNullable(e.getMessage())+"");
+                        Log.i("Fail getData", Optional.ofNullable(e.getMessage()) + "");
                     }
                 });
 
@@ -366,9 +723,97 @@ public class AuthRepository {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
 
+
                         if (!queryDocumentSnapshots.isEmpty()) {
-                            List<TimeModel> timeModelArrayList = new ArrayList<>();
-                            for (QueryDocumentSnapshot timeModels : queryDocumentSnapshots) {
+                            collectionReferenceUser.whereEqualTo("userId", userId).get().addOnSuccessListener((QuerySnapshot document) -> {
+                                if (!document.isEmpty()) {
+                                    TimeModel timeModel = null;
+                                    sumOfTime = 0;
+                                    sumOfPaidMoney = 0;
+                                    sumOfTimeSettle = 0;
+                                    currentUserEmail = "";
+                                    for (QueryDocumentSnapshot user : document) {
+                                        User user1 = user.toObject(User.class);
+                                        currentUserEmail = user1.getEmail();
+
+                                        //---------------------------------------
+                                        List<TimeModel> timeModelArrayList = new ArrayList<>();
+                                        Log.i("Pre loop", "WWWWWWWWWWWWWWWWWWWWWWWWW");
+                                        for (QueryDocumentSnapshot timeModels : queryDocumentSnapshots) {
+
+                                            timeModel = timeModels.toObject(TimeModel.class);
+
+                                            timeModelArrayList.add(timeModel);
+                                            Collections.sort(timeModelArrayList, new Comparator<TimeModel>() {
+                                                @Override
+                                                public int compare(TimeModel o1, TimeModel o2) {
+                                                    return o1.getTimeAdded().compareTo(o2.getTimeAdded());
+                                                }
+                                            });
+                                            Log.i("getTFU UserName", timeModel.getUserName());
+                                            Log.i("getTFU TimeAded", timeModel.getTimeAdded().toString());
+                                            Log.i("getTFU Id", timeModel.getDocumentId());
+                                            Log.i("getTFU timeStam", timeModel.getTimestamp().toDate() + "");
+
+                                            sumOfTime += timeModel.getTimeOverallInLong();
+                                            if (timeModel.getMoneyOverall()) {
+                                                sumOfTimeSettle += timeModel.getTimeOverallInLong();
+                                                sumOfPaidMoney += timeModel.getWithdrawnMoney();
+                                            }
+                                        }
+                                        Log.i("After loop", "MMMMMMMMMMMMMMMMMMMMMM");
+
+                                        saveAllCollectionToSQLite(timeModelArrayList);
+                                        Log.i("SAVING DATA", "SAVING DATA");
+
+                                        updateDataSQLite(timeModelArrayList);
+                                        Log.i("UPDATING DATA", "UPDATING DATA");
+
+                                        Log.i(FIREBASE_LOGGER, " " + "getTimeForUserNewMethod");
+                                        //---------------------------------------
+                                        Log.i("currenUserMailUpdated", currentUserEmail);
+
+                                        Map<String, Object> result = new HashMap<>();
+                                        result.put("hoursOverall", sumOfTime);
+                                        result.put("hoursToSettle", sumOfTime - sumOfTimeSettle);
+                                        result.put("paycheck", round(sumOfPaidMoney, 2));
+
+                                        collectionReferenceUser.document(currentUserEmail).update(result);
+
+
+                                    }
+                                }
+
+                            });
+
+
+
+                        /*    collectionReferenceUser.whereEqualTo("userId",timeModel.getId()).get().addOnSuccessListener((QuerySnapshot document)->{
+                                if(!document.isEmpty()){
+                                    for(QueryDocumentSnapshot user: document){
+                                        User user1 = user.toObject(User.class);
+                                        currentUserEmail = user1.getEmail();
+
+                                        Log.i("currenUserMailUpdated",currentUserEmail);
+
+                                        Map<String,Object> result = new HashMap<>();
+                                        result.put("hoursOverall",sumOfTime);
+                                        result.put("hoursToSettle",sumOfTime-sumOfTimeSettle);
+                                        result.put("paycheck",round(sumOfPaidMoney,2));
+
+                                        collectionReferenceUser.document(currentUserEmail).update(result);
+
+
+                                    }
+                                }
+                            });*/
+                        }
+
+                    }
+                });
+
+        /*
+        for (QueryDocumentSnapshot timeModels : queryDocumentSnapshots) {
 
                                 TimeModel timeModel = timeModels.toObject(TimeModel.class);
 
@@ -379,25 +824,30 @@ public class AuthRepository {
                                         return o1.getTimeAdded().compareTo(o2.getTimeAdded());
                                     }
                                 });
+                                sumOfTime += timeModel.getTimeOverallInLong();
+                                if(timeModel.getMoneyOverall()){
+                                    sumOfTimeSettle +=timeModel.getTimeOverallInLong();
+                                    sumOfPaidMoney += timeModel.getWithdrawnMoney();
+                                }
                                 Log.i("getTimeForUser UserName", timeModel.getUserName());
                                 Log.i("getTimeForUser TimeAded", timeModel.getTimeAdded().toString());
                                 Log.i("getTimeForUser Id", timeModel.getDocumentId());
                                 Log.i("getTimeForUser timeStam", timeModel.getTimestamp().toDate() + "");
+                                Log.i("------------","--------------");
+
                             }
-
+                            Log.i("Sum of time USER",sumOfTime+"");
+                            timeModelArrayListMutableLiveData.postValue(timeModelArrayList);
                             saveAllCollectionToSQLite(timeModelArrayList);
-                            Log.i("SAVING DATA", "SAVING DATA");
-
-
                             updateDataSQLite(timeModelArrayList);
-                            Log.i("UPDATING DATA", "UPDATING DATA");
+                            Log.i(FIREBASE_LOGGER, " " + "getDataFirebase");
+                            Map<String,Object> result = new HashMap<>();
+                            result.put("hoursOverall",sumOfTime);
+                            result.put("hoursToSettle",sumOfTime-sumOfTimeSettle);
+                            result.put("paycheck",round(sumOfPaidMoney,2));
 
-
-                            Log.i(FIREBASE_LOGGER, " " + "getTimeForUserNewMethod");
-                        }
-
-                    }
-                });
+                            collectionReferenceUser.document(email).update(result);
+         */
 
     }
 
@@ -421,9 +871,8 @@ public class AuthRepository {
                                 qrModelLink.add(qrModel);
                             }
                             qrModelMutableLiveData.postValue(qrModelLink);
-                            for(QRModel qrModel: qrModelLink)
-                            {
-                                Log.i("INSIDE QRMODE",qrModel.getDelay()+" ");
+                            for (QRModel qrModel : qrModelLink) {
+                                Log.i("INSIDE QRMODE", qrModel.getDelay() + " ");
                             }
                             Log.i(FIREBASE_LOGGER, " " + "getDataQRCode");
                         }
@@ -434,34 +883,6 @@ public class AuthRepository {
         return qrModelMutableLiveData;
     }
 
-    public LiveData<QRModel> getDataQRCode2(String adminId) {
-
-
-        collectionReferenceQrCode.whereEqualTo("idAdmin", adminId)
-                .get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-
-                        if (!queryDocumentSnapshots.isEmpty()) {
-
-                            for (QueryDocumentSnapshot qrModels : queryDocumentSnapshots) {
-
-                                QRModel qrModel = qrModels.toObject(QRModel.class);
-
-                                qrModelMutableLiveData2.postValue(qrModel);
-                                Log.i(FIREBASE_LOGGER, " " + "getDataQRCode");
-                            }
-
-
-
-                        }
-
-                    }
-                });
-
-        return qrModelMutableLiveData2;
-    }
 
     public LiveData<List<TimeModel>> getAllTimeModelsForAdminSQL(String userId) {
 
@@ -512,39 +933,45 @@ public class AuthRepository {
                                     Log.i(FIREBASE_LOGGER, " " + "getTimeForUserNewMethod");
                                 }
 
-                                    collectionReferenceUser.whereEqualTo("userId", userId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                                        @Override
-                                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                                            if (!queryDocumentSnapshots.isEmpty()) {
-                                                for (QueryDocumentSnapshot users : queryDocumentSnapshots) {
-                                                    executor.execute(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            User user = users.toObject(User.class);
-                                                            long hoursToSettle = user.getHoursOverall();
-                                                            long timeModelSumForTimeOverall = sumUp(timeModelDAO.getAllTimeModelsList(userId));
+                                collectionReferenceUser.whereEqualTo("userId", userId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                        if (!queryDocumentSnapshots.isEmpty()) {
+                                            for (QueryDocumentSnapshot users : queryDocumentSnapshots) {
+                                                executor.execute(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        User user = users.toObject(User.class);
+                                                        long hoursToSettle = user.getHoursOverall();
+                                                        long timeModelSumForTimeOverall = sumUp(timeModelDAO.getAllTimeModelsList(userId));
 
-                                                            Log.i("SZY userId: ", userId);
-                                                            Log.i("FROM USER VALUE", hoursToSettle + "");
-                                                            Log.i("FROM TimeModel VALUE", timeModelSumForTimeOverall + "");
+                                                        Log.i("SZY userId: ", userId);
+                                                        Log.i("FROM USER VALUE", hoursToSettle + "");
+                                                        Log.i("FROM TimeModel VALUE", timeModelSumForTimeOverall + "");
 
-                                                            if (hoursToSettle != timeModelSumForTimeOverall) {
-                                                                Log.i("ROZBIEŻNOŚĆ", "<<<<<<<<<");
-                                                                Log.i("USER VALUE", hoursToSettle + "");
-                                                                Log.i("TimeModel VALUE", timeModelSumForTimeOverall + "");
-                                                                Log.i("ROZBIEŻNOŚĆ", ">>>>>>>>>>");
-                                                                Log.i("Deleting and Adding A", userId);
-                                                                timeModelDAO.deleteListForTimeModel(userId);
-                                                                getDataFirebase(userId, new Timestamp(new Date(0)));
+                                                        if (hoursToSettle != timeModelSumForTimeOverall) {
+                                                            Log.i("ROZBIEŻNOŚĆ", "------------");
+                                                            Log.i("name", user.getUsername() + "");
+                                                            Log.i("USER VALUE", hoursToSettle + "");
+                                                            Log.i("TimeModel VALUE", timeModelSumForTimeOverall + "");
+                                                            Log.i("ROZBIEŻNOŚĆ", "----------");
+                                                            Log.i("Deleting and Adding A", userId);
+                                                            timeModelDAO.deleteListForTimeModel(userId);
+                                                            getDataFirebase(userId, new Timestamp(new Date(0)));
 
-                                                            }
+                                                        } else {
+                                                            Log.i("Brak ROZBIEŻNOŚĆ", "---------");
+                                                            Log.i("name", user.getUsername() + "");
+                                                            Log.i("hoursToSettle", hoursToSettle + "");
+                                                            Log.i("From LocalDB", timeModelSumForTimeOverall + "");
                                                         }
-                                                    });
+                                                    }
+                                                });
 
-                                                }
                                             }
                                         }
-                                    });
+                                    }
+                                });
 
                                 //}
 
@@ -556,10 +983,6 @@ public class AuthRepository {
                             }
                         });
 
-                ////
-                //List<TimeModel> value2 = timeModelDAO.getAllTimeModelsList(userId);
-
-                //readerList(value2);
                 Log.i(ROOM_DB_LOGGER, "ROOM_DB" + " " + "getAllTimeModelsForAdminSQL");
 
             }
@@ -644,6 +1067,10 @@ public class AuthRepository {
                                                             Log.i("Deleting and Adding U", "delete and add");
                                                             getDataFirebase(new Timestamp(new Date(0)));
 
+                                                        } else {
+                                                            Log.i("Brak ROZBIEŻNOŚĆ", ">>>>>>>>>>");
+                                                            Log.i("hoursToSettle", hoursToSettle + "");
+                                                            Log.i("From LocalDB", timeModelSumForTimeOverall + "");
                                                         }
                                                     }
                                                 });
@@ -658,7 +1085,7 @@ public class AuthRepository {
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
-                                Log.i("Fail getData", Optional.ofNullable(e.getMessage())+"");
+                                Log.i("Fail getData", Optional.ofNullable(e.getMessage()) + "");
 
                             }
                         });
@@ -717,7 +1144,7 @@ public class AuthRepository {
 
                         result.put("hoursToSettle", user1.getHoursToSettle());
 
-                        result.put("paycheck",user1.getPaycheck());
+                        result.put("paycheck", user1.getPaycheck());
 
 
 
@@ -728,7 +1155,7 @@ public class AuthRepository {
 
                         Log.i(FIREBASE_LOGGER, " " + "updatedDataHoursToFirebaseUser");
 
-                        updateUserTime(result,timeModel);
+                        updateUserTime(result, timeModel);
                     }
                 }
 
@@ -798,7 +1225,7 @@ public class AuthRepository {
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(application, "Fail on adding data", Toast.LENGTH_SHORT).show();
+                Toast.makeText(application, application.getString(R.string.fail_on_adding_data), Toast.LENGTH_SHORT).show();
                 Log.i(FIREBASE_LOGGER, " " + "saveDataToFireBase");
             }
         });
@@ -822,7 +1249,7 @@ public class AuthRepository {
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Log.i(FIREBASE_LOGGER + "FAIl", Optional.ofNullable(e.getMessage())+"");
+                Log.i(FIREBASE_LOGGER + "FAIl", Optional.ofNullable(e.getMessage()) + "");
             }
         });
     }
@@ -840,23 +1267,20 @@ public class AuthRepository {
         //to z modelu
 
         long hoursOverallToSend = hoursOverall + hoursFromTimeModel;
-        long hoursToSettleToSend=0;
-        double paycheckToSend =0;
+        long hoursToSettleToSend = 0;
+        double paycheckToSend = 0;
 
-        if(!timeModel.getMoneyOverall())
-        {
-             hoursToSettleToSend = hoursToSettle + hoursFromTimeModel;
+        if (!timeModel.getMoneyOverall()) {
+            hoursToSettleToSend = hoursToSettle + hoursFromTimeModel;
 
-        }
-        else {
-             hoursToSettleToSend = hoursToSettle;
-            paycheckToSend = paycheck -timeModel.getWithdrawnMoney();
-            resultToSend.put("paycheck",paycheckToSend);
+        } else {
+            hoursToSettleToSend = hoursToSettle;
+            paycheckToSend = paycheck - timeModel.getWithdrawnMoney();
+            resultToSend.put("paycheck", paycheckToSend);
         }
 
-        if(hoursOverallToSend==hoursToSettleToSend)
-        {
-            resultToSend.put("paycheck",0);
+        if (hoursOverallToSend == hoursToSettleToSend) {
+            resultToSend.put("paycheck", 0);
         }
 
 
@@ -940,7 +1364,7 @@ public class AuthRepository {
         String KEY_TIMESTAMP = "timestamp";
         result.put(KEY_TIMESTAMP, timestamp);
 
-        Log.i(LOGER, "updateStatusOfPayment");
+        Log.i(LOGGER, "updateStatusOfPayment");
 
         timeModel.setMoneyOverall(isSettled);
         timeModel.setWithdrawnMoney(withDrawnMoney);
@@ -1002,7 +1426,7 @@ public class AuthRepository {
 
     }
 
-    public boolean checkIfAdmin() {
+    public void checkIfAdmin() {
 
         collectionReferenceUser.whereEqualTo("foreign_key", currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
@@ -1023,8 +1447,169 @@ public class AuthRepository {
             }
         });
 
-        return ifAdmin;
+
     }
+
+    public void signInWithGoogleCredential(AuthCredential authCredential, Context context, String email) {
+
+
+        firebaseAuth.signInWithCredential(authCredential).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    //TODO Register
+
+                    fireBaseUser = firebaseAuth.getCurrentUser();
+                    assert fireBaseUser != null;
+
+
+                    collectionReferenceUser.whereEqualTo("email", email).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                        @Override
+                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                            if (!queryDocumentSnapshots.isEmpty()) {
+                                Log.i("Firebase response", "There is an email like that");
+                                context.startActivity(new Intent(context, UserMainActivity.class));
+                            } else {
+                                //TODO Register
+
+                                Log.i("Firebase response", "There is no email like that");
+                                valueToOpenDialogLiveData.postValue(true);
+                                Log.i("name", firebaseAuth.getCurrentUser().getDisplayName());
+                                Log.i("email", firebaseAuth.getCurrentUser().getEmail());
+                                final String currentUserId = fireBaseUser.getUid();
+                                Log.i("currentUserId", currentUserId);
+
+                            }
+
+
+                        }
+                    });
+
+                    /*userObj.put("userId", currentUserId);
+                    userObj.put("email", email);
+                    userObj.put("username", userName_send);
+                    userObj.put("surName", surName_send);
+                    userObj.put("foreign_key", arrayListForAssigningEmail.get(0));
+                    userObj.put("hoursOverall", 0);
+                    userObj.put("hoursToSettle", 0);
+                    userObj.put("paycheck", 0);
+                    userObj.put("entriesAmount", daysSinceUnix + "_" + "0");
+                    userObj.put("deviceId", App.android_id);*/
+
+
+                }
+            }
+        });
+    }
+
+    public void writeAdminDataToDb(Context context) {
+        collectionReferenceUser.whereEqualTo("email", firebaseAuth.getCurrentUser().getEmail()).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                if (queryDocumentSnapshots.isEmpty()) {
+                    Log.i("writeAdminToDb", "Assign Admin to Db");
+
+                    //Aktualny dzień
+                    long time = new Date().getTime();
+                    //long days = TimeUnit.MILLISECONDS.toDays(time);
+
+                    Duration duration = Duration.ofMillis(time);
+                    long daysSinceUnix = duration.toDays();
+
+
+                    String[] split = firebaseAuth.getCurrentUser().getDisplayName().split("\\s+");
+
+                    currentUserId = firebaseAuth.getUid();
+
+                    Map<String, Object> userObj = new HashMap<>();
+                    userObj.put("userId", currentUserId);
+                    userObj.put("foreign_key", currentUserId);
+                    userObj.put("email", firebaseAuth.getCurrentUser().getEmail());
+                    userObj.put("username", (split.length == 1 || split.length == 2) ? split[0] : "");
+                    userObj.put("surName", split.length == 2 ? split[1] : "");
+                    userObj.put("hoursOverall", 0);
+                    userObj.put("hoursToSettle", 0);
+                    userObj.put("paycheck", 0);
+                    userObj.put("entriesAmount", daysSinceUnix + "_" + "0");
+                    userObj.put("deviceId", App.android_id);
+
+                    collectionReferenceUser.document(firebaseAuth.getCurrentUser().getEmail()).set(userObj).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void unused) {
+                            context.startActivity(new Intent(context, UserMainActivity.class));
+
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+
+                        }
+                    });
+
+                } else {
+                    Log.i("writeAdminDataToDb", "Admin already signed To Db");
+                }
+            }
+        });
+    }
+
+    public void writeUserDataToDb(String foreign_email, Context context) {
+
+        collectionReferenceUser.whereEqualTo("email", foreign_email).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                if (!queryDocumentSnapshots.isEmpty()) {
+                    Log.i("writeUserDataToDb", "Assign User to Db");
+                    String foreign_key = "";
+
+                    //Aktualny dzień
+                    long time = new Date().getTime();
+                    //long days = TimeUnit.MILLISECONDS.toDays(time);
+
+                    Duration duration = Duration.ofMillis(time);
+                    long daysSinceUnix = duration.toDays();
+
+                    for (QueryDocumentSnapshot snapshot : queryDocumentSnapshots) {
+                        Log.i("WUDTDB foreigin key", foreign_key = snapshot.getString("userId"));
+                    }
+
+
+                    String[] split = firebaseAuth.getCurrentUser().getDisplayName().split("\\s+");
+
+                    currentUserId = firebaseAuth.getUid();
+
+                    Map<String, Object> userObj = new HashMap<>();
+                    userObj.put("userId", currentUserId);
+                    userObj.put("email", firebaseAuth.getCurrentUser().getEmail());
+                    userObj.put("username", (split.length == 1 || split.length == 2) ? split[0] : "");
+                    userObj.put("surName", split.length == 2 ? split[1] : "");
+                    userObj.put("foreign_key", foreign_key);
+                    userObj.put("hoursOverall", 0);
+                    userObj.put("hoursToSettle", 0);
+                    userObj.put("paycheck", 0);
+                    userObj.put("entriesAmount", daysSinceUnix + "_" + "0");
+                    userObj.put("deviceId", App.android_id);
+
+                    collectionReferenceUser.document(firebaseAuth.getCurrentUser().getEmail()).set(userObj).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void unused) {
+                            context.startActivity(new Intent(context, UserMainActivity.class));
+
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+
+                        }
+                    });
+
+                } else {
+                    Log.i("writeUserDataToDb", "No admin like that");
+                }
+            }
+        });
+    }
+
 
     public void register(String email, String password, String userName_send, String surName_send, String foreign_email) {
 
@@ -1039,71 +1624,72 @@ public class AuthRepository {
                     Log.i(FIREBASE_LOGGER, " " + "register");
 
 
-        if(arrayListForAssigningEmail.size()>0) {
-
-            firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
-                    if (task.isSuccessful()) {
-
-                        firebaseUserMutableLiveData.postValue(firebaseAuth.getCurrentUser());
-
-                        fireBaseUser = firebaseAuth.getCurrentUser();
-                        assert fireBaseUser != null;
-                        final String currentUserId = fireBaseUser.getUid();
-
-                        //Aktualny dzień
-                        long time = new Date().getTime();
-                        //long days = TimeUnit.MILLISECONDS.toDays(time);
-
-                        Duration duration = Duration.ofMillis(time);
-                        long daysSinceUnix = duration.toDays();
+                    if (arrayListForAssigningEmail.size() > 0) {
 
 
-                        // Create a userMap so we can create user in the User Collection in FireStore
-                        Map<String, Object> userObj = new HashMap<>();
-                        userObj.put("userId", currentUserId);
-                        userObj.put("email", email);
-                        userObj.put("username", userName_send);
-                        userObj.put("surName", surName_send);
-                        userObj.put("foreign_key", arrayListForAssigningEmail.get(0));
-                        userObj.put("hoursOverall", 0);
-                        userObj.put("hoursToSettle", 0);
-                        userObj.put("paycheck", 0);
-                        userObj.put("entriesAmount", daysSinceUnix + "_" + "0");
-
-                        isAdminExist.postValue(true);
-
-                        Log.i("isAdmin05","true");
-
-                        Log.i("Hello five", "five");
-
-                        collectionReferenceUser.document(email).set(userObj).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                             @Override
-                            public void onSuccess(Void unused) {
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()) {
 
-                                arrayListForAssigningEmail.clear();
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
+                                    firebaseUserMutableLiveData.postValue(firebaseAuth.getCurrentUser());
 
+                                    fireBaseUser = firebaseAuth.getCurrentUser();
+                                    assert fireBaseUser != null;
+                                    final String currentUserId = fireBaseUser.getUid();
+
+                                    //Aktualny dzień
+                                    long time = new Date().getTime();
+                                    //long days = TimeUnit.MILLISECONDS.toDays(time);
+
+                                    Duration duration = Duration.ofMillis(time);
+                                    long daysSinceUnix = duration.toDays();
+
+
+                                    // Create a userMap so we can create user in the User Collection in FireStore
+                                    //TODO Register
+                                    Map<String, Object> userObj = new HashMap<>();
+                                    userObj.put("userId", currentUserId);
+                                    userObj.put("email", email);
+                                    userObj.put("username", userName_send);
+                                    userObj.put("surName", surName_send);
+                                    userObj.put("foreign_key", arrayListForAssigningEmail.get(0));
+                                    userObj.put("hoursOverall", 0);
+                                    userObj.put("hoursToSettle", 0);
+                                    userObj.put("paycheck", 0);
+                                    userObj.put("entriesAmount", daysSinceUnix + "_" + "0");
+                                    userObj.put("deviceId", App.android_id);
+
+                                    isAdminExistLiveData.postValue(true);
+
+                                    Log.i("isAdmin05", "true");
+
+                                    Log.i("Hello five", "five");
+
+                                    collectionReferenceUser.document(email).set(userObj).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void unused) {
+
+                                            arrayListForAssigningEmail.clear();
+                                        }
+                                    }).addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+
+                                        }
+                                    });
+
+
+                                } else {
+                                    Toast.makeText(application, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                }
                             }
                         });
 
-
                     } else {
-                        Toast.makeText(application, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        isAdminExistLiveData.postValue(false);
+                        Log.i("isAdmin05", "false");
                     }
-                }
-            });
-
-        }
-        else
-        {
-            isAdminExist.postValue(false);
-            Log.i("isAdmin05","false");
-        }
 
                 }
 
@@ -1157,7 +1743,8 @@ public class AuthRepository {
                     userObj.put("hoursOverall", 0);
                     userObj.put("hoursToSettle", 0);
                     userObj.put("paycheck", 0);
-                    userObj.put("entriesAmount", daysSinceUnix+"_"+"0");
+                    userObj.put("entriesAmount", daysSinceUnix + "_" + "0");
+                    userObj.put("deviceId", App.android_id);
 
 
                     collectionReferenceUser.document(email).set(userObj).addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -1183,13 +1770,14 @@ public class AuthRepository {
 
     public void signIn(String email, String password) {
 
-        Log.i(LOGER, "signIn");
+        Log.i(LOGGER, "signIn");
 
         firebaseAuth.signInWithEmailAndPassword(email, password).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
             @Override
             public void onSuccess(AuthResult authResult) {
                 firebaseUserMutableLiveData.postValue(firebaseAuth.getCurrentUser());
-                Log.i(FIREBASE_LOGGER, " " + "signIn");
+                isUserInDBLiveDataLiveData.postValue(true);
+
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -1201,7 +1789,7 @@ public class AuthRepository {
     }
 
     public void resetPassword(String email) {
-        Log.i(LOGER, "resetPassword");
+        Log.i(LOGGER, "resetPassword");
 
         firebaseAuth.sendPasswordResetEmail(email).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
@@ -1219,11 +1807,9 @@ public class AuthRepository {
     }
 
 
-
     public LiveData<User> getUsernameAndSurname() {
         checkIfAdmin();
 
-        User user = new User();
 
         collectionReferenceUser.whereEqualTo("userId", currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
@@ -1235,14 +1821,42 @@ public class AuthRepository {
                         user.setSurName(snapshot.getString("surName"));
                         user.setForeign_key(snapshot.getString("foreign_key"));
                     }
-                    getUsernameAndSurname.postValue(user);
+                    getUsernameAndSurnameLiveData.postValue(user);
                     Log.i(FIREBASE_LOGGER, " " + "getUsernameAndSurname");
                 }
             }
         });
 
 
-        return getUsernameAndSurname;
+        return getUsernameAndSurnameLiveData;
+    }
+
+    public void writeToFile(String androidId) {
+
+        collectionReferenceUser.whereEqualTo("userId", currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                if (!queryDocumentSnapshots.isEmpty()) {
+                    Map<String, Object> userObj = new HashMap<>();
+                    for (QueryDocumentSnapshot snapshot : queryDocumentSnapshots) {
+
+
+                        userObj.put("deviceId", App.android_id);
+                        email = snapshot.getString("email");
+                    }
+
+
+                    collectionReferenceUser.document(email).update(userObj).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void unused) {
+
+                            youCanCheckNowLiveData.postValue(true);
+                        }
+                    });
+
+                }
+            }
+        });
     }
 
 
@@ -1251,5 +1865,6 @@ public class AuthRepository {
         userLoggedMutableLiveData.postValue(true);
         Log.i(FIREBASE_LOGGER, " " + "singOut");
     }
+
 
 }

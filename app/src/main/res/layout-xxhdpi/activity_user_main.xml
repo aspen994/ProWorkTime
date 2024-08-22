@@ -82,7 +82,7 @@
                 android:layout_marginTop="20dp"
                 android:layout_marginStart="20dp"
                 android:textColor="@color/white"
-                android:text="Użytkownik nr 1"
+                android:text="@string/user_number_1"
                 app:layout_constraintStart_toEndOf="@+id/usernameTitle"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -182,7 +182,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="2dp"
                 android:backgroundTint="#AF0000"
-                android:text="@string/stop_work"
+                android:text="@string/stop_work_without_dots"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/hold_resume_work"
                 app:layout_constraintTop_toBottomOf="@id/timeOverall"

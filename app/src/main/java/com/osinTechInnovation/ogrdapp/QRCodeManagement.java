@@ -99,7 +99,8 @@ public class QRCodeManagement extends AppCompatActivity {
                 for (QRModel qrModel : arrayListQRModel) {
                     if (inputValue == qrModel.getDelay()) {
                         flag = false;
-                        Toast.makeText(QRCodeManagement.this, "Retrive Old one", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(QRCodeManagement.this, getString(R.string.recovering_old_qr_code), Toast.LENGTH_SHORT).show();
+
                         qrCodeEncode = new StringBuilder();
                         qrCodeEncode.append(qrModel.getQRCode());
                         WindowManager manager = (WindowManager) getSystemService(WINDOW_SERVICE);
@@ -123,7 +124,8 @@ public class QRCodeManagement extends AppCompatActivity {
                     }
                 }
                     if (flag) {
-                        Toast.makeText(QRCodeManagement.this, "Generate new one", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(QRCodeManagement.this, getString(R.string.generate_new_one_qr_code), Toast.LENGTH_SHORT).show();
+
                         qrCodeEncode = new StringBuilder();
                         generateQR();
                         // Toast.makeText(QRCodeManagement.this, "generuje", Toast.LENGTH_SHORT).show();
@@ -161,7 +163,9 @@ public class QRCodeManagement extends AppCompatActivity {
                     saveImage();
                     if(flag) {
                         saveToDatabase(qrCodeEncode.toString(), Integer.parseInt(editText.getText().toString()));
-                        Toast.makeText(QRCodeManagement.this, "SAVING: "+flag, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(QRCodeManagement.this, getString(R.string.saves)+flag, Toast.LENGTH_SHORT).show();
+
+
                     }
                     Intent intent = new Intent();
                     intent.setAction(android.content.Intent.ACTION_VIEW);

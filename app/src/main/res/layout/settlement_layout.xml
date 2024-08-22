@@ -11,7 +11,7 @@
         android:id="@+id/date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Rozlicz za" />
+        android:text="@string/bill_for" />
         <Space
             android:layout_width="12dp"
             android:layout_height="wrap_content" />
@@ -40,7 +40,7 @@
            android:id="@+id/time_worked"
            android:layout_width="wrap_content"
            android:layout_height="wrap_content"
-           android:text="Przepracowany czas: "/>
+           android:text="@string/time_worked"/>
         <Space
             android:layout_width="12dp"
             android:layout_height="wrap_content" />
@@ -59,7 +59,7 @@
             android:id="@+id/bid"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Przepracowany czas: "/>
+            android:text="@string/time_worked"/>
         <Space
             android:layout_width="12dp"
             android:layout_height="wrap_content" />
@@ -81,7 +81,7 @@
             android:id="@+id/confirm_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Potwierdź stawkę "/>
+            android:text="@string/confirm_bid"/>
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 

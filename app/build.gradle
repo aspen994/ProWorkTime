@@ -15,8 +15,9 @@ android {
         applicationId "com.osinTechInnovation.ogrdapp"
         minSdk 21
         targetSdk 33
-        versionCode 29
-        versionName "1.29"
+        versionCode 33
+        versionName "1.33"
+        compileSdkPreview = "UpsideDownCake"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -39,7 +40,7 @@ dependencies {
     /*//RevenueCat
     implementation 'com.revenuecat.purchases:purchases:7.0.0'*/
 
-    implementation 'androidx.activity:activity:1.8.0'
+    implementation 'androidx.activity:activity:1.9.0'
     def work_version = "2.8.1"
     def room_version = "2.6.1"
 
@@ -78,5 +79,18 @@ dependencies {
     def billing_version = "7.0.0"
 
     implementation "com.android.billingclient:billing:$billing_version"
+
+
+
+    // optional - needed for credentials support from play services, for devices running
+    // Android 13 and below.
+    /*implementation "androidx.credentials:credentials:1.2.0"
+    implementation "com.google.android.libraries.identity.googleid:googleid: 1.2.0"
+    implementation "androidx.credentials:credentials-play-services-auth:1.2.0"*/
+
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+
+
 
 }

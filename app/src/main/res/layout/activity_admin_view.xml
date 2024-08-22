@@ -23,7 +23,7 @@
             android:id="@+id/txt_picked_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Data"
+            android:text="@string/data_without_dots"
             android:padding="10dp"/>
     </LinearLayout>
 

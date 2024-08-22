@@ -10,4 +10,19 @@
     <color name="blue_grey_500">#607D8B</color>
     <color name="blue">#48cae4</color>
     <color name="red">#d62828</color>
+    <color name="green1">#6a994e</color>
+    <color name="green2">#f2e8cf</color>
+    <color name="green3">#a7c957</color>
+    <color name="blue1">#0077b6</color>
+    <color name="blue2">#00b4d8</color>
+    <color name="blue3">#ade8f4</color>
+    <color name="blue4">#03045e</color>
+    <color name="teal1">#07beb8</color>
+    <color name="teal2">#3dccc7</color>
+    <color name="teal3">#68d8d6</color>
+    <color name="teal4">#9ceaef</color>
+    <color name="france1">#f1faee</color>
+    <color name="france2">#a8dadc</color>
+    <color name="france3">#457b9d</color>
+    <color name="france4">#1d3557</color>
 </resources>

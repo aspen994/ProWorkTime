@@ -72,7 +72,7 @@ public class TimeOverallAdapter extends RecyclerView.Adapter<TimeOverallAdapter.
         holder.dateLastRecord.setText(dateFormatted);
 
         holder.hours_last_record.setText(R.string.hours_shortcut);
-        holder.noteSettled.setText(list.get(position).getMoneyOverall()?"Rozliczone":"");
+        holder.noteSettled.setText(list.get(position).getMoneyOverall()?context.getString(R.string.billed):"");
 
         //Setting date
         holder.date.setText(formattedDate(date));

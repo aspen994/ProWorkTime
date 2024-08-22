@@ -1,6 +1,7 @@
 package com.osinTechInnovation.ogrdapp.view;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -9,6 +10,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
@@ -23,10 +26,13 @@ import com.android.billingclient.api.ProductDetailsResponseListener;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryPurchasesParams;
 import com.google.common.collect.ImmutableList;
 import com.osinTechInnovation.ogrdapp.R;
+import com.osinTechInnovation.ogrdapp.UserMainActivity;
 import com.osinTechInnovation.ogrdapp.utility.ConnectionClass;
 import com.osinTechInnovation.ogrdapp.utility.Security;
+import com.osinTechInnovation.ogrdapp.viewmodel.AuthViewModel;
 
 import java.io.IOException;
 import java.util.List;
@@ -44,6 +50,8 @@ public class Subs extends AppCompatActivity {
     public static final String PRODUCT_ID = "my_sub_ogrodapp";
 
     boolean isSuccess = false;
+    private AuthViewModel authViewModel;
+    boolean flag = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +63,9 @@ public class Subs extends AppCompatActivity {
         subsStatus = findViewById(R.id.subs_status);
         titleNoAds = findViewById(R.id.title_no_ads);
         tvGetPrice = findViewById(R.id.tv_get_price);
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
+        //Toast.makeText(this, "On create Subs", Toast.LENGTH_SHORT).show();
 
         billingClient = BillingClient.newBuilder(this)
                 .enablePendingPurchases()
@@ -63,14 +73,17 @@ public class Subs extends AppCompatActivity {
                 .build();
 
         getPrice();
+        query_purchase();
+
+
 
 
         if(ConnectionClass.premium){
-            subsStatus.setText("Status: Already Subscribed");
+            subsStatus.setText(getString(R.string.status_already_subscribed));
             btnSubscribe.setVisibility(View.GONE);
         }
         else {
-            subsStatus.setText("Status: Not Subscribed");
+            subsStatus.setText(getString(R.string.status_not_subscribed));
         }
 
         quitClick();
@@ -119,6 +132,7 @@ public class Subs extends AppCompatActivity {
 
                                         billingClient.launchBillingFlow(Subs.this, billingFlowParams);
 
+                                        Log.i("Invoked only once ?","Invoked only once ?");
 
                                     }
                                 }
@@ -133,8 +147,79 @@ public class Subs extends AppCompatActivity {
 
     }
 
+    private void query_purchase() {
+        billingClient.startConnection(new BillingClientStateListener() {
+            @Override
+            public void onBillingSetupFinished(BillingResult billingResult) {
+                Log.i("enter BSF",billingResult+"");
+                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    ExecutorService executorService = Executors.newSingleThreadExecutor();
+                    executorService.execute(() -> {
+                        try {
+
+                            billingClient.queryPurchasesAsync(
+                                    QueryPurchasesParams.newBuilder()
+                                            .setProductType(BillingClient.ProductType.SUBS)
+                                            .build(),
+                                    (billingResult1, purchaseList) -> {
+
+                                        for (Purchase purchase : purchaseList) {
+                                            if (purchase != null && purchase.isAcknowledged()) {
+                                                ConnectionClass.premium = true;
+                                                    subsStatus.setText(getString(R.string.status_already_subscribed));
+                                                    btnSubscribe.setVisibility(View.GONE);
+                                                    Log.i("Access Granted in BSF","Acces Granted in BSF");
+                                                    flag=true;
+                                            }
+                                            else{
+                                                Log.i("Access Denied in BSF 78","Acces Denied in BSF 78");
+                                            }
+                                        }
+
+                                    }
+
+                            );
+                            Log.i("try in block","enter BillingSetupFinisehd");
+                            if(!flag){
+                                ConnectionClass.premium = false;
+                                Log.i("Access Denied in BSF 79","Acces Denied in BSF 79");
+                            }
+
+
+                        } catch (Exception e) {
+                            // TODO 24.06.24
+                            ConnectionClass.premium = false;
+                            subsStatus.setText(getString(R.string.status_not_subscribed));
+                            btnSubscribe.setVisibility(View.VISIBLE);
+                            Log.i("catch in block","enter BillingSetupFinisehd");
+                            Log.i("Access Denied in BSF","Acces Denied in BSF");
+                        }
+
+                        runOnUiThread(() -> {
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+
+
+                        });
+                    });
+                }
+            }
+
+            @Override
+            public void onBillingServiceDisconnected() {
+
+            }
+        });
+
+    }
+
     private void getPrice() {
+
         btnGetPrice.setOnClickListener(v->{
+            Log.i("btnGetPrice","btnGetPriceClicked");
             billingClient.startConnection(new BillingClientStateListener() {
                 @Override
                 public void onBillingSetupFinished(BillingResult billingResult) {
@@ -191,29 +276,36 @@ public class Subs extends AppCompatActivity {
                                                 duration = billingPeriod.substring(2,3);
                                                 if(recurrenceMode ==2){
                                                     if(duration.equals("M")){
-                                                        dur = " For " + n + " Month ";
+                                                        dur = getString(R.string.for_word) + n + getString(R.string.month);
+
                                                     }
                                                     else if(duration.equals("Y")){
-                                                        dur = " For " + n + " Year ";
+                                                        dur = getString(R.string.for_word) + n + getString(R.string.year);
+
                                                     }
                                                     else if(duration.equals(" WEEK ")){
-                                                        dur = " FOR " + n + " Week ";
+                                                        dur = getString(R.string.for_word) + n + getString(R.string.week);
+
                                                     } else if (duration.equals("D")) {
-                                                        dur = " FOR " + n + " Days ";
+                                                        dur = getString(R.string.for_word) + n + getString(R.string.days);
                                                     }
 
                                                 } else{
                                                     if(bp.equals("P1M")){
-                                                        dur = "/Monthly";
+                                                        dur = getString(R.string.monthly);
                                                     }
                                                     else if(bp.equals("P6M")){
-                                                        dur = "/Every 6 Month";
+                                                        dur = getString(R.string.every_6_month);
+                                                        dur = getString(R.string.every_6_month);
                                                     }else if(bp.equals("P1Y")){
-                                                        dur = "/Yearly";
+                                                        dur = getString(R.string.yearly);
+                                                        dur = getString(R.string.yearly);
                                                     }else if(bp.equals("P1W")){
-                                                        dur = "/Weekly";
+                                                        dur = getString(R.string.weekly);
+                                                        dur = getString(R.string.weekly);
                                                     } else if (bp.equals("P3W")) {
-                                                        dur = "Every /3 Week";
+                                                        dur = getString(R.string.every_3_week);
+                                                        dur = getString(R.string.every_3_week);
                                                     }
                                                 }
                                                 phases = formattedPrice + " " + dur;
@@ -226,17 +318,18 @@ public class Subs extends AppCompatActivity {
                                                                 .getPricingPhases().getPricingPhaseList().get(0).getFormattedPrice();
 
                                                         if(period.equals("P1M")){
-                                                            dur = "/Monthly";
+                                                            dur = getString(R.string.monthly);
+
                                                         }else if(period.equals("P6M")){
-                                                            dur = "/Every 6 Month";
+                                                            dur = getString(R.string.every_6_month);
                                                         } else if (period.equals("P1Y")) {
-                                                            dur = "/Yearly";
+                                                            dur = getString(R.string.yearly);
                                                         } else if (period.equals("P1W")) {
-                                                            dur = "/Weekly";
+                                                            dur = getString(R.string.weekly);
                                                         } else if (period.equals("P1W")) {
-                                                            dur = "/Weekly";
+                                                            dur = getString(R.string.weekly);
                                                         } else if (period.equals("P3W")) {
-                                                            dur = "Every /3 Week";
+                                                            dur = getString(R.string.every_3_week);
                                                         }
 
                                                         phases += "\n" + price+dur;
@@ -260,8 +353,8 @@ public class Subs extends AppCompatActivity {
                                 e.printStackTrace();
                             }
 
-                            subsStatus.setText(subsName);
-                            tvGetPrice.setText("Price: " + phases);
+                            //subsStatus.setText(subsName);
+                            tvGetPrice.setText(getString(R.string.price) + phases);
                             titleNoAds.setText(des);
 
                         });
@@ -281,35 +374,86 @@ public class Subs extends AppCompatActivity {
     private PurchasesUpdatedListener purchasesUpdatedListener = new PurchasesUpdatedListener() {
         @Override
         public void onPurchasesUpdated(@NonNull BillingResult billingResult, @Nullable List<Purchase> purchases) {
+
+            Log.i("Pre checkpoint",billingResult.getResponseCode()+"");
+
              if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases !=null){
                  for(Purchase purchase: purchases){
                      handlePurchase(purchase);
+
+                     Log.i("First checkpoint","First checkpoint");
+                    /* authViewModel.isSubscribtionAlreadyExist(purchase.getOrderId()).observe(Subs.this, new Observer<String>() {
+                         @Override
+                         public void onChanged(String email) {
+                             //Log.i("Powinno hulać","Powinno hulać"+ aBoolean);
+                             if(aBoolean==false){
+
+                                 subsStatus.setText("Already Subcribed");
+                                 isSuccess = true;
+                                 ConnectionClass.premium = true;
+                                 ConnectionClass.locked = true;
+                                 btnSubscribe.setVisibility(View.GONE);
+                             }
+                         }
+                     });
+*/
+
                  }
              }
              else if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED){
-                 subsStatus.setText("Already Subcribed");
+                 Log.i("SUBS CLASS FUN","ITEM_ALREADY_OWNED");
+
+                 subsStatus.setText(R.string.already_subscribed);
                  isSuccess = true;
                  ConnectionClass.premium = true;
                  ConnectionClass.locked = true;
                  btnSubscribe.setVisibility(View.GONE);
+                 Log.i("Status of subs1",ConnectionClass.premium+"");
+
+                 for(Purchase purchase: purchases){
+                     handlePurchase(purchase);
+                     Log.i("What is there, Subs", purchase.getOriginalJson());
+
+
+                     Log.i("Second checkpoint","Second checkpoint");
+
+                  /*   authViewModel.isSubscribtionAlreadyExist(purchase.getOrderId()).observe(Subs.this, new Observer<String>() {
+                         @Override
+                         public void onChanged(String email) {
+                          //   Log.i("Powinno hulać","Powinno hulać"+ aBoolean);
+                            if(aBoolean==false){
+
+                                subsStatus.setText("Already Subcribed");
+                                isSuccess = true;
+                                ConnectionClass.premium = true;
+                                ConnectionClass.locked = true;
+                                btnSubscribe.setVisibility(View.GONE);
+                            }
+                         }
+                     });*/
+                 }
              }
              else if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED){
-                 subsStatus.setText("FEATURE_NOT_SUPPORTED");
+                 subsStatus.setText(getString(R.string.feature_not_supported));
              }
              else if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.BILLING_UNAVAILABLE){
-                 subsStatus.setText("BILLING_UNAVAILABLE");
+                 subsStatus.setText(getString(R.string.billing_unavailable));
              }else if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED){
-                 subsStatus.setText("USER_CANCELED");
+                 subsStatus.setText(getString(R.string.user_canceled));
              }else if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.DEVELOPER_ERROR){
-                 subsStatus.setText("DEVELOPER_ERROR");
+                 subsStatus.setText(getString(R.string.developer_error));
              }else if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.ITEM_UNAVAILABLE){
-                 subsStatus.setText("ITEM_UNAVAILABLE");
+                 subsStatus.setText(getString(R.string.item_unavailable));
              }else if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.NETWORK_ERROR){
-                 subsStatus.setText("NETWORK_ERROR");
+                 subsStatus.setText(getString(R.string.network_error));
              }else if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.SERVICE_DISCONNECTED){
-                 subsStatus.setText("SERVICE_DISCONNECTED");
-             }else {
-                 Toast.makeText(getApplicationContext(), "Error " + billingResult.getDebugMessage(), Toast.LENGTH_SHORT).show();
+                 subsStatus.setText(getString(R.string.service_disconnected));
+             }else if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.ITEM_NOT_OWNED){
+                 ConnectionClass.premium = false;
+                 Log.i("Item not owned","Item not owned");
+             }
+             else {
+                 Toast.makeText(getApplicationContext(), getString(R.string.error) + billingResult.getDebugMessage(), Toast.LENGTH_SHORT).show();
              }
         }
 
@@ -332,7 +476,7 @@ public class Subs extends AppCompatActivity {
 
             if(purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED){
                 if(!verifyValidSignature(purchase.getOriginalJson(),purchase.getSignature())){
-                    Toast.makeText(getApplicationContext(), "Error : invalid Purchase", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), getString(R.string.error_invalid_purchase), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 if(!purchase.isAcknowledged()){
@@ -340,30 +484,54 @@ public class Subs extends AppCompatActivity {
                             .setPurchaseToken(purchase.getPurchaseToken())
                             .build();
                     billingClient.acknowledgePurchase(acknowledgePurchaseParams,acknowledgePurchaseResponseListener);
-                    subsStatus.setText("Subscribed");
+                    subsStatus.setText(getString(R.string.subscribed));
                     isSuccess = true;
                 }else {
-                    subsStatus.setText("Already_Subscribed");
+                    subsStatus.setText(getString(R.string.already_subscribed));
                 }
-                ConnectionClass.premium = true;
+
+             /*   ConnectionClass.premium = true;
                 ConnectionClass.locked = false;
                 btnSubscribe.setVisibility(View.GONE);
+
+                */
+
+                Log.i("Status of subs2",ConnectionClass.premium+"");
+
+                Log.i("Third checkpoint","Third checkpoint");
+               /* authViewModel.isSubscribtionAlreadyExist(purchase.getOrderId()).observe(Subs.this, new Observer<String>() {
+                    @Override
+                    public void onChanged(String email) {
+                       *//* Log.i("Powinno hulać","Powinno hulać" + aBoolean);
+                        if(aBoolean){
+
+                            ConnectionClass.premium = true;
+                            ConnectionClass.locked = false;
+                            btnSubscribe.setVisibility(View.GONE);
+                        }*//*
+                    }
+                });*/
+
             } else if (purchase.getPurchaseState() == Purchase.PurchaseState.PENDING) {
-                subsStatus.setText("Subscription PENDING");
+                subsStatus.setText(getString(R.string.subscription_pending));
             } else if (purchase.getPurchaseState() == Purchase.PurchaseState.UNSPECIFIED_STATE) {
-                subsStatus.setText("UNSPECIFIED_STATE");
+                subsStatus.setText(getString(R.string.unspecified_state));
             }
 
 
+
+//billingClient.startConnection();
     }
 
     AcknowledgePurchaseResponseListener acknowledgePurchaseResponseListener = new AcknowledgePurchaseResponseListener() {
         @Override
         public void onAcknowledgePurchaseResponse(@NonNull BillingResult billingResult) {
-                subsStatus.setText("Subscribed");
+                subsStatus.setText(getString(R.string.subscribed));
                 isSuccess = true;
+                Log.i("getResponseCode",billingResult.getResponseCode()+"");
                 ConnectionClass.premium = true;
                 ConnectionClass.locked =false;
+
         }
     };
 
@@ -389,5 +557,12 @@ public class Subs extends AppCompatActivity {
         if(billingClient!=null){
             billingClient.endConnection();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        query_purchase();
+        //Toast.makeText(this, "On Resume", Toast.LENGTH_SHORT).show();
+        super.onResume();
     }
 }

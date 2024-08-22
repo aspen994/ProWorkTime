@@ -1,5 +1,6 @@
 package com.osinTechInnovation.ogrdapp.scanner;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -27,6 +28,7 @@ public class CustomScannerActivity extends Activity implements
     private ImageButton imageButton;
     private boolean isPressed = true;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -75,7 +75,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         authViewModel.getIsAdminExist().observe(this,(isAdminExist)->{
             if(isAdminExist.equals(false)){
-                Toast.makeText(this, "Nie ma takiego admina", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.there_is_no_such_admin), Toast.LENGTH_SHORT).show();
             }else{
 
             }
@@ -97,21 +97,6 @@ public class RegisterActivity extends AppCompatActivity {
                 String userName_send = userName.getText().toString();
                 String surName_send = surName.getText().toString();
                 String adminEmail = emailOfAdmin.getText().toString().toLowerCase();
-
-
-
-                /*
-                 !TextUtils.isEmpty(email.getText().toString())&&
-                        !TextUtils.isEmpty(password.getText().toString())&&
-                        !TextUtils.isEmpty(userName.getText().toString())&&
-                        !TextUtils.isEmpty(surName.getText().toString())&&
-                        ((!TextUtils.isEmpty(emailOfAdmin.getText().toString())
-                                && emailOfAdmin.getVisibility()==View.VISIBLE)||
-                                (TextUtils.isEmpty(emailOfAdmin.getText().toString())
-                                        && emailOfAdmin.getVisibility() == View.INVISIBLE))
-                        &&radioGroup.getCheckedRadioButtonId()!=-1
-                 */
-
 
 
                 if(
@@ -141,7 +126,7 @@ public class RegisterActivity extends AppCompatActivity {
                         authViewModel.registerUser(email_send,password_send,userName_send,surName_send);
                     }
                     else {
-                        Toast.makeText(RegisterActivity.this,"Dodałeś email admina czy jesteś użytkownikiem czy adminstartorem ?", Toast.LENGTH_LONG).show();
+                        Toast.makeText(RegisterActivity.this,getString(R.string.are_you_admin_or_user), Toast.LENGTH_LONG).show();
                     }
 
                     }

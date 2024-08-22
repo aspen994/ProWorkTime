@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -25,6 +26,8 @@ import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClic
 import com.google.firebase.Timestamp;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -176,7 +179,7 @@ public class UserOverall extends AppCompatActivity {
 
         }
         else{
-            Toast.makeText(this, "Nie zatwierdziłeś stawki albo nie wybrałeś godzin", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.you_havent_approved_your_rate_or_selected_your_hours), Toast.LENGTH_SHORT).show();
         }
 
 
@@ -187,7 +190,9 @@ public class UserOverall extends AppCompatActivity {
                 .setCalendarConstraints(DaysOutOfValidate().build())
                 .setSelection(Pair.create(MaterialDatePicker.thisMonthInUtcMilliseconds(),MaterialDatePicker.todayInUtcMilliseconds()))
                 .build();
+
         materialDatePicker.show(getSupportFragmentManager(), "S");
+
 
         materialDatePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener<Pair<Long, Long>>() {
             @Override
@@ -205,13 +210,42 @@ public class UserOverall extends AppCompatActivity {
                 Calendar calendar2 = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
                 calendar2.setTimeInMillis(selection.second);
 
+                Calendar currentDay = Calendar.getInstance();
+
+
+
                 formattedDate = format.format(calendar1.getTime());
                 stringBuilder.append(formattedDate);
 
 
+                // TODO do usunięcia jak zroie to z 225
+                dateDisplay.setText(materialDatePicker.getHeaderText());
                 workedTime.setText(FormattedTime.formattedTime(getTimeFromRangeDate(calendar1,calendar2)));
 
-                dateDisplay.setText(materialDatePicker.getHeaderText());
+                //TODO Do zrobienia
+                /*if(calendar2.get(Calendar.YEAR) == currentDay.get(Calendar.YEAR))
+                {
+                    if(calendar2.get(Calendar.DAY_OF_YEAR) <=currentDay.get(Calendar.DAY_OF_YEAR)) {
+                        dateDisplay.setText(materialDatePicker.getHeaderText());
+                        workedTime.setText(FormattedTime.formattedTime(getTimeFromRangeDate(calendar1,calendar2)));
+                    }
+                    else {
+                        Toast.makeText(UserOverall.this, "Nie możesz ustawiać przyszłych dat", Toast.LENGTH_SHORT).show();
+                        timeToSettlement= 0;
+                        workedTime.setText("");
+                    }
+                }
+                else if(){
+
+                }*/
+
+               /* else {
+                    //Toast.makeText(UserOverall.this, "Nie możesz ustawiać przyszłych dat", Toast.LENGTH_LONG).show();
+                    timeToSettlement=0;
+                    workedTime.setText("");
+                }*/
+
+
 
             }
         });
@@ -225,18 +259,69 @@ public class UserOverall extends AppCompatActivity {
 
         for(TimeModel x: listOfAllRecordsForUser)
         {
+/*            String.valueOf(ChronoUnit.DAYS.between(LocalDate.of(calendar1.get(Calendar.YEAR),calendar1.get(Calendar.MONTH),calendar1.get(Calendar.DAY_OF_MONTH)),
+                    LocalDate.of(calendar2.get(Calendar.YEAR),calendar2.get(Calendar.MONTH),calendar2.get(Calendar.DAY_OF_MONTH))));*/
+
             if(x.getId().equals(id) && x.getMoneyOverall()==false) {
 
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTimeInMillis(x.getTimeAdded().toDate().toInstant().toEpochMilli());
 
-                if (calendar1.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) &&
-                        calendar1.get(Calendar.DAY_OF_YEAR) <= calendar.get(Calendar.DAY_OF_YEAR) &&
-                        calendar2.get(Calendar.DAY_OF_YEAR) >= calendar.get(Calendar.DAY_OF_YEAR))
+                Log.i("0 condition", x.getTimeAdded().toDate().toString());
+
+                if (
+                        calendar1.get(Calendar.YEAR) == calendar2.get(Calendar.YEAR) &&
+                        calendar1.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) &&
+                        calendar2.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) &&
+                        calendar1.get(Calendar.DAY_OF_YEAR) <= calendar.get(Calendar.DAY_OF_YEAR)
+                         && calendar2.get(Calendar.DAY_OF_YEAR) >= calendar.get(Calendar.DAY_OF_YEAR)
+                )
                 {
                     time += x.getTimeOverallInLong();
                     selectedTimeModelList.add(x);
+                    Log.i("1 condition", x.getTimeAdded().toDate().toString());
+                } else if (
+                        calendar1.get(Calendar.YEAR) != calendar2.get(Calendar.YEAR)
+                ) {
+                    if(
+                            calendar1.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) &&
+                            calendar1.get(Calendar.DAY_OF_YEAR) <= calendar.get(Calendar.DAY_OF_YEAR)
+                    ){
+                        time += x.getTimeOverallInLong();
+                        selectedTimeModelList.add(x);
+                        Log.i("2 condition", x.getTimeAdded().toDate().toString());
+                    } else if (
+                            calendar2.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) &&
+                            calendar2.get(Calendar.DAY_OF_YEAR) >= calendar.get(Calendar.DAY_OF_YEAR)
+                    ) {
+                        time += x.getTimeOverallInLong();
+                        selectedTimeModelList.add(x);
+                        Log.i("3 condition", x.getTimeAdded().toDate().toString());
+                    }
                 }
+               /* else if(
+                        calendar1.get(Calendar.YEAR) < calendar.get(Calendar.YEAR) &&
+                                calendar2.get(Calendar.YEAR) <=calendar.get(Calendar.YEAR)
+                ){
+                    if(
+                            calendar1.get(Calendar.YEAR)==calendar.get(Calendar.YEAR)
+                    )
+                        if(calendar1.get(Calendar.DAY_OF_YEAR)<=calendar.get(Calendar.DAY_OF_YEAR)){
+                            Log.i("Get Date", x.getTimeAdded().toDate().toString());
+                            time += x.getTimeOverallInLong();
+                            selectedTimeModelList.add(x);
+                        }
+                    else if(calendar2.get(Calendar.YEAR)==calendar.get(Calendar.YEAR)){
+                            if(calendar2.get(Calendar.DAY_OF_YEAR)>=calendar.get(Calendar.DAY_OF_YEAR)){
+                                Log.i("Get Date", x.getTimeAdded().toDate().toString());
+                                time += x.getTimeOverallInLong();
+                                selectedTimeModelList.add(x);
+                            }
+                        }
+
+                }*/
+
+
             }
         }
 

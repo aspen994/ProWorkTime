@@ -10,8 +10,21 @@ public class User {
     private long  hoursToSettle;
     private double paycheck;
     private String entriesAmount;
+    private String deviceId;
+    private String subsOrderId;
 
-    public User(String email, String foreign_key, String surName, String userId, String userName,long hoursOverall,long hoursToSettle, double paycheck,  String entriesAmount) {
+    public User(
+            String email,
+            String foreign_key,
+            String surName,
+            String userId,
+            String userName,
+            long hoursOverall,
+            long hoursToSettle,
+            double paycheck,
+            String entriesAmount,
+            String deviceId
+    ) {
         this.email = email;
         this.foreign_key = foreign_key;
         this.surName = surName;
@@ -21,6 +34,23 @@ public class User {
         this.hoursToSettle = hoursToSettle;
         this.paycheck = paycheck;
         this.entriesAmount = entriesAmount;
+        this.deviceId = deviceId;
+    }
+
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+    }
+
+    public String getSubsOrderId() {
+        return subsOrderId;
+    }
+
+    public void setSubsOrderId(String subsOrderId) {
+        this.subsOrderId = subsOrderId;
     }
 
     public String getEntriesAmount() {

@@ -3,7 +3,6 @@ package com.osinTechInnovation.ogrdapp.view;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.util.Pair;
@@ -33,7 +32,7 @@ public class AdminView extends AppCompatActivity {
 
     private AuthViewModel authViewModel;
     private LinkedList<User> userModelArrayList;
-    private LinkedList<TimeModelForDisplay> timeModelForDisplayArrayList;
+    private LinkedList<TimeModelForDisplay> timeModelForDisplayLinkedList;
     private LinkedList<TimeModel> timeModelArrayListForAdmin;
 
     private LinkedList<TimeModelForDisplay> brandNewArrayList;
@@ -53,7 +52,7 @@ public class AdminView extends AppCompatActivity {
         View view = binding.getRoot();
         setContentView(view);
 
-        timeModelForDisplayArrayList = new LinkedList<>();
+        timeModelForDisplayLinkedList = new LinkedList<>();
 
         userModelArrayList = new LinkedList<>();
 
@@ -170,7 +169,7 @@ public class AdminView extends AppCompatActivity {
                  //   Log.d("TMFD Method", element.getUserName());
                 }*/
                 binding.lackData.setVisibility(View.VISIBLE);
-                binding.lackData.setText("BRAK DANYCH DLA \n"  +materialDatePicker.getHeaderText());
+                binding.lackData.setText(getString(R.string.no_data_for)  +materialDatePicker.getHeaderText());
             }
             else {
                 binding.lackData.setVisibility(View.INVISIBLE);
@@ -186,17 +185,30 @@ public class AdminView extends AppCompatActivity {
 
     }
 
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
+    }
+
     private ArrayList<TimeModelForDisplay> summingTimeFromDatePicker(LinkedList<TimeModel> arrayListFromInsideSelectDateMethod) {
         // INVOKED FOR EACH INDIVIDUAL USER, NOT FOR ALL USER
         ArrayList<TimeModelForDisplay> timeModelsForDisplay = new ArrayList<>();
         long settledHours = 0;
         long summedTime = 0;
-        int summedMoney = 0;
+        double summedMoney = 0;
         long leftHours = 0;
+
+        for(TimeModel x: arrayListFromInsideSelectDateMethod){
+            Log.i("Check -1", x.getUserName());
+            Log.i("Check -1", x.getWithdrawnMoney()+"");
+        }
 
         if(arrayListFromInsideSelectDateMethod.size()==1)
         {
-            //TODO 29.04.24 popraw żeby wyświetlało poprapwnie
             TimeModelForDisplay timeModel = new TimeModelForDisplay();
             timeModel.setUserName(arrayListFromInsideSelectDateMethod.get(0).getUserName());
             timeModel.setTimeOverallInLong(arrayListFromInsideSelectDateMethod.get(0).getTimeOverallInLong());
@@ -219,6 +231,12 @@ public class AdminView extends AppCompatActivity {
                         settledHours += arrayListFromInsideSelectDateMethod.get(i).getTimeOverallInLong();
                     }
 
+                    Log.i("To check 0",arrayListFromInsideSelectDateMethod.get(i).getUserName()+"");
+                    Log.i("To check 0", arrayListFromInsideSelectDateMethod.get(i).getWithdrawnMoney()+"");
+                    Log.i("To check 0 summedMoney", summedMoney+"");
+
+
+
                     if (j == arrayListFromInsideSelectDateMethod.size() - 1) {
 
                         if (arrayListFromInsideSelectDateMethod.get(j).getMoneyOverall() == false) {
@@ -230,14 +248,25 @@ public class AdminView extends AppCompatActivity {
 
                         summedMoney += arrayListFromInsideSelectDateMethod.get(j).getWithdrawnMoney();
 
+                        Log.i("To check sum",arrayListFromInsideSelectDateMethod.get(j).getUserName()+"");
+                        Log.i("To check sum",summedMoney+"");
+
+                        Log.i("To check 0'",arrayListFromInsideSelectDateMethod.get(j).getUserName()+"");
+                        Log.i("To check 0' ", arrayListFromInsideSelectDateMethod.get(j).getWithdrawnMoney()+"");
+                        Log.i("To check 0' summedMoney", summedMoney+"");
+
                         summedTime += arrayListFromInsideSelectDateMethod.get(j).getTimeOverallInLong();
-                        TimeModelForDisplay timeModel = new TimeModelForDisplay();
-                        timeModel.setUserName(arrayListFromInsideSelectDateMethod.get(i).getUserName());
-                        timeModel.setTimeOverallInLong(summedTime);
-                        timeModel.setId(arrayListFromInsideSelectDateMethod.get(i).getId());
-                        timeModel.setTimeOverallInLongLefToSettle(leftHours);
-                        timeModel.setWithdrawnMoney(summedMoney);
-                        timeModelsForDisplay.add(timeModel);
+                        TimeModelForDisplay timeModelForDisplay = new TimeModelForDisplay();
+                        timeModelForDisplay.setUserName(arrayListFromInsideSelectDateMethod.get(i).getUserName());
+                        timeModelForDisplay.setTimeOverallInLong(summedTime);
+                        timeModelForDisplay.setId(arrayListFromInsideSelectDateMethod.get(i).getId());
+                        timeModelForDisplay.setTimeOverallInLongLefToSettle(leftHours);
+                        timeModelForDisplay.setWithdrawnMoney(round(summedMoney,2));
+                        timeModelsForDisplay.add(timeModelForDisplay);
+
+                        Log.i("To check 1", timeModelForDisplay.getUserName());
+                        Log.i("To check 1",timeModelForDisplay.getWithdrawnMoney()+"");
+
                         leftHours = 0;
                         summedTime = 0;
                         summedMoney = 0;
@@ -254,14 +283,22 @@ public class AdminView extends AppCompatActivity {
                         }
 
                         summedMoney += arrayListFromInsideSelectDateMethod.get(i).getWithdrawnMoney();
+
+                        Log.i("Missing for Jessy",arrayListFromInsideSelectDateMethod.get(i).getUserName()+"");
+                        Log.i("Missing for Jessy",arrayListFromInsideSelectDateMethod.get(i).getWithdrawnMoney()+"");
+
                         summedTime += arrayListFromInsideSelectDateMethod.get(i).getTimeOverallInLong();
                         TimeModelForDisplay timeModel = new TimeModelForDisplay();
                         timeModel.setUserName(arrayListFromInsideSelectDateMethod.get(i).getUserName());
                         timeModel.setId(arrayListFromInsideSelectDateMethod.get(i).getId());
                         timeModel.setTimeOverallInLong(summedTime);
-                        timeModel.setWithdrawnMoney(summedMoney);
+                        timeModel.setWithdrawnMoney(round(summedMoney,2));
                         timeModel.setTimeOverallInLongLefToSettle(leftHours);
                         timeModelsForDisplay.add(timeModel);
+
+                        Log.i("To check 2", timeModel.getUserName());
+                        Log.i("To check 2",timeModel.getWithdrawnMoney()+"");
+
                         summedTime = 0;
                         summedMoney = 0;
                         leftHours = 0;
@@ -273,6 +310,8 @@ public class AdminView extends AppCompatActivity {
                         summedTime += arrayListFromInsideSelectDateMethod.get(i).getTimeOverallInLong();
                         summedMoney += arrayListFromInsideSelectDateMethod.get(i).getWithdrawnMoney();
 
+                        Log.i("To check 0'' ",arrayListFromInsideSelectDateMethod.get(j).getUserName()+"");
+                        Log.i("To check 0'' ", arrayListFromInsideSelectDateMethod.get(j).getWithdrawnMoney()+"");
 
                         if (arrayListFromInsideSelectDateMethod.get(i).getMoneyOverall() == false) {
                             leftHours += arrayListFromInsideSelectDateMethod.get(i).getTimeOverallInLong();
@@ -284,10 +323,12 @@ public class AdminView extends AppCompatActivity {
 
                         timeModels1[0].setUserName(arrayListFromInsideSelectDateMethod.get(i).getUserName());
                         timeModels1[0].setTimeOverallInLong(summedTime);
-                        timeModels1[0].setWithdrawnMoney(summedMoney);
+                        timeModels1[0].setWithdrawnMoney(round(summedMoney,2));
                         timeModels1[0].setTimeOverallInLongLefToSettle(leftHours);
                         timeModels1[0].setId(arrayListFromInsideSelectDateMethod.get(i).getId());
                         timeModelsForDisplay.add(timeModels1[0]);
+
+
                         summedTime = 0;
                         summedMoney = 0;
                         leftHours = 0;
@@ -303,9 +344,11 @@ public class AdminView extends AppCompatActivity {
                         }
                         timeModels1[1].setUserName(arrayListFromInsideSelectDateMethod.get(j).getUserName());
                         timeModels1[1].setTimeOverallInLong(summedTime);
-                        timeModels1[1].setWithdrawnMoney(summedMoney);
+                        timeModels1[1].setWithdrawnMoney(round(summedMoney,2));
                         timeModels1[1].setTimeOverallInLongLefToSettle(leftHours);
                         timeModels1[1].setId(arrayListFromInsideSelectDateMethod.get(i).getId());
+
+
 
                         timeModelsForDisplay.add(timeModels1[1]);
                         summedTime = 0;
@@ -316,13 +359,29 @@ public class AdminView extends AppCompatActivity {
                 }
             }
         }
+
+/*
+        for(TimeModelForDisplay item: timeModelsForDisplay){
+            Log.i("To check ",item.getUserName()+"");
+            Log.i("To check ",item.getWithdrawnMoney()+"");
+        }
+*/
+
         return timeModelsForDisplay;
 
     }
 
     private void setupRecyclerView() {
         // TEN ADAPTER JEST ZACZYTYWANY PRZY PIERWSZYM URUCHOMIENIU
-        adapterUserForAdmin = new AdapterUserForAdmin(AdminView.this, timeModelForDisplayArrayList, this, listOfAllRecordsForUser);
+
+        adapterUserForAdmin = new AdapterUserForAdmin(AdminView.this, timeModelForDisplayLinkedList, this, listOfAllRecordsForUser);
+
+        for(TimeModelForDisplay timeModelForDisplay: timeModelForDisplayLinkedList){
+            Log.i("TMFDAL ",timeModelForDisplay.getUserName());
+            Log.i("TMFDAL TimeInLong TQ",timeModelForDisplay.getTimeOverallInLong()+"");
+            Log.i("TMFDAL TimeToSettle TQ",timeModelForDisplay.getTimeOverallInLongLefToSettle()+"");
+        }
+
         binding.recyclerViewCardy.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         binding.recyclerViewCardy.setAdapter(adapterUserForAdmin);
         adapterUserForAdmin.notifyDataSetChanged();
@@ -378,7 +437,7 @@ public class AdminView extends AppCompatActivity {
         //Log.i("------","-------");
         timeModelForDisplay.setId(timeModelArrayList.get(timeModelArrayList.size() - 1).getId());
         timeModelForDisplay.setTimeOverallInLong(sumTime);
-        timeModelForDisplay.setWithdrawnMoney(summedMoney);
+        timeModelForDisplay.setWithdrawnMoney(round(summedMoney,2));
         timeModelForDisplay.setTimeOverallInLongLefToSettle(leftHours);
 
         Log.i("timeModelForDisplay",timeModelForDisplay.getUserName());
@@ -398,15 +457,13 @@ public class AdminView extends AppCompatActivity {
             @Override
             public void onChanged(List<TimeModel> timeModels) {
 
-
-
                 // Czyści wszystkie wpisy jeśli się powtórzą.
                 if (!timeModelArrayListForAdmin.isEmpty() && !timeModels.isEmpty()) {
                     for (TimeModel timeModel : timeModelArrayListForAdmin) {
                         if (timeModels.get(0).getDocumentId().equals(timeModel.getDocumentId())) {
                             timeModelArrayListForAdmin.clear();
                             listOfAllRecordsForUser.clear();
-                            timeModelForDisplayArrayList.clear();
+                            timeModelForDisplayLinkedList.clear();
 
                             break;
                         }
@@ -419,9 +476,17 @@ public class AdminView extends AppCompatActivity {
                     binding.lackData.setVisibility(View.INVISIBLE);
                     //2 //  ze względu na to ,że pobiera dużo list. Trzeba zrobić metodę ,która będzie porównawała listy i dodawała nowe bez dupilkatów.
                     // to działa tak że pobiera dla jednego użytkownika i potem dodaje. zrób Tak żeby nie dodawało tej samej listy.
-                    timeModelForDisplayArrayList.addAll(summingTime(timeModels));
+                    timeModelForDisplayLinkedList.addAll(summingTime(timeModels));
+                    for(TimeModelForDisplay timeModelForDisplay: timeModelForDisplayLinkedList){
+                        Log.i("TMFD userName",timeModelForDisplay.getUserName());
+                        Log.i("TMFD timeLong",timeModelForDisplay.getTimeOverallInLong()+"");
+                        Log.i("TMFD timeLongLeft",timeModelForDisplay.getTimeOverallInLongLefToSettle()+"");
+
+                    }
                     adapterUserForAdmin.notifyDataSetChanged();
                 }
+
+
             }
         });
         setupRecyclerView();

@@ -4,6 +4,7 @@ import static androidx.recyclerview.widget.ItemTouchHelper.ACTION_STATE_SWIPE;
 import static androidx.recyclerview.widget.ItemTouchHelper.LEFT;
 import static androidx.recyclerview.widget.ItemTouchHelper.RIGHT;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -13,6 +14,9 @@ import android.view.View;
 
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.osinTechInnovation.ogrdapp.R;
+
 enum ButtonsState {
     GONE,
     LEFT_VISIBLE,
@@ -30,9 +34,11 @@ public class SwipeController extends ItemTouchHelper.Callback {
     private SwipeControllerActions buttonsActions = null;
 
     private static final float buttonWidth = 300;
+    private Context context;
 
-    public SwipeController(SwipeControllerActions buttonsActions) {
-        this.buttonsActions = buttonsActions;
+    public SwipeController(Context context,SwipeControllerActions buttonsAction) {
+        this.buttonsActions = buttonsAction;
+        this.context = context;
     }
 
     @Override
@@ -164,12 +170,14 @@ public class SwipeController extends ItemTouchHelper.Callback {
         RectF leftButton = new RectF(itemView.getLeft(), itemView.getTop(), itemView.getLeft() + buttonWidthWithoutPadding, itemView.getBottom());
         p.setColor(Color.BLUE);
         c.drawRoundRect(leftButton, corners, corners, p);
-        drawText("EDIT", c, leftButton, p);
+        drawText(context.getString(R.string.edit), c, leftButton, p);
+
+
 
         RectF rightButton = new RectF(itemView.getRight() - buttonWidthWithoutPadding, itemView.getTop(), itemView.getRight(), itemView.getBottom());
         p.setColor(Color.RED);
         c.drawRoundRect(rightButton, corners, corners, p);
-        drawText("DELETE", c, rightButton, p);
+        drawText(context.getString(R.string.delete), c, rightButton, p);
 
         buttonInstance = null;
         if (buttonShowedState == ButtonsState.LEFT_VISIBLE) {

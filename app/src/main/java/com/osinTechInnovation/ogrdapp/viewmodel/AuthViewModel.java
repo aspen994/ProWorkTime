@@ -1,6 +1,7 @@
 package com.osinTechInnovation.ogrdapp.viewmodel;
 
 import android.app.Application;
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -9,6 +10,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
+import com.google.firebase.auth.AuthCredential;
 import com.osinTechInnovation.ogrdapp.model.QRModel;
 import com.osinTechInnovation.ogrdapp.model.TimeModel;
 import com.osinTechInnovation.ogrdapp.model.User;
@@ -16,9 +18,8 @@ import com.osinTechInnovation.ogrdapp.repository.AuthRepository;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseUser;
 import com.osinTechInnovation.ogrdapp.utility.DecodeDaysAndEntries;
+import com.osinTechInnovation.ogrdapp.utility.SingleLiveEvent;
 
-import java.time.Duration;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +41,14 @@ public class AuthViewModel extends AndroidViewModel {
     private MutableLiveData<Integer> getIntegerHelps;
     private Observer observer;
 
+    private MutableLiveData<String> checkSubscribtion;
+    private MutableLiveData<Boolean> valueToOpenDialog;
+    private MutableLiveData<Boolean> isUserInDB;
+    private MutableLiveData<Integer> entriesLiveData;
+    private MutableLiveData<String> getAmountEntriesLiveData2;
+    private SingleLiveEvent<Map<String, Object>> singleLiveEvent;
+    private SingleLiveEvent<Map<String, Object>> singleLiveEventStart;
+
 
 
 
@@ -47,7 +56,7 @@ public class AuthViewModel extends AndroidViewModel {
         super(application);
         authRepository = new AuthRepository(application);
         userData = authRepository.getFirebaseUserMutableLiveData();
-        timeModelMutableLiveData = authRepository.getGetUsernameAndSurname();
+        timeModelMutableLiveData = authRepository.getGetUsernameAndSurnameLiveData();
         loggedStatus = authRepository.getUserLoggedMutableLiveData();
         ifAdminMutableLiveData = authRepository.getIfAdminMutableLiveData();
         userArrayListOfUserMutableLiveData = authRepository.getUserArrayListOfUserMutableLiveData();
@@ -57,13 +66,79 @@ public class AuthViewModel extends AndroidViewModel {
         adminIdMutableLiveData =authRepository.getAdminIdMutableLiveData();
         timeModelListMutableLiveData=authRepository.getTimeModelArrayListMutableLiveData();
         getAllTimeModelsForAdminSQLLiveData = authRepository.getGetAllTimeModelsForAdminSQLLiveData();
+        checkSubscribtion = authRepository.getCheckSubscriptionLiveData();
+        valueToOpenDialog = authRepository.getValueToOpenDialogLiveData();
+        isUserInDB = authRepository.getIsUserInDBLiveDataLiveData();
+        entriesLiveData = new MutableLiveData<>();
+        this.getAmountEntriesLiveData2 = authRepository.getGetAmountEntriesSnapshotListenerLiveData();
+        this.singleLiveEvent = authRepository.getSingleLiveEvent();
+        this.singleLiveEventStart = authRepository.getSingleLiveEventStart();
+    }
+
+    public SingleLiveEvent<Map<String, Object>> getSingleLiveEventStart() {
+        return singleLiveEventStart;
+    }
+
+    public SingleLiveEvent<Map<String, Object>> getSingleLiveEvent() {
+        return singleLiveEvent;
+    }
+
+    public MutableLiveData<String> getGetAmountEntriesLiveData2() {
+        return getAmountEntriesLiveData2;
+    }
+
+    public MutableLiveData<Integer> getEntriesLiveData() {
+        return entriesLiveData;
+    }
+
+    public MutableLiveData<Boolean> getIsUserInDB() {
+        return isUserInDB;
+    }
+
+    public MutableLiveData<Boolean> getValueToOpenDialog() {
+        return valueToOpenDialog;
+    }
+
+    public SingleLiveEvent<Map<String, Object>>getAmountEntriesStart(String id){
+        return authRepository.getAmountEntriesStart(id);
+    }
+
+    public MutableLiveData<String> getGetEmailMutableLiveData(){
+        return authRepository.getEmail();
+    }
+
+    public MutableLiveData<String> getCheckSubscribtion() {
+        return checkSubscribtion;
+    }
+
+    public void isSubscriptionAlreadyExist(String orderId)
+    {
+         authRepository.isSubscriptionAlreadyExist(orderId);
+    }
+
+    public void signInWithGoogleCredential(AuthCredential authCredential, Context context,String email){
+        authRepository.signInWithGoogleCredential(authCredential,context,email);
+    }
+
+
+    public void setTheSubsForUser(String orderId){
+        authRepository.updateUserWithSubs(orderId);
+    }
+
+
+    public MutableLiveData<Boolean> getYouCanCheckNow(){
+        return authRepository.getYouCanCheckNowLiveData();
     }
 
     public MutableLiveData<Boolean> getIsAdminExist(){
-        return authRepository.getIsAdminExist();
+        return authRepository.getIsAdminExistLiveData();
     }
 
-    public MutableLiveData<Map<String,Object>> getAmountEntries(String id){
+    public LiveData<String> getDeviceId() {
+        return authRepository.getDeviceId();
+    }
+
+    public SingleLiveEvent<Map<String, Object>> getAmountEntries(String id){
         return authRepository.getAmountEntries(id);
     }
 
@@ -201,14 +276,12 @@ public class AuthViewModel extends AndroidViewModel {
     {
         return authRepository.getDataQRCode(adminId);
     }
-    public LiveData<QRModel> getDataQrCode2(String admin)
-    {
-        return authRepository.getDataQRCode2(admin);
-    }
 
+
+    // TODo 16.08.2024 dlaczego tutaj a nie w repozytorium
     public void updateEntriesAmount(TimeModel timeModel) {
 
-        long time1 = timeModel.getTimeAdded().toDate().getTime();
+/*        long time1 = timeModel.getTimeAdded().toDate().getTime();
 
         Duration duration1 = Duration.ofMillis(time1);
         int daysSinceUnixTimeModel = (int) duration1.toDays();
@@ -219,9 +292,11 @@ public class AuthViewModel extends AndroidViewModel {
         Duration duration = Duration.ofMillis(time);
         int daysSinceUnixCurrent = (int) duration.toDays();
 
-        DecodeDaysAndEntries decodeDaysAndEntries = new DecodeDaysAndEntries();
+        DecodeDaysAndEntries decodeDaysAndEntries = new DecodeDaysAndEntries();*/
 
-        observer = new Observer<Map<String, Object>>() {
+        authRepository.updateEntriesAmount(timeModel);
+
+     /*   observer = new Observer<Map<String, Object>>() {
             @Override
             public void onChanged(Map<String, Object> stringObjectMap) {
                 String s = (String) stringObjectMap.get("entriesAmount");
@@ -239,19 +314,104 @@ public class AuthViewModel extends AndroidViewModel {
 
                     amountEntriesDecoded--;
 
-                    authRepository.updateEntriesAmount(dayDecoded+"_"+amountEntriesDecoded,email);
+
                 }
             }
-        };
+        };*/
 
-        authRepository.getAmountEntries(timeModel.getId()).observeForever(observer);
+        //TOOD 19.08.2024
+       // authRepository.getAmountEntries(timeModel.getId()).observeForever(observer);
+    }
+
+     public void writeToFile(String androidId) {
+        authRepository.writeToFile(androidId);
     }
 
 
 
     @Override
     protected void onCleared() {
-        authRepository.getGetAmountEntriesLiveData().removeObserver(observer);
+        //TODO 19.08.2024
+        //authRepository.getGetAmountEntriesLiveData().removeObserver(observer);
         super.onCleared();
+    }
+
+    public void writeUserDataToDb(String emailAdmin,Context context) {
+        authRepository.writeUserDataToDb(emailAdmin,context);
+    }
+
+    public void writeAdminDataToDb(Context context) {
+        authRepository.writeAdminDataToDb(context);
+    }
+
+    public MutableLiveData<Integer> doesTheUserStillHaveAnyEntries() {
+
+        Log.i("doesTheUser", "doestTheUser");
+
+        final String[] amountEntriesWithDays = {""};
+
+        DecodeDaysAndEntries decodeDaysAndEntries = new DecodeDaysAndEntries();
+
+        /*getAmountEntries(getUserId()).observe(UserMainActivity.this, new Observer<Map<String, Object>>() {
+            @Override
+            public void onChanged(Map<String, Object> stringObjectMap) {
+                amountEntriesWithDays[0] = (String) stringObjectMap.get("entriesAmount");
+
+
+                Log.i("Tu paczz",decodeDaysAndEntries.decodeToAmountEntries(amountEntriesWithDays[0])+"");
+
+                //Log.i("doesTheUser inside", isInvoked+"");
+                //if (!isInvoked) {
+
+                *//*    switch (decodeDaysAndEntries.decodeToAmountEntries(amountEntriesWithDays[0])) {
+                        case 0:
+                            Toast.makeText(UserMainActivity.this, "Masz jeszcze 7 możliwości zapisania czasu", Toast.LENGTH_SHORT).show();
+                            authViewModel.getEntriesLiveData().postValue(0);
+                            break;
+                        case 1:
+                            Toast.makeText(UserMainActivity.this, "Masz jeszcze 6 możliwości zapisania czasu", Toast.LENGTH_SHORT).show();
+                            authViewModel.getEntriesLiveData().postValue(1);
+                            break;
+                        case 2:
+                            Toast.makeText(UserMainActivity.this, "Masz jeszcze 5 możliwości zapisania czasu", Toast.LENGTH_SHORT).show();
+                            authViewModel.getEntriesLiveData().postValue(2);
+                            break;
+                        case 3:
+                            Toast.makeText(UserMainActivity.this, "Masz jeszcze 4 możliwości zapisania czasu", Toast.LENGTH_SHORT).show();
+                            authViewModel.getEntriesLiveData().postValue(3);
+                            break;
+                        case 4:
+                            Toast.makeText(UserMainActivity.this, "Masz jeszcze 3 możliwości zapisania czasu", Toast.LENGTH_SHORT).show();
+                            authViewModel.getEntriesLiveData().postValue(4);
+                            break;
+                        case 5:
+                            Toast.makeText(UserMainActivity.this, "Masz jeszcze 2 możliwości zapisania czasu", Toast.LENGTH_SHORT).show();
+                            authViewModel.getEntriesLiveData().postValue(5);
+                            break;
+                        case 6:
+                            Toast.makeText(UserMainActivity.this, "Masz jeszcze 1 możliwości zapisania czasu", Toast.LENGTH_SHORT).show();
+                            authViewModel.getEntriesLiveData().postValue(6);
+                            break;
+                        case 7:
+                            Toast.makeText(UserMainActivity.this, "Masz jeszcze 0 możliwości zapisania czasu", Toast.LENGTH_SHORT).show();
+                            authViewModel.getEntriesLiveData().postValue(7);
+                            break;
+
+                    }*//*
+
+                    if (decodeDaysAndEntries.decodeToAmountEntries(amountEntriesWithDays[0]) < 7) {
+                        //authViewModel.getEntriesLiveData().postValue(true);
+                    } else {
+                        //authViewModel.getEntriesLiveData().postValue(false);
+                    }
+             //       isInvoked = true;
+                }
+
+           // }
+        });*/
+
+        //authViewModel.getAmountEntries().re
+
+        return getEntriesLiveData();
     }
 }

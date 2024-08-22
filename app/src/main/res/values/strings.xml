@@ -1,12 +1,12 @@
 <resources>
-    <string name="app_name" translatable="false">OgródApp</string>
+    <string name="app_name" translatable="false">Pro Work Time</string>
     <string name="open">Open</string>
     <string name="close">Close</string>
     <string name="enter_password">Wprowadź hasło</string>
     <string name="select_language">Wybierz język</string>
     <string name="login">Login</string>
     <string name="login_in">Zaloguj</string>
-    <string name="lack_of_account">Nie masz konta ? \n Zajerestruj się</string>
+    <string name="lack_of_account">Nie masz konta? \n Zajerestruj się</string>
     <string name="enter_email">Wprowadź email</string>
     <string name="forget_password">Zapomniałeś hasła.\n Zresetuj</string>
     <string name="register">Zajerestruj</string>
@@ -45,6 +45,7 @@
     <string name="admin_panel">Zarządzaj pracownikami</string>
     <string name="money_paid">Wypłacone pieniądze :\u0020 </string>
     <string name="pick_date">Wybierz datę </string>
+
 
 
     <string-array name="language">
@@ -99,5 +100,111 @@
     <string name="about">About</string>
     <string name="lack_data_for">NO DATA FOR \n</string>
     <string name="lack_data">NO DATA</string>
+    <string name="are_you_admin_or_user">Have you added the admin\'s email address? Are you a user or an adminstarter? </string>
+    <string name="monthly_subscription">Monthly Subscription</string>
+    <string name="PRODUCT_ID" translatable="false">my_sub_ogrodapp</string>
+    <string name="status_already_subscribed">Status: Already Subscribed</string>
+    <string name="status_not_subscribed">Status: Not Subscribed</string>
+    <string name="monthly">/Monthly</string>
+    <string name="every_6_month">Every 6 Month</string>
+    <string name="yearly">Yearly</string>
+    <string name="weekly">Weekly</string>
+    <string name="every_3_week">Every 3 Week</string>
+    <string name="serverClientId" translatable="false">602672706888-fsep5a5g6cdnpekkug83ti8qsb6likid.apps.googleusercontent.com</string>
+    <string name="or_login_with">Albo zaloguj się z</string>
+    <string name="login_with_google">Zaloguj się z Google</string>
+    <string name="enter_email_of_your_employers">Wprowadź email swojego pracodawcy</string>
+    <string name="before_we_start">Zanim zaczniemy</string>
+    <string name="are_you_an_administrator_or_a_user">Jesteś administatotrem czy użytkownikiem?</string>
+    <string name="user_without_dots">Użytkownik</string>
+    <string name="you_are_subscribed_to_a_different_email_address">Masz suba na innym mailu</string>
+    <string name="recover_old_code">Odzyskaj stary kod</string>
+    <string name="feature_not_supported">FEATURE NOT SUPPORTED</string>
+    <string name="billing_unavailable">BILLING UNAVAILABLE</string>
+    <string name="user_canceled">USER CANCELED</string>
+    <string name="developer_error">DEVELOPER ERROR</string>
+    <string name="item_unavailable">ITEM UNAVAILABLE</string>
+    <string name="network_error">NETWORK ERROR</string>
+    <string name="service_disconnected">SERVICE DISCONNECTED</string>
+    <string name="error">Error</string>
+    <string name="name_of_db">timeModel_db</string>
+    <string name="fail_on_adding_data">Fail on adding data</string>
+    <string name="edit">EDIT</string>
+    <string name="delete">DELETE</string>
+    <string name="employee">Pracownik: </string>
+    <string name="hours_worked">Przepracowane godziny: </string>
+    <string name="hours_to_be_billed">Godziny do rozliczenia: </string>
+    <string name="billed_hours">Rozliczone godziny: </string>
+    <string name="no_data_for">BRAK DANYCH DLA \n</string>
+    <string name="there_is_no_such_admin">There is no such admin</string>
+    <string name="error_invalid_purchase">Error : invalid Purchase</string>
+    <string name="subscribed">Subscribed</string>
+    <string name="already_subscribed">Already Subscribed</string>
+    <string name="subscription_pending">Subscription PENDING</string>
+    <string name="unspecified_state">UNSPECIFIED STATE</string>
+    <string name="you_havent_approved_your_rate_or_selected_your_hours">You haven\'t approved your rate or selected your hours</string>
+    <string name="wrong_format">Wrong format</string>
+    <string name="for_word"> For </string>
+    <string name="month"> Month </string>
+    <string name="week"> Week </string>
+    <string name="days"> Days </string>
+    <string name="year">  Year  </string>
+    <string name="price">Price: </string>
+    <string name="set_start_time">Set start time</string>
+    <string name="set_an_end_time">Ustaw godzinę zakończenia</string>
+    <string name="the_start_time_cannot_be_later_than_the_start_time">Godzina rozpoczęcia nie może być później niż godzina zaczęcia</string>
+    <string name="recovering_old_qr_code">Recovering old qr code</string>
+    <string name="generate_new_one_qr_code">Generuje nowy kod qr</string>
+    <string name="saves">Saves: </string>
+    <string name="billed">Billed</string>
+    <string name="wait">Wait...</string>
+    <string name="user_number_1">User number 1</string>
+    <string name="too_many_entries_contact_the_admin">Too many entries, contact the admin</string>
+
+    <string name="data_without_dots">Data</string>
+    <string name="what_delay">What delay?</string>
+    <string name="specify_the_delay_in_minutes">Specify the delay \n in minutes</string>
+    <string name="generate">Generate</string>
+    <string name="save">Save</string>
+    <string name="connecting">Connecting</string>
+    <string name="no_ads">No ads</string>
+    <string name="get_price">Get Price</string>
+    <string name="subscribe">Subscribe</string>
+    <string name="quit">QUIT</string>
+    <string name="stop_work_without_dots">Zatrzymaj pracę</string>
+    <string name="settle_the_employee">Settle the Employee:</string>
+    <string name="bill_for">Bill for:</string>
+    <string name="time_worked">Przepracowany czas: </string>
+    <string name="enter_the_rate_for_h">Podaj stawkę za H </string>
+    <string name="enter_rate_in_pln">Podaj \n stawkę w zł</string>
+    <string name="possible_withdrawals">Możliwe do wypłacenia: </string>
+    <string name="confirm_your_withdrawal">Potwierdź wypłatę</string>
+    <string name="cancel">Anuluj</string>
+    <string name="confirm_bid">Potwierdź Stawkę</string>
+    <string name="are_you_sure_you_want_to_delete_this_entry">Jesteś pewien że chcesz usunąć ten wpis?</string>
+    <string name="no">Nie</string>
+    <string name="yes">Tak</string>
+    <string name="data_editing">Edycja danych</string>
+    <string name="enter_start_time">Wprowadź czas rozpoczęcia: </string>
+    <string name="enter">Wprowadź</string>
+    <string name="enter_end_time">Wprowadź czas zakończenia: </string>
+    <string name="overall_working_time">Ogólny czas pracy: </string>
+    <string name="confirm">Potwierdź</string>
+    <string name="are_you_sure_you_want_to_log_out">Czy napewno chcesz się wylogować?</string>
+    <string name="what_do_you_want_to_do">Co chcesz zrobić?</string>
+    <string name="edit_data">Edytować dane</string>
+    <string name="settle_the_employee_without_dots">Rozliczyć Pracownika</string>
+    <string name="purchase_token">purchase Token</string>
+    <string name="you_have_6_more_opportunities_to_save_time">Masz jeszcze 6 możliwości zapisania czasu</string>
+    <string name="you_have_5_more_opportunities_to_save_time">Masz jeszcze 5 możliwości zapisania czasu</string>
+    <string name="you_have_4_more_opportunities_to_save_time">Masz jeszcze 4 możliwości zapisania czasu</string>
+    <string name="you_have_3_more_opportunities_to_save_time">Masz jeszcze 3 możliwości zapisania czasu</string>
+    <string name="you_have_2_more_opportunities_to_save_time">Masz jeszcze 2 możliwości zapisania czasu</string>
+    <string name="you_have_1_more_opportunities_to_save_time">Masz jeszcze 1 możliwości zapisania czasu</string>
+    <string name="you_have_0_more_opportunities_to_save_time">Masz jeszcze 0 możliwości zapisania czasu</string>
+
+
+
+
 
 </resources>
