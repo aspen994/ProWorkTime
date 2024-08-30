@@ -119,12 +119,6 @@ public class UserTimeTable extends AppCompatActivity {
 
 
                     }
-                    Log.i("Sum of entries", sum+"");
-                    Log.i("All time Formated", FormattedTime.formattedTime(allTheTime)+"");
-                    Log.i("All time raw", allTheTime+"");
-                    Log.i("Settled Time Formated", FormattedTime.formattedTime(settledTime)+"");
-                    Log.i("Settled Time raw ", settledTime+"");
-                    Log.i("Settled To Settle ", allTheTime-settledTime+"");
 
                     if(!timeModelArrayList.isEmpty()){
                         lack_data.setVisibility(View.INVISIBLE);

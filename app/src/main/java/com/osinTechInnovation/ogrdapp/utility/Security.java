@@ -1,9 +1,6 @@
 package com.osinTechInnovation.ogrdapp.utility;
 
-import static com.google.common.base.Verify.verify;
-
 import android.os.Build;
-import android.service.credentials.BeginGetCredentialOption;
 import android.text.TextUtils;
 
 import java.io.IOException;

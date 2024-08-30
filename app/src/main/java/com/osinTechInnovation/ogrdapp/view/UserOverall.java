@@ -267,7 +267,6 @@ public class UserOverall extends AppCompatActivity {
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTimeInMillis(x.getTimeAdded().toDate().toInstant().toEpochMilli());
 
-                Log.i("0 condition", x.getTimeAdded().toDate().toString());
 
                 if (
                         calendar1.get(Calendar.YEAR) == calendar2.get(Calendar.YEAR) &&
@@ -279,7 +278,7 @@ public class UserOverall extends AppCompatActivity {
                 {
                     time += x.getTimeOverallInLong();
                     selectedTimeModelList.add(x);
-                    Log.i("1 condition", x.getTimeAdded().toDate().toString());
+
                 } else if (
                         calendar1.get(Calendar.YEAR) != calendar2.get(Calendar.YEAR)
                 ) {
@@ -289,14 +288,14 @@ public class UserOverall extends AppCompatActivity {
                     ){
                         time += x.getTimeOverallInLong();
                         selectedTimeModelList.add(x);
-                        Log.i("2 condition", x.getTimeAdded().toDate().toString());
+
                     } else if (
                             calendar2.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) &&
                             calendar2.get(Calendar.DAY_OF_YEAR) >= calendar.get(Calendar.DAY_OF_YEAR)
                     ) {
                         time += x.getTimeOverallInLong();
                         selectedTimeModelList.add(x);
-                        Log.i("3 condition", x.getTimeAdded().toDate().toString());
+
                     }
                 }
                /* else if(

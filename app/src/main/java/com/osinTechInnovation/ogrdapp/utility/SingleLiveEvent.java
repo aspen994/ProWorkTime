@@ -48,8 +48,6 @@ public class SingleLiveEvent<T> extends MutableLiveData<T> {
         observers.add(observer);
         if(!hasObservers()){
             super.observe(owner,internalObserver);
-        }else {
-            Log.i("TAG","oberver: multiple observers registered but only one will be notified of changes");
         }
     }
 

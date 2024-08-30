@@ -1,9 +1,12 @@
 package com.osinTechInnovation.ogrdapp.view;
 
+import static android.os.AsyncTask.THREAD_POOL_EXECUTOR;
+
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CancellationSignal;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
@@ -18,20 +21,29 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.RequiresApi;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-
+import androidx.credentials.ClearCredentialStateRequest;
+import androidx.credentials.Credential;
+import androidx.credentials.CredentialManager;
+import androidx.credentials.CredentialManagerCallback;
+import androidx.credentials.CustomCredential;
+import androidx.credentials.GetCredentialRequest;
+import androidx.credentials.GetCredentialResponse;
+import androidx.credentials.PasswordCredential;
+import androidx.credentials.PublicKeyCredential;
+import androidx.credentials.exceptions.GetCredentialException;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.gms.auth.api.identity.BeginSignInRequest;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
@@ -39,38 +51,35 @@ import com.osinTechInnovation.ogrdapp.R;
 import com.osinTechInnovation.ogrdapp.UserMainActivity;
 import com.osinTechInnovation.ogrdapp.viewmodel.AuthViewModel;
 
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
+
+
 public class MainActivity extends AppCompatActivity {
 
     private Button loginBtn,singInGoogleBtn;
     private TextView textViewRegister,textViewZresetuj;
     private AutoCompleteTextView email, password;
-
     private AuthViewModel authViewModel;
-
-    public GoogleSignInClient googleSignInClient;
-
-    public BeginSignInRequest signInRequest;
     private Dialog dialog,dialogForUser;
     private  Button btnDialogAdmin, btnDialogUser,btnRegister;
     private AutoCompleteTextView actvFillAdminEmail;
+    private GoogleSignInClient googleSignInClient;
 
 
-
-
-
-    private final    ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+    private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
         @Override
         public void onActivityResult(ActivityResult result) {
+            Log.i("result",result.getResultCode()+"");
             if(result.getResultCode() == RESULT_OK){
                 Task<GoogleSignInAccount> accountTask = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
-
-
+                Log.i("result after if",result.getResultCode()+"");
                 try{
                     GoogleSignInAccount signInAccount = accountTask.getResult(ApiException.class);
-                    AuthCredential authCredential = GoogleAuthProvider.getCredential(signInAccount.getIdToken(),null);
+                    AuthCredential  authCredential = GoogleAuthProvider.getCredential(signInAccount.getIdToken(),null);
                     authViewModel.signInWithGoogleCredential(authCredential,MainActivity.this,signInAccount.getEmail());
 
                 } catch (ApiException e) {
+                    Log.i("ApiException",e.getMessage());
                     throw new RuntimeException(e);
                 }
             }
@@ -79,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
     });
 
 
-    @RequiresApi(api = Build.VERSION_CODES.P)
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -131,20 +140,9 @@ public class MainActivity extends AppCompatActivity {
 
         btnDialogAdmin.setOnClickListener((View v)->{
             authViewModel.writeAdminDataToDb(this);
+           // Log.i("Credential Data",credentialData.getDisplayName());
+
         });
-
-
-
-
-        signInRequest = BeginSignInRequest.builder()
-                .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
-                        .setSupported(true)
-                        // Your server's client ID, not your Android client ID.
-                        .setServerClientId(getString(R.string.serverClientId))
-                        // Only show accounts previously used to sign in.
-                        .setFilterByAuthorizedAccounts(true)
-                        .build())
-                .build();
 
         authViewModel.getValueToOpenDialog().observe(this, new Observer<Boolean>() {
             @Override
@@ -161,52 +159,6 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-        //! ! ! ! ! ! ! ! ! ! ! !-FOR NEXT IMPROVEMENT LEAVE IT ! ! ! ! ! ! ! ! ! ! ! !
-
-        /*ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,R.array.language, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setPrompt("Wybierz język");
-        spinner.setAdapter(adapter);*/
-
-        //! ! ! ! ! ! ! ! ! ! ! !-FOR NEXT IMPROVEMENT LEAVE IT ! ! ! ! ! ! ! ! ! ! ! !
-        /*textViewSelectLanguage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                spinner.performClick();
-            }
-        });
-
-        //! ! ! ! ! ! ! ! ! ! ! !-FOR NEXT IMPROVEMENT LEAVE IT ! ! ! ! ! ! ! ! ! ! ! !
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedLanguage = parent.getItemAtPosition(position).toString();
-
-                if(selectedLanguage.equals("polski"))
-                {
-                    setLocal(MainActivity.this,"pl");
-                    finish();
-                    startActivity(getIntent());
-                }
-                else if(selectedLanguage.equals("українська"))
-                {
-                    setLocal(MainActivity.this,"uk");
-                    finish();
-                    startActivity(getIntent());
-
-                } else if (selectedLanguage.equals("english")) {
-                    setLocal(MainActivity.this,"en");
-                    finish();
-                    startActivity(getIntent());
-                }
-
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });*/
 
         textViewZresetuj.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -225,8 +177,8 @@ public class MainActivity extends AppCompatActivity {
         authViewModel.getUserData().observe(this, new Observer<FirebaseUser>() {
             @Override
             public void onChanged(FirebaseUser firebaseUser) {
-             /*   startActivity(new Intent(MainActivity.this,UserMainActivity.class));
-                finish();*/
+                startActivity(new Intent(MainActivity.this,UserMainActivity.class));
+                finish();
             }
         });
 
@@ -235,13 +187,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(Boolean aBoolean) {
                 if(aBoolean){
-                    Log.i("Here baby",true+"");
                     startActivity(new Intent(MainActivity.this,UserMainActivity.class));
                     finish();
-                }
-                else {
-                    //Log.i("Here baby", "Not in DB yet");
-                    googleSignInClient.signOut();
                 }
             }
         });
@@ -250,132 +197,112 @@ public class MainActivity extends AppCompatActivity {
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //startActivity(new Intent(MainActivity.this,UserMainActivity.class));
-
                 String emailToLogin = email.getText().toString();
                 String passwordToLogin = password.getText().toString();
                 if(!TextUtils.isEmpty(email.getText().toString())&&!TextUtils.isEmpty(password.getText().toString())) {
                     authViewModel.signIn(emailToLogin,passwordToLogin);
-                    //startActivity(new Intent(MainActivity.this,UserMainActivity.class));
                 }
-
             }
         });
 
-        GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.serverClientId))
-                        .requestEmail()
-                                .build();
+        singInGoogleBtn.setOnClickListener(view -> {
+            // FOR NEXT IMPROVEMENTS - CREDENTIAL MANAGER
+            /*if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
+                googleSignInWithCredentialManager();
+            }else{
+                googleSignIn();
+            }*/
+            googleSignIn();
 
-        googleSignInClient = GoogleSignIn.getClient(MainActivity.this,options);
-
-
-
-
-        singInGoogleBtn.setOnClickListener((view -> {
-
-            Intent intent = googleSignInClient.getSignInIntent();
-            activityResultLauncher.launch(intent);
-
-            //TODO 25.07.2024
-            //googleSignInClient.signOut();
-
-
-
-            /*CredentialManager credentialManager = CredentialManager.create(getApplicationContext());
-
-            String rawNonce = UUID.randomUUID().toString();
-            byte[] bytes = rawNonce.getBytes();
-            StringBuilder hashedNonce = new StringBuilder("");
-            try {
-                MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-                byte[] digest = messageDigest.digest(bytes);
-
-                for (int i = 0; i < digest.length; i++) {
-                    //hashedNonce.append(Integer.toString((digest[i] & 0xff) + 0x100, 16).substring(1));
-                    hashedNonce.append(String.format("%02X ", digest[i]));
-                }
-            } catch (NoSuchAlgorithmException e) {
-                Log.i("NoSuchAlgorithm", e.getMessage());
-            }
-
-
-
-            GetGoogleIdOption getGoogleIdOption = new GetGoogleIdOption.Builder()
-                    .setFilterByAuthorizedAccounts(false)
-                    .setServerClientId(getString(R.string.serverClientId))
-                    .setNonce(hashedNonce.toString())
-                    .build();
-
-            GetCredentialRequest getCredentialRequest = new GetCredentialRequest.Builder()
-                    .addCredentialOption(getGoogleIdOption)
-                    .build();
-
-
-            Executor executor = Executors.newSingleThreadExecutor();
-
-            CancellationSignal cancellationSignal = null;
-
-
-            credentialManager.getCredentialAsync(
-                    MainActivity.this,
-                    getCredentialRequest,
-                    cancellationSignal,
-                    getApplicationContext().getMainExecutor(),
-                    new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
-                        @Override
-                        public void onResult(GetCredentialResponse result) {
-                            handleSignIn(result);
-                        }
-
-                        @Override
-                        public void onError(GetCredentialException e) {
-                            Log.i("Error Google", e.getMessage());
-                        }
-                    }
-                    );*/
-
-
-
-
-        }));
+        });
     }
 
+    private void googleSignIn() {
 
-  /*  public void handleSignIn(GetCredentialResponse result) {
+        GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.serverClientId))
+                .requestEmail()
+                .build();
+
+        googleSignInClient = GoogleSignIn.getClient(MainActivity.this,options);
+        Log.i("Method google Sign IN","Method");
+        Intent intent = googleSignInClient.getSignInIntent();
+        activityResultLauncher.launch(intent);
+    }
+
+    public void googleSignInWithCredentialManager(){
+        CancellationSignal cancellationSignal = null;
+        CredentialManager credentialManager = CredentialManager.create(this);
+
+        GetGoogleIdOption getGoogleIdOption = new GetGoogleIdOption.Builder()
+                .setFilterByAuthorizedAccounts(false)
+                .setServerClientId(getString(R.string.serverClientId))
+                .build();
+
+        GetCredentialRequest request  = new GetCredentialRequest.Builder()
+                .addCredentialOption(getGoogleIdOption)
+                .build();
+
+
+        credentialManager.getCredentialAsync(this, request, null,
+                THREAD_POOL_EXECUTOR,
+                new CredentialManagerCallback<GetCredentialResponse, androidx.credentials.exceptions.GetCredentialException>() {
+
+                    @Override
+                    public void onResult(GetCredentialResponse getCredentialResponse) {
+                        handleSignIn(getCredentialResponse);
+                    }
+
+                    @Override
+                    public void onError(@NonNull GetCredentialException e) {
+                        Log.i("Google Login Problem",e.getMessage());
+                      //  credentialManager.clearCredentialState(new ClearCredentialStateRequest(),null);
+                    }
+                });
+
+    }
+
+    public void handleSignIn(GetCredentialResponse result) {
         // Handle the successfully returned credential.
-
-
         Credential credential = result.getCredential();
 
-
-        result.toString();
+        if(credential.getType().equals(GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL)){
+            GoogleIdTokenCredential credentialData = GoogleIdTokenCredential.createFrom(credential.getData());
+            AuthCredential authCredential = GoogleAuthProvider.getCredential(credentialData.getIdToken(),null);
+            Log.i("CREDENTIAL DATA",credentialData.getId());
+            authViewModel.signInWithGoogleCredential(authCredential,MainActivity.this,credentialData.getId());
+        }
 
         if (credential instanceof PublicKeyCredential) {
             String responseJson = ((PublicKeyCredential) credential).getAuthenticationResponseJson();
-
-            Log.i("responseJson",responseJson);
+            Log.e("Check the Tag", "ResponseJson");
             // Share responseJson i.e. a GetCredentialResponse on your server to validate and authenticate
         } else if (credential instanceof PasswordCredential) {
             String username = ((PasswordCredential) credential).getId();
             String password = ((PasswordCredential) credential).getPassword();
-            Log.i("Username", username);
-            Log.i("password", password);
+            Log.e("Check the Tag", "PasswordCredential");
             // Use id and password to send to your server to validate and authenticate
+        } /*else if (credential instanceof CustomCredential) {
+            if (ExampleCustomCredential.TYPE.equals(credential.getType())) {
+                try {
+                    ExampleCustomCredential customCred = ExampleCustomCredential.createFrom(customCredential.getData());
+                    // Extract the required credentials and complete the
+                    // authentication as per the federated sign in or any external
+                    // sign in library flow
+                } catch (ExampleCustomCredential.ExampleCustomCredentialParsingException e) {
+                    // Unlikely to happen. If it does, you likely need to update the
+                    // dependency version of your external sign-in library.
+                    Log.e("Check the Tag", "Failed to parse an ExampleCustomCredential", e);
+                }
+            } else {
+                // Catch any unrecognized custom credential type here.
+                Log.e("Check the Tag", "Unexpected type of credential");
+            }
+        }*/ else {
+            // Catch any unrecognized credential type here.
+            Log.e("Check the Tag", "Unexpected type of credential");
         }
 
-    }*/
-
-
-
-    //! ! ! ! ! ! ! ! ! ! ! !-FOR NEXT IMPROVEMNET LEAV IT ! ! ! ! ! ! ! ! ! ! ! !
-/*    private void setLocal(Activity activity, String langCode) {
-        Locale locale = new Locale(langCode);
-        locale.setDefault(locale);
-        Resources resources = activity.getResources();
-        Configuration configuration = resources.getConfiguration();
-        configuration.setLocale(locale);
-        resources.updateConfiguration(configuration,resources.getDisplayMetrics());
-    }*/
+    }
 }
 

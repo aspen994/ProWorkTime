@@ -5,8 +5,10 @@ import static com.osinTechInnovation.ogrdapp.services.ForegroundServices.isPause
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.work.ListenableWorker;
 import androidx.work.WorkerParameters;
 
@@ -27,6 +29,7 @@ public class StopWatchWorker extends Worker {
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @NonNull
     @Override
     public ListenableWorker.Result doWork() {
@@ -37,6 +40,8 @@ public class StopWatchWorker extends Worker {
         if(timerStarted || isPaused)
         {
             context.startService(intent);
+            //context.startForegroundService(intent);
+
 
             return ListenableWorker.Result.retry();
         }

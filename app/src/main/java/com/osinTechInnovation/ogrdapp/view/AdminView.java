@@ -202,10 +202,7 @@ public class AdminView extends AppCompatActivity {
         double summedMoney = 0;
         long leftHours = 0;
 
-        for(TimeModel x: arrayListFromInsideSelectDateMethod){
-            Log.i("Check -1", x.getUserName());
-            Log.i("Check -1", x.getWithdrawnMoney()+"");
-        }
+
 
         if(arrayListFromInsideSelectDateMethod.size()==1)
         {
@@ -231,11 +228,6 @@ public class AdminView extends AppCompatActivity {
                         settledHours += arrayListFromInsideSelectDateMethod.get(i).getTimeOverallInLong();
                     }
 
-                    Log.i("To check 0",arrayListFromInsideSelectDateMethod.get(i).getUserName()+"");
-                    Log.i("To check 0", arrayListFromInsideSelectDateMethod.get(i).getWithdrawnMoney()+"");
-                    Log.i("To check 0 summedMoney", summedMoney+"");
-
-
 
                     if (j == arrayListFromInsideSelectDateMethod.size() - 1) {
 
@@ -248,13 +240,6 @@ public class AdminView extends AppCompatActivity {
 
                         summedMoney += arrayListFromInsideSelectDateMethod.get(j).getWithdrawnMoney();
 
-                        Log.i("To check sum",arrayListFromInsideSelectDateMethod.get(j).getUserName()+"");
-                        Log.i("To check sum",summedMoney+"");
-
-                        Log.i("To check 0'",arrayListFromInsideSelectDateMethod.get(j).getUserName()+"");
-                        Log.i("To check 0' ", arrayListFromInsideSelectDateMethod.get(j).getWithdrawnMoney()+"");
-                        Log.i("To check 0' summedMoney", summedMoney+"");
-
                         summedTime += arrayListFromInsideSelectDateMethod.get(j).getTimeOverallInLong();
                         TimeModelForDisplay timeModelForDisplay = new TimeModelForDisplay();
                         timeModelForDisplay.setUserName(arrayListFromInsideSelectDateMethod.get(i).getUserName());
@@ -264,8 +249,6 @@ public class AdminView extends AppCompatActivity {
                         timeModelForDisplay.setWithdrawnMoney(round(summedMoney,2));
                         timeModelsForDisplay.add(timeModelForDisplay);
 
-                        Log.i("To check 1", timeModelForDisplay.getUserName());
-                        Log.i("To check 1",timeModelForDisplay.getWithdrawnMoney()+"");
 
                         leftHours = 0;
                         summedTime = 0;
@@ -284,8 +267,7 @@ public class AdminView extends AppCompatActivity {
 
                         summedMoney += arrayListFromInsideSelectDateMethod.get(i).getWithdrawnMoney();
 
-                        Log.i("Missing for Jessy",arrayListFromInsideSelectDateMethod.get(i).getUserName()+"");
-                        Log.i("Missing for Jessy",arrayListFromInsideSelectDateMethod.get(i).getWithdrawnMoney()+"");
+
 
                         summedTime += arrayListFromInsideSelectDateMethod.get(i).getTimeOverallInLong();
                         TimeModelForDisplay timeModel = new TimeModelForDisplay();
@@ -295,9 +277,6 @@ public class AdminView extends AppCompatActivity {
                         timeModel.setWithdrawnMoney(round(summedMoney,2));
                         timeModel.setTimeOverallInLongLefToSettle(leftHours);
                         timeModelsForDisplay.add(timeModel);
-
-                        Log.i("To check 2", timeModel.getUserName());
-                        Log.i("To check 2",timeModel.getWithdrawnMoney()+"");
 
                         summedTime = 0;
                         summedMoney = 0;
@@ -310,8 +289,7 @@ public class AdminView extends AppCompatActivity {
                         summedTime += arrayListFromInsideSelectDateMethod.get(i).getTimeOverallInLong();
                         summedMoney += arrayListFromInsideSelectDateMethod.get(i).getWithdrawnMoney();
 
-                        Log.i("To check 0'' ",arrayListFromInsideSelectDateMethod.get(j).getUserName()+"");
-                        Log.i("To check 0'' ", arrayListFromInsideSelectDateMethod.get(j).getWithdrawnMoney()+"");
+
 
                         if (arrayListFromInsideSelectDateMethod.get(i).getMoneyOverall() == false) {
                             leftHours += arrayListFromInsideSelectDateMethod.get(i).getTimeOverallInLong();
@@ -360,12 +338,7 @@ public class AdminView extends AppCompatActivity {
             }
         }
 
-/*
-        for(TimeModelForDisplay item: timeModelsForDisplay){
-            Log.i("To check ",item.getUserName()+"");
-            Log.i("To check ",item.getWithdrawnMoney()+"");
-        }
-*/
+
 
         return timeModelsForDisplay;
 
@@ -376,11 +349,7 @@ public class AdminView extends AppCompatActivity {
 
         adapterUserForAdmin = new AdapterUserForAdmin(AdminView.this, timeModelForDisplayLinkedList, this, listOfAllRecordsForUser);
 
-        for(TimeModelForDisplay timeModelForDisplay: timeModelForDisplayLinkedList){
-            Log.i("TMFDAL ",timeModelForDisplay.getUserName());
-            Log.i("TMFDAL TimeInLong TQ",timeModelForDisplay.getTimeOverallInLong()+"");
-            Log.i("TMFDAL TimeToSettle TQ",timeModelForDisplay.getTimeOverallInLongLefToSettle()+"");
-        }
+
 
         binding.recyclerViewCardy.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         binding.recyclerViewCardy.setAdapter(adapterUserForAdmin);
@@ -440,12 +409,6 @@ public class AdminView extends AppCompatActivity {
         timeModelForDisplay.setWithdrawnMoney(round(summedMoney,2));
         timeModelForDisplay.setTimeOverallInLongLefToSettle(leftHours);
 
-        Log.i("timeModelForDisplay",timeModelForDisplay.getUserName());
-        Log.i("SummedMoney",summedMoney+"");
-        Log.i("SummedTime",sumTime+"");
-        Log.i("SummedLeftHours",leftHours+"");
-
-
 
         timeModels.add(timeModelForDisplay);
         return timeModels;
@@ -477,12 +440,7 @@ public class AdminView extends AppCompatActivity {
                     //2 //  ze względu na to ,że pobiera dużo list. Trzeba zrobić metodę ,która będzie porównawała listy i dodawała nowe bez dupilkatów.
                     // to działa tak że pobiera dla jednego użytkownika i potem dodaje. zrób Tak żeby nie dodawało tej samej listy.
                     timeModelForDisplayLinkedList.addAll(summingTime(timeModels));
-                    for(TimeModelForDisplay timeModelForDisplay: timeModelForDisplayLinkedList){
-                        Log.i("TMFD userName",timeModelForDisplay.getUserName());
-                        Log.i("TMFD timeLong",timeModelForDisplay.getTimeOverallInLong()+"");
-                        Log.i("TMFD timeLongLeft",timeModelForDisplay.getTimeOverallInLongLefToSettle()+"");
 
-                    }
                     adapterUserForAdmin.notifyDataSetChanged();
                 }
 

@@ -1,7 +1,6 @@
 package com.osinTechInnovation.ogrdapp.view;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -10,7 +9,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.android.billingclient.api.AcknowledgePurchaseParams;
@@ -29,7 +27,6 @@ import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.QueryPurchasesParams;
 import com.google.common.collect.ImmutableList;
 import com.osinTechInnovation.ogrdapp.R;
-import com.osinTechInnovation.ogrdapp.UserMainActivity;
 import com.osinTechInnovation.ogrdapp.utility.ConnectionClass;
 import com.osinTechInnovation.ogrdapp.utility.Security;
 import com.osinTechInnovation.ogrdapp.viewmodel.AuthViewModel;
@@ -132,7 +129,7 @@ public class Subs extends AppCompatActivity {
 
                                         billingClient.launchBillingFlow(Subs.this, billingFlowParams);
 
-                                        Log.i("Invoked only once ?","Invoked only once ?");
+
 
                                     }
                                 }
@@ -151,7 +148,7 @@ public class Subs extends AppCompatActivity {
         billingClient.startConnection(new BillingClientStateListener() {
             @Override
             public void onBillingSetupFinished(BillingResult billingResult) {
-                Log.i("enter BSF",billingResult+"");
+
                 if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                     ExecutorService executorService = Executors.newSingleThreadExecutor();
                     executorService.execute(() -> {
@@ -168,21 +165,20 @@ public class Subs extends AppCompatActivity {
                                                 ConnectionClass.premium = true;
                                                     subsStatus.setText(getString(R.string.status_already_subscribed));
                                                     btnSubscribe.setVisibility(View.GONE);
-                                                    Log.i("Access Granted in BSF","Acces Granted in BSF");
+
                                                     flag=true;
                                             }
                                             else{
-                                                Log.i("Access Denied in BSF 78","Acces Denied in BSF 78");
+
                                             }
                                         }
 
                                     }
 
                             );
-                            Log.i("try in block","enter BillingSetupFinisehd");
                             if(!flag){
                                 ConnectionClass.premium = false;
-                                Log.i("Access Denied in BSF 79","Acces Denied in BSF 79");
+
                             }
 
 
@@ -191,8 +187,7 @@ public class Subs extends AppCompatActivity {
                             ConnectionClass.premium = false;
                             subsStatus.setText(getString(R.string.status_not_subscribed));
                             btnSubscribe.setVisibility(View.VISIBLE);
-                            Log.i("catch in block","enter BillingSetupFinisehd");
-                            Log.i("Access Denied in BSF","Acces Denied in BSF");
+
                         }
 
                         runOnUiThread(() -> {
@@ -219,7 +214,7 @@ public class Subs extends AppCompatActivity {
     private void getPrice() {
 
         btnGetPrice.setOnClickListener(v->{
-            Log.i("btnGetPrice","btnGetPriceClicked");
+
             billingClient.startConnection(new BillingClientStateListener() {
                 @Override
                 public void onBillingSetupFinished(BillingResult billingResult) {
@@ -375,13 +370,9 @@ public class Subs extends AppCompatActivity {
         @Override
         public void onPurchasesUpdated(@NonNull BillingResult billingResult, @Nullable List<Purchase> purchases) {
 
-            Log.i("Pre checkpoint",billingResult.getResponseCode()+"");
-
              if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases !=null){
                  for(Purchase purchase: purchases){
                      handlePurchase(purchase);
-
-                     Log.i("First checkpoint","First checkpoint");
                     /* authViewModel.isSubscribtionAlreadyExist(purchase.getOrderId()).observe(Subs.this, new Observer<String>() {
                          @Override
                          public void onChanged(String email) {
@@ -401,21 +392,15 @@ public class Subs extends AppCompatActivity {
                  }
              }
              else if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED){
-                 Log.i("SUBS CLASS FUN","ITEM_ALREADY_OWNED");
-
                  subsStatus.setText(R.string.already_subscribed);
                  isSuccess = true;
                  ConnectionClass.premium = true;
                  ConnectionClass.locked = true;
                  btnSubscribe.setVisibility(View.GONE);
-                 Log.i("Status of subs1",ConnectionClass.premium+"");
 
                  for(Purchase purchase: purchases){
                      handlePurchase(purchase);
-                     Log.i("What is there, Subs", purchase.getOriginalJson());
 
-
-                     Log.i("Second checkpoint","Second checkpoint");
 
                   /*   authViewModel.isSubscribtionAlreadyExist(purchase.getOrderId()).observe(Subs.this, new Observer<String>() {
                          @Override
@@ -450,7 +435,7 @@ public class Subs extends AppCompatActivity {
                  subsStatus.setText(getString(R.string.service_disconnected));
              }else if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.ITEM_NOT_OWNED){
                  ConnectionClass.premium = false;
-                 Log.i("Item not owned","Item not owned");
+
              }
              else {
                  Toast.makeText(getApplicationContext(), getString(R.string.error) + billingResult.getDebugMessage(), Toast.LENGTH_SHORT).show();
@@ -496,9 +481,7 @@ public class Subs extends AppCompatActivity {
 
                 */
 
-                Log.i("Status of subs2",ConnectionClass.premium+"");
 
-                Log.i("Third checkpoint","Third checkpoint");
                /* authViewModel.isSubscribtionAlreadyExist(purchase.getOrderId()).observe(Subs.this, new Observer<String>() {
                     @Override
                     public void onChanged(String email) {
@@ -527,8 +510,9 @@ public class Subs extends AppCompatActivity {
         @Override
         public void onAcknowledgePurchaseResponse(@NonNull BillingResult billingResult) {
                 subsStatus.setText(getString(R.string.subscribed));
+                btnSubscribe.setVisibility(View.GONE);
                 isSuccess = true;
-                Log.i("getResponseCode",billingResult.getResponseCode()+"");
+
                 ConnectionClass.premium = true;
                 ConnectionClass.locked =false;
 

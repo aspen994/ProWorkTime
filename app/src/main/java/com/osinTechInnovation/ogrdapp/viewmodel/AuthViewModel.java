@@ -10,6 +10,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.firebase.auth.AuthCredential;
 import com.osinTechInnovation.ogrdapp.model.QRModel;
 import com.osinTechInnovation.ogrdapp.model.TimeModel;
@@ -280,47 +281,7 @@ public class AuthViewModel extends AndroidViewModel {
 
     // TODo 16.08.2024 dlaczego tutaj a nie w repozytorium
     public void updateEntriesAmount(TimeModel timeModel) {
-
-/*        long time1 = timeModel.getTimeAdded().toDate().getTime();
-
-        Duration duration1 = Duration.ofMillis(time1);
-        int daysSinceUnixTimeModel = (int) duration1.toDays();
-
-
-        long time = new Date().getTime();
-
-        Duration duration = Duration.ofMillis(time);
-        int daysSinceUnixCurrent = (int) duration.toDays();
-
-        DecodeDaysAndEntries decodeDaysAndEntries = new DecodeDaysAndEntries();*/
-
         authRepository.updateEntriesAmount(timeModel);
-
-     /*   observer = new Observer<Map<String, Object>>() {
-            @Override
-            public void onChanged(Map<String, Object> stringObjectMap) {
-                String s = (String) stringObjectMap.get("entriesAmount");
-                String email = (String)stringObjectMap.get("email");
-
-                Log.i("daysSinceUnixTimeModel",daysSinceUnixTimeModel+"");
-                Log.i("daysSinceUnixCurrent",daysSinceUnixCurrent+"");
-
-
-
-                if(daysSinceUnixTimeModel==daysSinceUnixCurrent) {
-
-                    int amountEntriesDecoded = decodeDaysAndEntries.decodeToAmountEntries(s);
-                    int dayDecoded = decodeDaysAndEntries.decodeDays(s);
-
-                    amountEntriesDecoded--;
-
-
-                }
-            }
-        };*/
-
-        //TOOD 19.08.2024
-       // authRepository.getAmountEntries(timeModel.getId()).observeForever(observer);
     }
 
      public void writeToFile(String androidId) {
@@ -346,7 +307,7 @@ public class AuthViewModel extends AndroidViewModel {
 
     public MutableLiveData<Integer> doesTheUserStillHaveAnyEntries() {
 
-        Log.i("doesTheUser", "doestTheUser");
+
 
         final String[] amountEntriesWithDays = {""};
 

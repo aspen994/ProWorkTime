@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="com.android.vending.BILLING" />
     <uses-permission
         android:name="com.google.android.gms.permission.AD_ID"
@@ -96,7 +97,9 @@
 
         <service
             android:name=".services.ForegroundServices"
-            android:foregroundServiceType="location|camera|microphone" />
+            android:foregroundServiceType="specialUse"
+            tools:node="merge"
+            />
 
         <receiver
             android:name=".MyBroadcastReceiver"

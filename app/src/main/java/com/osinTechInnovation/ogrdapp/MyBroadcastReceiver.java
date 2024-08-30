@@ -1,5 +1,9 @@
 package com.osinTechInnovation.ogrdapp;
 
+import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
+
+import static androidx.core.app.ServiceCompat.startForeground;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +21,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             Intent i = new Intent(context, ForegroundServices.class);
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startService(i);
+            //context.startForegroundService(i);
+            //startForeground(0, , FOREGROUND_SERVICE_TYPE_LOCATION)
         }
     }
 

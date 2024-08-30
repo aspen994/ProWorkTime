@@ -20,6 +20,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
@@ -83,7 +84,7 @@ public class AuthRepository {
     private MutableLiveData<Boolean> valueToOpenDialogLiveData;
     private MutableLiveData<Boolean> isUserInDBLiveDataLiveData;
 
-    private final FirebaseAuth firebaseAuth;
+    private  FirebaseAuth firebaseAuth;
     private FirebaseUser fireBaseUser;
     private final CollectionReference collectionReferenceUser;
     private final CollectionReference collectionReferenceTime;
@@ -290,7 +291,6 @@ public class AuthRepository {
     }
 
 
-
     public void updateEntriesAmount(TimeModel timeModel) {
         long time1 = timeModel.getTimeAdded().toDate().getTime();
 
@@ -304,7 +304,8 @@ public class AuthRepository {
 
         DecodeDaysAndEntries decodeDaysAndEntries = new DecodeDaysAndEntries();
 
-        collectionReferenceUser.whereEqualTo("email", email).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+
+        collectionReferenceUser.whereEqualTo("userId", timeModel.getId()).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 if (!queryDocumentSnapshots.isEmpty()) {
@@ -312,6 +313,7 @@ public class AuthRepository {
 
                         User user1 = user.toObject(User.class);
                         String entriesAmount = user1.getEntriesAmount();
+                        String userEmail = user1.getEmail();
 
                         if (daysSinceUnixTimeModel == daysSinceUnixCurrent) {
 
@@ -324,7 +326,7 @@ public class AuthRepository {
 
                             mapa.put("entriesAmount", dayDecoded + "_" + amountEntriesDecoded);
 
-                            collectionReferenceUser.document(email).update(mapa);
+                            collectionReferenceUser.document(userEmail).update(mapa);
                         }
                     }
                 }
@@ -346,97 +348,27 @@ public class AuthRepository {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 for (QueryDocumentSnapshot user : queryDocumentSnapshots) {
-
                     User user1 = user.toObject(User.class);
-                    Map<String, Object> mapa = new HashMap<>();
                     orderIdField = orderId;
 
                     if (!queryDocumentSnapshots.isEmpty()) {
-
                         checkSubscriptionLiveData.postValue(user1.getEmail());
-/*
-                        if(email.equals(user1.getEmail())){
-                            Log.i("Show me the user",user1.getEmail());
-
-                            String subsOrderId = user1.getSubsOrderId();
-
-                            mapa.put("subsOrderId",subsOrderId);
-
-
-                            checkSubscribtion.postValue(true);
-                        }else {
-                            checkSubscribtion.postValue(false);
-                        }
-*/
-
-
-                        Log.i(FIREBASE_LOGGER, " " + "getDataFirebase");
                     } else {
                         checkSubscriptionLiveData.postValue("Null");
-
-                    /*    emailMutableLiveData.observeForever( new Observer<String>() {
-                            @Override
-                            public void onChanged(String s) {
-
-                                Log.i("Ssss check",s);
-                                Log.i("user1.getEmail()",user1.getEmail());
-
-                                if (s.equals(user1.getEmail()) && user1.getSubsOrderId().isEmpty()) {
-
-
-                                    Log.i("Show me the user", user1.getEmail());
-
-                                    String subsOrderId = user1.getSubsOrderId();
-
-                                    mapa.put("subsOrderId", subsOrderId);
-
-                                    collectionReferenceUser.document(email).update(mapa).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void unused) {
-
-                                        }
-                                    });
-
-                                }
-                            }
-                        });*/
-
-
                     }
                 }
-
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-
-            }
-        }).addOnCanceledListener(new OnCanceledListener() {
-            @Override
-            public void onCanceled() {
-
             }
         }).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
 
-
                 if (orderIdField.equals("Nothing")) {
-
 
                     collectionReferenceUser.whereEqualTo("userId", currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                         @Override
                         public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
 
-                          /*  checkSubscribtion.observeForever(new Observer<Boolean>() {
-                                @Override
-                                public void onChanged(Boolean aBoolean) {
-
-                                }
-                            });*/
-
                             for (QueryDocumentSnapshot user : queryDocumentSnapshots) {
-
 
                                 User user1 = user.toObject(User.class);
                                 Map<String, Object> mapa = new HashMap<>();
@@ -444,14 +376,8 @@ public class AuthRepository {
                                 observer = new Observer<String>() {
                                     @Override
                                     public void onChanged(String s) {
-                                        Log.i("Ssss check", s);
-                                        Log.i("user1.getEmail()", user1.getEmail());
 
                                         if (s.equals(user1.getEmail())) {
-
-
-                                            Log.i("Show me the user", user1.getEmail());
-
 
                                             checkSubscriptionLiveData.postValue(user1.getEmail());
                                             mapa.put("subsOrderId", orderId);
@@ -473,81 +399,12 @@ public class AuthRepository {
                             }
 
                             emailMutableLiveData.removeObserver(observer);
-
-                            // checkSubscribtion= null;
                         }
                     });
-                    Log.i("Tutaj małpo", orderIdField);
-                } else {
-                    Log.i("Tutaj małpo 2 ", orderIdField);
                 }
                 orderIdField = "Nothing";
-
             }
-
-
         });
-
-
-
-
-
-
-
-      /*  collectionReferenceUser.whereEqualTo("userId",currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-            @Override
-            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-
-                checkSubscribtion.observeForever(new Observer<Boolean>() {
-                    @Override
-                    public void onChanged(Boolean aBoolean) {
-
-                    }
-                });
-
-                for (QueryDocumentSnapshot user : queryDocumentSnapshots) {
-
-                    Log.i("kurwo jego","kurwo jego");
-
-                    User user1 = user.toObject(User.class);
-                    Log.i("Pokaż jaja",user1.getEmail());
-                    Map<String, Object> mapa = new HashMap<>();
-
-
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        emailMutableLiveData.observeForever( new Observer<String>() {
-                            @Override
-                            public void onChanged(String s) {
-
-                                Log.i("Ssss check",s);
-                                Log.i("user1.getEmail()",user1.getEmail());
-
-                                if (s.equals(user1.getEmail()) && *//*user1.getSubsOrderId().isEmpty()||*//*user1.getSubsOrderId()==null ) {
-
-
-                                    Log.i("Show me the user", user1.getEmail());
-
-
-                                    mapa.put("subsOrderId", orderId);
-
-                                    collectionReferenceUser.document(email).update(mapa).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void unused) {
-
-                                        }
-                                    });
-
-                                }
-                            }
-                        });
-
-                    }
-                }
-
-            }
-        });*/
-
-
     }
 
     public SingleLiveEvent<Map<String, Object>> getAmountEntriesStart(String id) {
@@ -567,18 +424,11 @@ public class AuthRepository {
 
                         mapa.put("entriesAmount", entriesAmount);
                         mapa.put("email", email);
-
-                        Log.i("entriesAmount", entriesAmount);
-                        Log.i("email", email);
-
                     }
-
                     singleLiveEventStart.postValue(mapa);
-
                 }
             }
         });
-
         return singleLiveEventStart;
 
     }
@@ -601,14 +451,8 @@ public class AuthRepository {
 
                         mapa.put("entriesAmount", entriesAmount);
                         mapa.put("email", email);
-
-                        Log.i("entriesAmount", entriesAmount);
-                        Log.i("email", email);
-
                     }
-
                     singleLiveEvent.postValue(mapa);
-
                 }
             }
         });
@@ -624,7 +468,6 @@ public class AuthRepository {
                 if (!value.isEmpty()) {
                     for (QueryDocumentSnapshot snapshot : value) {
                         getDeviceIdLiveData.postValue(snapshot.getString("deviceId"));
-
                     }
                 }
 
@@ -649,8 +492,8 @@ public class AuthRepository {
 
                 qrModelMutableLiveData.postValue(qrModelLinkedList);
             }
-        }).addOnFailureListener((Exception e) ->
-                Log.i("Fail setNewCodeQR", Optional.ofNullable(e.getMessage()) + ""));
+        });
+
 
     }
 
@@ -685,23 +528,15 @@ public class AuthRepository {
                                     sumOfTimeSettle += timeModel.getTimeOverallInLong();
                                     sumOfPaidMoney += timeModel.getWithdrawnMoney();
                                 }
-                                Log.i("getTimeForUser UserName", timeModel.getUserName());
-                                Log.i("getTimeForUser TimeAded", timeModel.getTimeAdded().toString());
-                                Log.i("getTimeForUser Id", timeModel.getDocumentId());
-                                Log.i("getTimeForUser timeStam", timeModel.getTimestamp().toDate() + "");
-                                Log.i("------------", "--------------");
 
                             }
-                            Log.i("Sum of time USER", sumOfTime + "");
                             timeModelArrayListMutableLiveData.postValue(timeModelArrayList);
                             saveAllCollectionToSQLite(timeModelArrayList);
                             updateDataSQLite(timeModelArrayList);
-                            Log.i(FIREBASE_LOGGER, " " + "getDataFirebase");
                             Map<String, Object> result = new HashMap<>();
                             result.put("hoursOverall", sumOfTime);
                             result.put("hoursToSettle", sumOfTime - sumOfTimeSettle);
                             result.put("paycheck", round(sumOfPaidMoney, 2));
-
                             collectionReferenceUser.document(email).update(result);
                         }
 
@@ -709,7 +544,7 @@ public class AuthRepository {
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.i("Fail getData", Optional.ofNullable(e.getMessage()) + "");
+
                     }
                 });
 
@@ -722,8 +557,6 @@ public class AuthRepository {
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-
-
                         if (!queryDocumentSnapshots.isEmpty()) {
                             collectionReferenceUser.whereEqualTo("userId", userId).get().addOnSuccessListener((QuerySnapshot document) -> {
                                 if (!document.isEmpty()) {
@@ -736,9 +569,7 @@ public class AuthRepository {
                                         User user1 = user.toObject(User.class);
                                         currentUserEmail = user1.getEmail();
 
-                                        //---------------------------------------
                                         List<TimeModel> timeModelArrayList = new ArrayList<>();
-                                        Log.i("Pre loop", "WWWWWWWWWWWWWWWWWWWWWWWWW");
                                         for (QueryDocumentSnapshot timeModels : queryDocumentSnapshots) {
 
                                             timeModel = timeModels.toObject(TimeModel.class);
@@ -750,28 +581,15 @@ public class AuthRepository {
                                                     return o1.getTimeAdded().compareTo(o2.getTimeAdded());
                                                 }
                                             });
-                                            Log.i("getTFU UserName", timeModel.getUserName());
-                                            Log.i("getTFU TimeAded", timeModel.getTimeAdded().toString());
-                                            Log.i("getTFU Id", timeModel.getDocumentId());
-                                            Log.i("getTFU timeStam", timeModel.getTimestamp().toDate() + "");
-
                                             sumOfTime += timeModel.getTimeOverallInLong();
                                             if (timeModel.getMoneyOverall()) {
                                                 sumOfTimeSettle += timeModel.getTimeOverallInLong();
                                                 sumOfPaidMoney += timeModel.getWithdrawnMoney();
                                             }
                                         }
-                                        Log.i("After loop", "MMMMMMMMMMMMMMMMMMMMMM");
-
                                         saveAllCollectionToSQLite(timeModelArrayList);
-                                        Log.i("SAVING DATA", "SAVING DATA");
 
                                         updateDataSQLite(timeModelArrayList);
-                                        Log.i("UPDATING DATA", "UPDATING DATA");
-
-                                        Log.i(FIREBASE_LOGGER, " " + "getTimeForUserNewMethod");
-                                        //---------------------------------------
-                                        Log.i("currenUserMailUpdated", currentUserEmail);
 
                                         Map<String, Object> result = new HashMap<>();
                                         result.put("hoursOverall", sumOfTime);
@@ -780,74 +598,12 @@ public class AuthRepository {
 
                                         collectionReferenceUser.document(currentUserEmail).update(result);
 
-
                                     }
                                 }
-
                             });
-
-
-
-                        /*    collectionReferenceUser.whereEqualTo("userId",timeModel.getId()).get().addOnSuccessListener((QuerySnapshot document)->{
-                                if(!document.isEmpty()){
-                                    for(QueryDocumentSnapshot user: document){
-                                        User user1 = user.toObject(User.class);
-                                        currentUserEmail = user1.getEmail();
-
-                                        Log.i("currenUserMailUpdated",currentUserEmail);
-
-                                        Map<String,Object> result = new HashMap<>();
-                                        result.put("hoursOverall",sumOfTime);
-                                        result.put("hoursToSettle",sumOfTime-sumOfTimeSettle);
-                                        result.put("paycheck",round(sumOfPaidMoney,2));
-
-                                        collectionReferenceUser.document(currentUserEmail).update(result);
-
-
-                                    }
-                                }
-                            });*/
                         }
-
                     }
                 });
-
-        /*
-        for (QueryDocumentSnapshot timeModels : queryDocumentSnapshots) {
-
-                                TimeModel timeModel = timeModels.toObject(TimeModel.class);
-
-                                timeModelArrayList.add(timeModel);
-                                Collections.sort(timeModelArrayList, new Comparator<TimeModel>() {
-                                    @Override
-                                    public int compare(TimeModel o1, TimeModel o2) {
-                                        return o1.getTimeAdded().compareTo(o2.getTimeAdded());
-                                    }
-                                });
-                                sumOfTime += timeModel.getTimeOverallInLong();
-                                if(timeModel.getMoneyOverall()){
-                                    sumOfTimeSettle +=timeModel.getTimeOverallInLong();
-                                    sumOfPaidMoney += timeModel.getWithdrawnMoney();
-                                }
-                                Log.i("getTimeForUser UserName", timeModel.getUserName());
-                                Log.i("getTimeForUser TimeAded", timeModel.getTimeAdded().toString());
-                                Log.i("getTimeForUser Id", timeModel.getDocumentId());
-                                Log.i("getTimeForUser timeStam", timeModel.getTimestamp().toDate() + "");
-                                Log.i("------------","--------------");
-
-                            }
-                            Log.i("Sum of time USER",sumOfTime+"");
-                            timeModelArrayListMutableLiveData.postValue(timeModelArrayList);
-                            saveAllCollectionToSQLite(timeModelArrayList);
-                            updateDataSQLite(timeModelArrayList);
-                            Log.i(FIREBASE_LOGGER, " " + "getDataFirebase");
-                            Map<String,Object> result = new HashMap<>();
-                            result.put("hoursOverall",sumOfTime);
-                            result.put("hoursToSettle",sumOfTime-sumOfTimeSettle);
-                            result.put("paycheck",round(sumOfPaidMoney,2));
-
-                            collectionReferenceUser.document(email).update(result);
-         */
 
     }
 
@@ -871,12 +627,7 @@ public class AuthRepository {
                                 qrModelLink.add(qrModel);
                             }
                             qrModelMutableLiveData.postValue(qrModelLink);
-                            for (QRModel qrModel : qrModelLink) {
-                                Log.i("INSIDE QRMODE", qrModel.getDelay() + " ");
-                            }
-                            Log.i(FIREBASE_LOGGER, " " + "getDataQRCode");
                         }
-
                     }
                 });
 
@@ -886,17 +637,12 @@ public class AuthRepository {
 
     public LiveData<List<TimeModel>> getAllTimeModelsForAdminSQL(String userId) {
 
-        Log.i("STRING UserID", userId);
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                Log.i("ITERACJA POCZĄTEK", "Iteracja Początek");
+
                 List<TimeModel> value = timeModelDAO.getAllTimeModelsList(userId);
-                Log.i("value list: ", value.size() + "");
-                Log.i("ForAdminSQL user:", userId);
 
-
-                ///
                 collectionReferenceTime.whereEqualTo("id", userId).whereGreaterThan("timestamp", countMethod(value))
                         .get()
                         .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
@@ -916,21 +662,12 @@ public class AuthRepository {
                                                 return o1.getTimeAdded().compareTo(o2.getTimeAdded());
                                             }
                                         });
-                                        Log.i("getTimeForUser UserName", timeModel.getUserName());
-                                        Log.i("getTimeForUser TimeAded", timeModel.getTimeAdded().toString());
-                                        Log.i("getTimeForUser Id", timeModel.getDocumentId());
-                                        Log.i("getTimeForUser timeStam", timeModel.getTimestamp().toDate() + "");
                                     }
 
                                     saveAllCollectionToSQLite(timeModelArrayList);
-                                    Log.i("SAVING DATA", "SAVING DATA");
-
 
                                     updateDataSQLite(timeModelArrayList);
-                                    Log.i("UPDATING DATA", "UPDATING DATA");
 
-
-                                    Log.i(FIREBASE_LOGGER, " " + "getTimeForUserNewMethod");
                                 }
 
                                 collectionReferenceUser.whereEqualTo("userId", userId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
@@ -945,25 +682,11 @@ public class AuthRepository {
                                                         long hoursToSettle = user.getHoursOverall();
                                                         long timeModelSumForTimeOverall = sumUp(timeModelDAO.getAllTimeModelsList(userId));
 
-                                                        Log.i("SZY userId: ", userId);
-                                                        Log.i("FROM USER VALUE", hoursToSettle + "");
-                                                        Log.i("FROM TimeModel VALUE", timeModelSumForTimeOverall + "");
-
                                                         if (hoursToSettle != timeModelSumForTimeOverall) {
-                                                            Log.i("ROZBIEŻNOŚĆ", "------------");
-                                                            Log.i("name", user.getUsername() + "");
-                                                            Log.i("USER VALUE", hoursToSettle + "");
-                                                            Log.i("TimeModel VALUE", timeModelSumForTimeOverall + "");
-                                                            Log.i("ROZBIEŻNOŚĆ", "----------");
-                                                            Log.i("Deleting and Adding A", userId);
+
                                                             timeModelDAO.deleteListForTimeModel(userId);
                                                             getDataFirebase(userId, new Timestamp(new Date(0)));
 
-                                                        } else {
-                                                            Log.i("Brak ROZBIEŻNOŚĆ", "---------");
-                                                            Log.i("name", user.getUsername() + "");
-                                                            Log.i("hoursToSettle", hoursToSettle + "");
-                                                            Log.i("From LocalDB", timeModelSumForTimeOverall + "");
                                                         }
                                                     }
                                                 });
@@ -973,18 +696,8 @@ public class AuthRepository {
                                     }
                                 });
 
-                                //}
-
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Log.i("NOTHING NEW", "-----");
                             }
                         });
-
-                Log.i(ROOM_DB_LOGGER, "ROOM_DB" + " " + "getAllTimeModelsForAdminSQL");
-
             }
         });
 
@@ -998,10 +711,8 @@ public class AuthRepository {
             @Override
             public void run() {
                 List<TimeModel> value = timeModelDAO.getAllTimeModelsList(currentUserId);
-                // Ta metoda do ściagania hoursOverall dla Users
-                //readLogcat(value);
-                Log.i(ROOM_DB_LOGGER, ROOM_DB_LOGGER + " " + "getAllTimeModelsForUserSQL");
 
+                // Ta metoda do ściagania hoursOverall dla Users
                 collectionReferenceTime.whereEqualTo("id", currentUserId).whereGreaterThan("timestamp", countMethod(value))
                         .get()
                         .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
@@ -1023,20 +734,10 @@ public class AuthRepository {
                                             }
                                         });
 
-                                        Log.i("PRINT1: ", timeModel.getUserName());
-                                        Log.i("PRINT2: ", timeModel.getTimeBegin());
-                                        Log.i("PRINT3: ", timeModel.getTimeEnd());
-                                        Log.i("PRINT4: ", timeModel.getTimeOverall());
-                                        Log.i("PRINT5: ", timeModel.getTimeAdded().toDate() + "");
-                                        Log.i("------", "--------");
-
-
                                     }
                                     timeModelArrayListMutableLiveData.postValue(timeModelArrayList);
                                     saveAllCollectionToSQLite(timeModelArrayList);
                                     updateDataSQLite(timeModelArrayList);
-                                    Log.i(FIREBASE_LOGGER, " " + "getDataFirebase");
-
                                 }
 
 
@@ -1050,27 +751,12 @@ public class AuthRepository {
                                                     public void run() {
                                                         User user = users.toObject(User.class);
                                                         long hoursToSettle = user.getHoursOverall();
-                                                        //long timeModelSumForTimeOverall = sumUp(timeModelDAO.getAllTimeModelsList(currentUserId));
                                                         long timeModelSumForTimeOverall = sumUp(timeModelDAO.getAllTimeModelsList(currentUserId));
 
-
-                                                        Log.i("FROM USER VALUE", hoursToSettle + "");
-                                                        Log.i("FROM TimeModel VALUE", timeModelSumForTimeOverall + "");
-
                                                         if (hoursToSettle != timeModelSumForTimeOverall) {
-                                                            Log.i("ROZBIEŻNOŚĆ", "<<<<<<<<<");
-                                                            Log.i("USER VALUE", hoursToSettle + "");
-                                                            Log.i("TimeModel VALUE", timeModelSumForTimeOverall + "");
-                                                            Log.i("ROZBIEŻNOŚĆ", ">>>>>>>>>>");
-
                                                             timeModelDAO.deleteListForTimeModel(currentUserId);
-                                                            Log.i("Deleting and Adding U", "delete and add");
                                                             getDataFirebase(new Timestamp(new Date(0)));
 
-                                                        } else {
-                                                            Log.i("Brak ROZBIEŻNOŚĆ", ">>>>>>>>>>");
-                                                            Log.i("hoursToSettle", hoursToSettle + "");
-                                                            Log.i("From LocalDB", timeModelSumForTimeOverall + "");
                                                         }
                                                     }
                                                 });
@@ -1082,14 +768,7 @@ public class AuthRepository {
 
 
                             }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Log.i("Fail getData", Optional.ofNullable(e.getMessage()) + "");
-
-                            }
                         });
-
             }
         });
 
@@ -1111,15 +790,9 @@ public class AuthRepository {
             for (TimeModel timeModel : timeModels) {
                 if (timeModel.getTimestamp().toDate().getTime() >= max) {
                     max = timeModel.getTimestamp().toDate().getTime();
-                    Log.i("Inside loop", max + "");
                 }
             }
-            Log.i("USERNAME VALUE MAX", timeModels.get(0).getUserName());
-            Log.i("the value of max", max + "");
-            Log.i("What is the last date", new Date(max) + "");
-            Log.i("---------", "-----");
         }
-
         return new Timestamp(new Date(max));
     }
 
@@ -1145,15 +818,6 @@ public class AuthRepository {
                         result.put("hoursToSettle", user1.getHoursToSettle());
 
                         result.put("paycheck", user1.getPaycheck());
-
-
-
-
-              /*          Log.i("2 UU userName", user1.getUsername() + "");
-                        Log.i("2 UU hoursOverall", user1.getHoursOverall() + "");
-                        Log.i("2 UTM timeOverall ", timeModel.getTimeOverallInLong() + "");*/
-
-                        Log.i(FIREBASE_LOGGER, " " + "updatedDataHoursToFirebaseUser");
 
                         updateUserTime(result, timeModel);
                     }
@@ -1183,7 +847,6 @@ public class AuthRepository {
                         paycheckHoursToSettleMutableLiveData.postValue(result);
 
                     }
-                    Log.i(FIREBASE_LOGGER, " " + "getDataToUpdatePayCheck");
                 }
 
             }
@@ -1195,7 +858,6 @@ public class AuthRepository {
             @Override
             public void run() {
                 timeModelDAO.insertAllCollection(timeModelList);
-                Log.i(ROOM_DB_LOGGER, ROOM_DB_LOGGER + " " + "saveAllCollectionToSQLite");
             }
         });
 
@@ -1212,21 +874,14 @@ public class AuthRepository {
             public void run() {
                 timeModelDAO.insert(timeModel);
 
-                Log.i("SUCCESFULLY ADDED", timeModel.toString());
-                Log.i(ROOM_DB_LOGGER, ROOM_DB_LOGGER + " " + "saveAllCollectionToSQLite");
             }
         });
 
-        collectionReferenceTime.document(idDocument).set(timeModel).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void unused) {
-                Log.i("Succes on adding", timeModel.toString());
-            }
-        }).addOnFailureListener(new OnFailureListener() {
+        collectionReferenceTime.document(idDocument).set(timeModel).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(application, application.getString(R.string.fail_on_adding_data), Toast.LENGTH_SHORT).show();
-                Log.i(FIREBASE_LOGGER, " " + "saveDataToFireBase");
+
             }
         });
     }
@@ -1237,26 +892,11 @@ public class AuthRepository {
 
     public void deleteDateFromFireBase(TimeModel timeModel) {
         deleteDataFromRoomDB(timeModel);
-        Log.i("4 UU username", timeModel.getUserName());
-        Log.i("4 UU time begin", timeModel.getTimeBegin());
-        Log.i("4 UU time end", timeModel.getTimeEnd());
-        Log.i("4 UU time overall", timeModel.getTimeOverallInLong() + "");
-        collectionReferenceTime.document(timeModel.getDocumentId()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void unused) {
-                Log.i(FIREBASE_LOGGER, " " + "deleteDateFromFireBase");
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.i(FIREBASE_LOGGER + "FAIl", Optional.ofNullable(e.getMessage()) + "");
-            }
-        });
+        collectionReferenceTime.document(timeModel.getDocumentId()).delete();
     }
 
     private void updateUserTime(Map<String, Object> result, TimeModel timeModel) {
         Map<String, Object> resultToSend = new HashMap<>();
-
 
         String userEmail = (String) result.get("userEmail");
         //to z usera
@@ -1287,14 +927,7 @@ public class AuthRepository {
         resultToSend.put("hoursOverall", hoursOverallToSend);
         resultToSend.put("hoursToSettle", hoursToSettleToSend);
 
-        Log.i("3 UU hoursOverallToSend", hoursOverallToSend + "");
-        collectionReferenceUser.document(userEmail).update(resultToSend).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void unused) {
-
-                Log.i(FIREBASE_LOGGER, " " + "updateUserTime");
-            }
-        });
+        collectionReferenceUser.document(userEmail).update(resultToSend);
     }
 
     public void updateDataSQLite(List<TimeModel> list) {
@@ -1302,7 +935,6 @@ public class AuthRepository {
             @Override
             public void run() {
                 timeModelDAO.updateList(list);
-                Log.i(ROOM_DB_LOGGER, "Updated List");
             }
         });
     }
@@ -1312,7 +944,6 @@ public class AuthRepository {
             @Override
             public void run() {
                 timeModelDAO.updated(timeModel);
-                Log.i(ROOM_DB_LOGGER, "Updated TimeModel");
             }
         });
     }
@@ -1336,23 +967,9 @@ public class AuthRepository {
         timeModel.setTimeOverall(overall);
         timeModel.setTimeOverallInLong(timeInLong);
         timeModel.setTimestamp(timestamp);
-        Log.i("TimeModel updated: ", timeModel.toString());
-
-        Log.i(FIREBASE_LOGGER, " " + "updateDataToFirebase");
-
-        Log.i("3’ UTM username", timeModel.getUserName());
-        Log.i("3’ UTM username", timeModel.getTimeBegin());
-        Log.i("3’ UTM username", timeModel.getTimeEnd());
-        Log.i("3’ UTM username", timeModel.getTimeOverallInLong() + "");
-
 
         updateDataSQLite(timeModel);
-        collectionReferenceTime.document(documentID).update(result).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-            }
-        });
-
+        collectionReferenceTime.document(documentID).update(result);
     }
 
     public void updateStatusOfPayment(String documentID, boolean isSettled, double withDrawnMoney, Timestamp timestamp, TimeModel timeModel) {
@@ -1364,8 +981,6 @@ public class AuthRepository {
         String KEY_TIMESTAMP = "timestamp";
         result.put(KEY_TIMESTAMP, timestamp);
 
-        Log.i(LOGGER, "updateStatusOfPayment");
-
         timeModel.setMoneyOverall(isSettled);
         timeModel.setWithdrawnMoney(withDrawnMoney);
         timeModel.setTimestamp(timestamp);
@@ -1373,8 +988,6 @@ public class AuthRepository {
         updateDataSQLite(timeModel);
 
         collectionReferenceTime.document(documentID).update(result);
-
-        Log.i(FIREBASE_LOGGER, " " + "updateStatusOfPayment");
     }
 
 
@@ -1383,13 +996,7 @@ public class AuthRepository {
 
         result.put("paycheck", payCheck);
         result.put("hoursToSettle", settledTimeInMillis);
-        Log.i("Firebase", "updateStatusOfTimeForUser");
-        collectionReferenceUser.document(email).update(result).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                Log.i(FIREBASE_LOGGER, " " + "updateStatusOfTimeForUser");
-            }
-        });
+        collectionReferenceUser.document(email).update(result);
     }
 
     public void getUsersDataAssignedToAdmin() {
@@ -1407,14 +1014,7 @@ public class AuthRepository {
 
                             userArrayList.add(user);
 
-
                             userArrayListOfUserMutableLiveData.postValue(userArrayList);
-
-                            Log.i(FIREBASE_LOGGER, " " + "getUsersDataAssignedToAdmin");
-                            Log.i("User name:", user.getUsername());
-                            Log.i("User hoursOverall:", user.getHoursOverall() + "");
-                            Log.i("User hoursToSettle: ", user.getHoursToSettle() + "");
-                            Log.i("-----", "-----");
 
                         }
 
@@ -1442,7 +1042,6 @@ public class AuthRepository {
                             ifAdminMutableLiveData.postValue(false);
                         }
                     }
-                    Log.i(FIREBASE_LOGGER, " " + "checkIfAdmin");
                 }
             }
         });
@@ -1452,32 +1051,25 @@ public class AuthRepository {
 
     public void signInWithGoogleCredential(AuthCredential authCredential, Context context, String email) {
 
-
+        Log.i("Sign in Google","Sign in Google");
         firebaseAuth.signInWithCredential(authCredential).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
-                    //TODO Register
-
+                    Log.i("Sign in Google","task.isSuccessful()");
                     fireBaseUser = firebaseAuth.getCurrentUser();
                     assert fireBaseUser != null;
 
 
-                    collectionReferenceUser.whereEqualTo("email", email).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    collectionReferenceUser.whereEqualTo("email", fireBaseUser.getEmail()).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                         @Override
                         public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                             if (!queryDocumentSnapshots.isEmpty()) {
-                                Log.i("Firebase response", "There is an email like that");
                                 context.startActivity(new Intent(context, UserMainActivity.class));
+                                Log.i("Sign in Google","onSuccess");
                             } else {
-                                //TODO Register
 
-                                Log.i("Firebase response", "There is no email like that");
                                 valueToOpenDialogLiveData.postValue(true);
-                                Log.i("name", firebaseAuth.getCurrentUser().getDisplayName());
-                                Log.i("email", firebaseAuth.getCurrentUser().getEmail());
-                                final String currentUserId = fireBaseUser.getUid();
-                                Log.i("currentUserId", currentUserId);
 
                             }
 
@@ -1485,18 +1077,8 @@ public class AuthRepository {
                         }
                     });
 
-                    /*userObj.put("userId", currentUserId);
-                    userObj.put("email", email);
-                    userObj.put("username", userName_send);
-                    userObj.put("surName", surName_send);
-                    userObj.put("foreign_key", arrayListForAssigningEmail.get(0));
-                    userObj.put("hoursOverall", 0);
-                    userObj.put("hoursToSettle", 0);
-                    userObj.put("paycheck", 0);
-                    userObj.put("entriesAmount", daysSinceUnix + "_" + "0");
-                    userObj.put("deviceId", App.android_id);*/
-
-
+                }else{
+                    Log.i("Sign in Google","task not sucesfull");
                 }
             }
         });
@@ -1507,15 +1089,13 @@ public class AuthRepository {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 if (queryDocumentSnapshots.isEmpty()) {
-                    Log.i("writeAdminToDb", "Assign Admin to Db");
-
                     //Aktualny dzień
                     long time = new Date().getTime();
-                    //long days = TimeUnit.MILLISECONDS.toDays(time);
 
                     Duration duration = Duration.ofMillis(time);
                     long daysSinceUnix = duration.toDays();
 
+                    firebaseAuth = FirebaseAuth.getInstance();
 
                     String[] split = firebaseAuth.getCurrentUser().getDisplayName().split("\\s+");
 
@@ -1539,15 +1119,7 @@ public class AuthRepository {
                             context.startActivity(new Intent(context, UserMainActivity.class));
 
                         }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-
-                        }
                     });
-
-                } else {
-                    Log.i("writeAdminDataToDb", "Admin already signed To Db");
                 }
             }
         });
@@ -1559,7 +1131,6 @@ public class AuthRepository {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 if (!queryDocumentSnapshots.isEmpty()) {
-                    Log.i("writeUserDataToDb", "Assign User to Db");
                     String foreign_key = "";
 
                     //Aktualny dzień
@@ -1570,7 +1141,7 @@ public class AuthRepository {
                     long daysSinceUnix = duration.toDays();
 
                     for (QueryDocumentSnapshot snapshot : queryDocumentSnapshots) {
-                        Log.i("WUDTDB foreigin key", foreign_key = snapshot.getString("userId"));
+                        foreign_key = snapshot.getString("userId");
                     }
 
 
@@ -1603,8 +1174,6 @@ public class AuthRepository {
                         }
                     });
 
-                } else {
-                    Log.i("writeUserDataToDb", "No admin like that");
                 }
             }
         });
@@ -1620,9 +1189,6 @@ public class AuthRepository {
                     for (QueryDocumentSnapshot snapshot : value) {
                         arrayListForAssigningEmail.add(snapshot.getString("userId"));
                     }
-
-                    Log.i(FIREBASE_LOGGER, " " + "register");
-
 
                     if (arrayListForAssigningEmail.size() > 0) {
 
@@ -1662,23 +1228,13 @@ public class AuthRepository {
 
                                     isAdminExistLiveData.postValue(true);
 
-                                    Log.i("isAdmin05", "true");
-
-                                    Log.i("Hello five", "five");
-
                                     collectionReferenceUser.document(email).set(userObj).addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void unused) {
 
                                             arrayListForAssigningEmail.clear();
                                         }
-                                    }).addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-
-                                        }
                                     });
-
 
                                 } else {
                                     Toast.makeText(application, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
@@ -1688,7 +1244,6 @@ public class AuthRepository {
 
                     } else {
                         isAdminExistLiveData.postValue(false);
-                        Log.i("isAdmin05", "false");
                     }
 
                 }
@@ -1700,21 +1255,7 @@ public class AuthRepository {
     }
 
 
-    public void register(String email, String password, String userName_send, String surName_send/*, String foreign_email*/) {
-
-    /*    collectionReferenceUser.whereEqualTo("email", foreign_email).addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                if (!value.isEmpty()) {
-                    for (QueryDocumentSnapshot snapshot : value) {
-                        arrayListForAssigningEmail.add(snapshot.getString("userId"));
-                    }
-                    Log.i(FIREBASE_LOGGER, " " + "register");
-                }
-
-
-            }
-        });*/
+    public void register(String email, String password, String userName_send, String surName_send) {
 
         firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
@@ -1753,11 +1294,6 @@ public class AuthRepository {
 
                             arrayListForAssigningEmail.clear();
                         }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-
-                        }
                     });
 
 
@@ -1769,9 +1305,6 @@ public class AuthRepository {
     }
 
     public void signIn(String email, String password) {
-
-        Log.i(LOGGER, "signIn");
-
         firebaseAuth.signInWithEmailAndPassword(email, password).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
             @Override
             public void onSuccess(AuthResult authResult) {
@@ -1789,13 +1322,10 @@ public class AuthRepository {
     }
 
     public void resetPassword(String email) {
-        Log.i(LOGGER, "resetPassword");
-
         firebaseAuth.sendPasswordResetEmail(email).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
                 Toast.makeText(application, application.getString(R.string.reset_meesage), Toast.LENGTH_SHORT).show();
-                Log.i(FIREBASE_LOGGER, " " + "resetPassword");
 
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -1808,9 +1338,8 @@ public class AuthRepository {
 
 
     public LiveData<User> getUsernameAndSurname() {
+
         checkIfAdmin();
-
-
         collectionReferenceUser.whereEqualTo("userId", currentUserId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
@@ -1822,7 +1351,6 @@ public class AuthRepository {
                         user.setForeign_key(snapshot.getString("foreign_key"));
                     }
                     getUsernameAndSurnameLiveData.postValue(user);
-                    Log.i(FIREBASE_LOGGER, " " + "getUsernameAndSurname");
                 }
             }
         });
@@ -1863,7 +1391,7 @@ public class AuthRepository {
     public void singOut() {
         firebaseAuth.signOut();
         userLoggedMutableLiveData.postValue(true);
-        Log.i(FIREBASE_LOGGER, " " + "singOut");
+
     }
 
 

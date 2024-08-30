@@ -51,8 +51,6 @@ public class App extends Application {
         executorService.execute(()->{
             for (int i = 0; i < 10; i++) {
 
-
-                Log.i("AndroidId", android_id);
                 try{
                     Thread.sleep(1000);
                 }

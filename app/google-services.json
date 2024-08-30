@@ -7,35 +7,6 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:227825902328:android:68426982e9e0373456910d",
-        "android_client_info": {
-          "package_name": "com.example.ogrdapp"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "227825902328-k7iiiurp0628sj543agpdkhdjqe09769.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCNAqwX3JkCFiY07Bc0aZtz-MJrchglDFQ"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "227825902328-k7iiiurp0628sj543agpdkhdjqe09769.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:227825902328:android:ca3fed2169a504f456910d",
         "android_client_info": {
           "package_name": "com.osinTechInnovation.ogrdapp"
@@ -43,7 +14,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "227825902328-k7iiiurp0628sj543agpdkhdjqe09769.apps.googleusercontent.com",
+          "client_id": "227825902328-eahkuo10nn2sbv9vkbdnaa52a9kqh3mq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.osinTechInnovation.ogrdapp",
+            "certificate_hash": "d8873dd31f257d21fbf6314a5818cd601d527d36"
+          }
+        },
+        {
+          "client_id": "227825902328-8t0b9p440vforaatednmmnvfesefsqsb.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -56,36 +35,7 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "227825902328-k7iiiurp0628sj543agpdkhdjqe09769.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:227825902328:android:f350591a94b1abea56910d",
-        "android_client_info": {
-          "package_name": "com.osinTechInnovation.ogrdapp_user"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "227825902328-k7iiiurp0628sj543agpdkhdjqe09769.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCNAqwX3JkCFiY07Bc0aZtz-MJrchglDFQ"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "227825902328-k7iiiurp0628sj543agpdkhdjqe09769.apps.googleusercontent.com",
+              "client_id": "227825902328-8t0b9p440vforaatednmmnvfesefsqsb.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

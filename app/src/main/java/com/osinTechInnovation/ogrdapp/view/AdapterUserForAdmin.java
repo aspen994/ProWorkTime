@@ -60,7 +60,7 @@ public class AdapterUserForAdmin extends RecyclerView.Adapter<AdapterUserForAdmi
 
         TimeModelForDisplay timeModel = list.get(position);
 
-        Log.i("CHECK OVER HERE",list.get(position).getUserName());
+
 
         dialog = new Dialog(context);
         dialog.setContentView(R.layout.dialog_what_next);

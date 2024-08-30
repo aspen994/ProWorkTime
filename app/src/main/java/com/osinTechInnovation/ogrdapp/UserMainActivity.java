@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -129,7 +130,7 @@ public class UserMainActivity extends AppCompatActivity {
     public boolean itemShowed = false;
 
     private GoogleSignInClient googleSignInClient;
-    private Dialog dialog;
+    private Dialog dialog,dialogUserOrAdmin;
     private Button btnDialogYes, btnDialogNo;
 
 
@@ -160,6 +161,11 @@ public class UserMainActivity extends AppCompatActivity {
         btnDialogYes = dialog.findViewById(R.id.btn_edit_date);
         btnDialogNo = dialog.findViewById(R.id.btn_settle_the_employee);
 
+        dialogUserOrAdmin = new Dialog(UserMainActivity.this);
+        dialogUserOrAdmin.setContentView(R.layout.dialog_chose_user_admin);
+        dialogUserOrAdmin.getWindow().setLayout(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialogUserOrAdmin.getWindow().setBackgroundDrawable(getDrawable(R.drawable.custom_dialog_bg));
+        dialogUserOrAdmin.setCancelable(false);
 
 
         GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -239,6 +245,9 @@ public class UserMainActivity extends AppCompatActivity {
         if (!isMyServiceRunning(ForegroundServices.class) && (timerStarted || isPaused)) {
             Intent intent = new Intent(UserMainActivity.this, ForegroundServices.class);
             startService(intent);
+            /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent);
+            }*/
         }
 
         // After loading data checking if clock is running if it is show the buttons
@@ -553,6 +562,7 @@ public class UserMainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 authViewModel.signOut();
                 googleSignInClient.signOut();
+                dialog.dismiss();
             }
         });
 
@@ -560,6 +570,15 @@ public class UserMainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 dialog.dismiss();
+            }
+        });
+        authViewModel.getValueToOpenDialog().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if(aBoolean){
+                    dialog.show();
+                    dialogUserOrAdmin.show();
+                }
             }
         });
 
@@ -706,6 +725,7 @@ public class UserMainActivity extends AppCompatActivity {
         timerStarted = true;
         Intent i = new Intent(UserMainActivity.this, ForegroundServices.class);
         startService(i);
+
 
     }
 
@@ -1087,9 +1107,12 @@ public class UserMainActivity extends AppCompatActivity {
         super.onResume();
 
         startCountingTimeWithHandler(delayToAssign);
-        if (isAdmin && !itemShowed) {
+        hideItem();
+        if (isAdmin) {
             query_purchase();
         }
+
+
 
 
     }
