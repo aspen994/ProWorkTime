@@ -105,14 +105,13 @@
     <string name="weekly">Weekly</string>
     <string name="every_3_week">Every 3 Week</string>
     <string name="or_login_with">Or log in with</string>
-    <string name="login_with_google">Sign in with Google</string>
+    <string name="login_with_google">Continue with Google</string>
     <string name="enter_email_of_your_employers">Enter your employer\'s email address</string>
     <string name="before_we_start">Before we start</string>
     <string name="are_you_an_administrator_or_a_user">Are you an administrator or a user?</string>
     <string name="user_without_dots">User</string>
     <string name="you_are_subscribed_to_a_different_email_address">You are subscribed to a different email address</string>
     <string name="recover_old_code">Recover old code</string>
-
     <string name="feature_not_supported">FEATURE NOT SUPPORTED</string>
     <string name="billing_unavailable">BILLING UNAVAILABLE</string>
     <string name="user_canceled">USER CANCELED</string>

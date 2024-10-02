@@ -889,7 +889,6 @@ public class UserMainActivity extends AppCompatActivity {
                             holdResumeWork.setText(getString(R.string.hold_work));
                             startCountingTimeWithHandler(delayToAssign);
 
-
                             endingTime.setText("");
 
                             stopWork.setVisibility(View.VISIBLE);

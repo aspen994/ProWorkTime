@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black">
+    android:background="@color/white">
 
     <androidx.drawerlayout.widget.DrawerLayout
         android:id="@+id/drawerLayout"
@@ -36,8 +36,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="20dp"
-                android:textColor="@color/white"
                 android:text="@string/time"
+                android:textColor="@color/black"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView_date" />
 
@@ -47,8 +47,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="20dp"
-                android:textColor="@color/white"
                 android:text="00 : 00 : 00"
+                android:textColor="@color/black"
                 app:layout_constraintStart_toEndOf="@+id/textView6"
                 app:layout_constraintTop_toBottomOf="@+id/textview_dateToInsert" />
 
@@ -58,8 +58,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="80dp"
-                android:textColor="@color/white"
                 android:text="18.05.2023 r."
+                android:textColor="@color/black"
                 app:layout_constraintStart_toEndOf="@+id/textView_date"
                 app:layout_constraintTop_toBottomOf="@+id/buttonQR" />
 
@@ -67,10 +67,10 @@
                 android:id="@+id/textView_begin_work"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/white"
-                android:text="@string/begin_work"
-                android:textSize="20sp"
                 android:layout_marginTop="20dp"
+                android:text="@string/begin_work"
+                android:textColor="@color/black"
+                android:textSize="20sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/username" />
@@ -79,10 +79,10 @@
                 android:id="@+id/username"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
                 android:layout_marginStart="20dp"
-                android:textColor="@color/white"
+                android:layout_marginTop="20dp"
                 android:text="@string/user_number_1"
+                android:textColor="@color/black"
                 app:layout_constraintStart_toEndOf="@+id/usernameTitle"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -92,8 +92,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="20dp"
-                android:textColor="@color/white"
                 android:text="@string/user"
+                android:textColor="@color/black"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -103,8 +103,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="80dp"
-                android:textColor="@color/white"
                 android:text="@string/date"
+                android:textColor="@color/black"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/buttonQR" />
 
@@ -114,8 +114,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="14dp"
-                android:textColor="@color/white"
                 android:text=""
+                android:textColor="@color/black"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView6" />
 
@@ -125,8 +125,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="20dp"
-                android:textColor="@color/white"
                 android:text=""
+                android:textColor="@color/black"
                 app:layout_constraintBaseline_toBaselineOf="@+id/textView_pausa"
                 app:layout_constraintStart_toEndOf="@+id/textView_pausa" />
 
@@ -135,8 +135,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="52dp"
-                android:textColor="@color/white"
                 android:text=""
+                android:textColor="@color/black"
                 android:textSize="20sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -147,8 +147,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
+                android:textColor="@color/black"
                 android:textSize="20sp"
-                android:textColor="@color/white"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/begining_time" />
@@ -159,7 +159,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:gravity="center"
-                android:textColor="@color/white"
+                android:textColor="@color/black"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/ending_time" />

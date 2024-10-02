@@ -15,8 +15,8 @@ android {
         applicationId "com.osinTechInnovation.ogrdapp"
         minSdk 23
         targetSdk 34
-        versionCode 53
-        versionName "1.53"
+        versionCode 54
+        versionName "1.54"
         compileSdkPreview = "UpsideDownCake"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
