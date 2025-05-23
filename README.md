@@ -4,21 +4,34 @@ https://www.youtube.com/watch?v=BXa5uEQBEzE
 
 ## Functionalities of ProWorkTime App
 - login with google
-- registarion 
+- registarion with google
+- login with email
+- registration with email
 - two way registration as a worker and as an employer
 - buying subscrtion with google
 - starting time with qr code
-- assing delay to qr code
-- assing worker to employer
 - displaying time of work
-- editing time of work as employer
-- deleting time of work
-- sorting work of time employers by date
-- settlement of working time
-- withdrawing money based on time
 - notifaction in background about time
 - two way counting time ( work time and pause time)
 
+## Functionality as admin
+- assing delay to qr code
+- assing worker to employer
+- editing time of work as employer
+- deleting time of work
+- showing time of workers
+- sorting work of time employers by date
+- settlement of working time
+- withdrawing money based on time
+
+## Tools which I used to build server side of this app
+- java
+- firebase
+
+## Architecture
+- MVVN
+
+  
 ## Screenshots
 ![1](https://github.com/user-attachments/assets/1703c7b7-b922-45e2-a1b1-572d9609d109)
 ![2](https://github.com/user-attachments/assets/c4d00a8b-1d28-45bc-9c55-889fc2e37d8d)
